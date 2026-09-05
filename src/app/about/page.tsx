@@ -161,13 +161,13 @@ export default function AboutPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<SectionId>('bio')
 
-  // FIX: ref to track if scroll was triggered by nav click (to prevent listener override)
   const isScrollingToRef = useRef(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // ref for mobile nav scroll
+  const mobileNavRef = useRef<HTMLDivElement>(null)
 
   const t = isRTL ? sectionLabels.ar : sectionLabels.en
 
-  // FIX: Promise.allSettled + proper error handling
   useEffect(() => {
     async function fetchData() {
       try {
@@ -197,25 +197,18 @@ export default function AboutPage() {
 
         if (profileResult.status === 'fulfilled' && profileResult.value.data)
           setProfile(profileResult.value.data)
-
         if (educationResult.status === 'fulfilled' && educationResult.value.data)
           setEducation(educationResult.value.data)
-
         if (positionsResult.status === 'fulfilled' && positionsResult.value.data)
           setPositions(positionsResult.value.data)
-
         if (awardsResult.status === 'fulfilled' && awardsResult.value.data)
           setAwards(awardsResult.value.data)
-
         if (membershipsResult.status === 'fulfilled' && membershipsResult.value.data)
           setMemberships(membershipsResult.value.data)
-
         if (committeesResult.status === 'fulfilled' && committeesResult.value.data)
           setCommittees(committeesResult.value.data)
-
         if (conferencesResult.status === 'fulfilled' && conferencesResult.value.data)
           setConferences(conferencesResult.value.data)
-
         if (supervisionResult.status === 'fulfilled' && supervisionResult.value.data)
           setSupervision(supervisionResult.value.data)
       } catch (err) {
@@ -229,11 +222,10 @@ export default function AboutPage() {
     fetchData()
   }, [])
 
-  // Scroll detection on window — no nested scrollbar
   useEffect(() => {
     if (loading) return
 
-    const OFFSET = 140 // navbar height + some breathing room
+    const OFFSET = 140
 
     const handleScroll = () => {
       if (isScrollingToRef.current) return
@@ -243,14 +235,24 @@ export default function AboutPage() {
       for (const id of NAV_IDS) {
         const element = document.getElementById(id)
         if (!element) continue
-
-        // position relative to viewport top
         if (element.getBoundingClientRect().top <= OFFSET) {
           current = id
         }
       }
 
       setActiveSection(current)
+
+      // Auto-scroll mobile nav to keep active item visible
+      if (mobileNavRef.current) {
+        const activeBtn = mobileNavRef.current.querySelector(`[data-id="${current}"]`) as HTMLElement
+        if (activeBtn) {
+          const nav = mobileNavRef.current
+          const btnLeft = activeBtn.offsetLeft
+          const btnWidth = activeBtn.offsetWidth
+          const navWidth = nav.offsetWidth
+          nav.scrollTo({ left: btnLeft - navWidth / 2 + btnWidth / 2, behavior: 'smooth' })
+        }
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -262,7 +264,6 @@ export default function AboutPage() {
     }
   }, [loading])
 
-  // Nav click scrolls the window, not a nested container
   const handleNavClick = (id: SectionId) => {
     const section = document.getElementById(id)
     if (!section) return
@@ -270,7 +271,7 @@ export default function AboutPage() {
     isScrollingToRef.current = true
     setActiveSection(id)
 
-    const OFFSET = 100 // leave gap below sticky navbar
+    const OFFSET = 100
     const top = section.getBoundingClientRect().top + window.scrollY - OFFSET
 
     window.scrollTo({ top, behavior: 'smooth' })
@@ -284,8 +285,6 @@ export default function AboutPage() {
   const name = isRTL ? profile?.name_ar || profile?.name_en : profile?.name_en
   const title = isRTL ? profile?.title_ar || profile?.title_en : profile?.title_en
   const bio = isRTL ? profile?.bio_ar || profile?.bio_en : profile?.bio_en
-
-  // FIX: use profile?.email from DB, not hardcoded string
   const email = profile?.email || ''
 
   const yearRange = (
@@ -329,16 +328,14 @@ export default function AboutPage() {
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
-      className={`min-h-screen bg-[#F6F8FC] text-[#16233A] ${
-        isRTL ? 'font-arabic' : ''
-      }`}
+      className={`min-h-screen bg-[#F6F8FC] text-[#16233A] ${isRTL ? 'font-arabic' : ''}`}
     >
       <Navbar />
 
       {/* =========================================================
-          HERO — mt-[68px] يعوّض ارتفاع الـ Navbar الـ fixed
+          HERO — unchanged on desktop | compact on mobile
       ========================================================= */}
-      <section className="relative bg-[#0A1B31] px-6 pt-[84px] pb-14 overflow-hidden">
+      <section className="relative bg-[#0A1B31] px-4 sm:px-6 pt-[72px] sm:pt-[84px] pb-8 sm:pb-14 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div
             className="absolute inset-0"
@@ -356,7 +353,8 @@ export default function AboutPage() {
             }}
           />
 
-          <div className="absolute top-0 bottom-0 right-0 w-[62%] max-w-[720px]">
+          {/* Hide decorative SVG on mobile to save space */}
+          <div className="hidden sm:block absolute top-0 bottom-0 right-0 w-[62%] max-w-[720px]">
             <svg
               viewBox="0 0 720 320"
               preserveAspectRatio="none"
@@ -411,27 +409,27 @@ export default function AboutPage() {
         </div>
 
         <div className="relative max-w-[1220px] mx-auto">
-          <p className="mb-3 text-[12px] font-semibold text-[#C9A227] tracking-[0.08em]">
+          <p className="mb-2 sm:mb-3 text-[11px] sm:text-[12px] font-semibold text-[#C9A227] tracking-[0.08em]">
             {t.eyebrow}
           </p>
 
-          <h1 className="mb-3 max-w-3xl text-white font-serif text-[clamp(30px,4vw,44px)] leading-[1.14] font-semibold tracking-[-0.012em]">
+          <h1 className="mb-2 sm:mb-3 max-w-3xl text-white font-serif text-[clamp(24px,4vw,44px)] leading-[1.2] sm:leading-[1.14] font-semibold tracking-[-0.012em]">
             {name}
           </h1>
 
-          <p className="mb-6 max-w-3xl text-[15.5px] leading-[1.6] text-[#AEBBCC]">
+          <p className="mb-4 sm:mb-6 max-w-3xl text-[14px] sm:text-[15.5px] leading-[1.6] text-[#AEBBCC]">
             {title}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {profile?.cv_url && (
               <a
                 href={profile.cv_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-[3px] bg-[#C9A227] px-5 py-3 text-[13.5px] font-semibold text-[#0A1B31] transition-colors hover:bg-[#E0C45B]"
+                className="inline-flex items-center gap-2 rounded-[3px] bg-[#C9A227] px-4 sm:px-5 py-2.5 sm:py-3 text-[13px] sm:text-[13.5px] font-semibold text-[#0A1B31] transition-colors hover:bg-[#E0C45B]"
               >
-                <Download size={15} />
+                <Download size={14} />
                 {t.cv}
               </a>
             )}
@@ -439,7 +437,7 @@ export default function AboutPage() {
             {email && (
               <a
                 href={`mailto:${email}`}
-                className="inline-flex items-center rounded-[3px] border border-white/25 px-[18px] py-3 text-[13.5px] text-[#DCE6F2] transition-colors hover:border-white/40 hover:text-white"
+                className="inline-flex items-center rounded-[3px] border border-white/25 px-3 sm:px-[18px] py-2.5 sm:py-3 text-[12px] sm:text-[13.5px] text-[#DCE6F2] transition-colors hover:border-white/40 hover:text-white truncate max-w-[200px] sm:max-w-none"
                 dir="ltr"
               >
                 {email}
@@ -450,15 +448,42 @@ export default function AboutPage() {
       </section>
 
       {/* =========================================================
-          MAIN CONTENT
-          FIX: Removed h-[calc(100vh-90px)] and overflow-hidden from wrapper
-               so content isn't clipped. Scroll is now on the main element only.
+          MOBILE NAV — horizontal scrollable tabs (hidden on lg+)
       ========================================================= */}
-      <div className="max-w-[1220px] mx-auto px-6 py-10 flex gap-14 items-start">
+      <div className="lg:hidden sticky top-[64px] z-30 bg-white border-b border-[#E2E8F1] shadow-sm">
+        <div
+          ref={mobileNavRef}
+          className="flex overflow-x-auto scrollbar-hide px-4 gap-1 py-2"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {navigation.map(([id, number, label]) => {
+            const active = activeSection === id
+            return (
+              <button
+                key={id}
+                data-id={id}
+                onClick={() => handleNavClick(id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12.5px] font-medium transition-all whitespace-nowrap ${
+                  active
+                    ? 'bg-[#12233C] text-white'
+                    : 'bg-[#F0F3F8] text-[#52627A] hover:bg-[#E2E8F1]'
+                }`}
+              >
+                <span className="font-serif italic text-[11px] text-[#C9A227]">{number}</span>
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* =========================================================
+          MAIN CONTENT
+      ========================================================= */}
+      <div className="max-w-[1220px] mx-auto px-4 sm:px-6 py-6 sm:py-10 flex gap-14 items-start">
 
         {/* =======================================================
-            LEFT NAVIGATION RAIL
-            FIX: sticky positioning so sidebar stays visible while scrolling
+            LEFT NAVIGATION RAIL — desktop only (unchanged)
         ======================================================= */}
         <aside className="hidden lg:block flex-[0_0_196px] sticky top-[calc(50vh-200px)] self-start pt-2">
           <p className="mb-[18px] text-[11.5px] font-semibold text-[#8C9BB2]">
@@ -496,37 +521,34 @@ export default function AboutPage() {
           </nav>
         </aside>
 
-        {/* Content — no overflow here; window handles all scrolling */}
-        <main className="flex-1 min-w-0 max-w-[820px] flex flex-col gap-[54px] pb-20">
-          {/* =====================================================
-              BIOGRAPHY
-          ===================================================== */}
+        {/* Content */}
+        <main className="flex-1 min-w-0 max-w-[820px] flex flex-col gap-[36px] sm:gap-[54px] pb-20">
+
+          {/* BIOGRAPHY */}
           <Section id="bio" number="01" title={t.bio} isRTL={isRTL}>
             {bio ? (
-              <p className="m-0 text-[16px] leading-[1.8] text-[#3D4C63]">{bio}</p>
+              <p className="m-0 text-[15px] sm:text-[16px] leading-[1.8] text-[#3D4C63]">{bio}</p>
             ) : (
               <Empty isRTL={isRTL} text={t.noData} />
             )}
           </Section>
 
-          {/* =====================================================
-              EDUCATION
-          ===================================================== */}
+          {/* EDUCATION */}
           <Section id="education" number="02" title={t.education} isRTL={isRTL}>
             {education.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
             ) : (
               <div className="flex flex-col">
                 {education.map((ed, index) => (
-                  <div key={ed.id} className="flex gap-6 pb-8">
-                    <div className="flex-[0_0_92px] text-end pt-[3px]">
+                  <div key={ed.id} className="flex gap-3 sm:gap-6 pb-8">
+                    {/* Year — hidden on mobile, shown inline in content */}
+                    <div className="hidden sm:block flex-[0_0_92px] text-end pt-[3px]">
                       <bdi dir="ltr" className="font-serif text-[15px] font-semibold text-[#12233C]">
                         {yearRange(ed.year_start, ed.year_end)}
                       </bdi>
                     </div>
 
-                    <div className="flex-[0_0_auto] w-px bg-[#E2E8F1] relative">
-                      {/* FIX: first item gets filled dot, rest get hollow */}
+                    <div className="hidden sm:block flex-[0_0_auto] w-px bg-[#E2E8F1] relative">
                       <span
                         className={`absolute top-[6px] -start-1 w-[9px] h-[9px] rounded-full border-2 border-[#C9A227] ${
                           index === 0 ? 'bg-[#C9A227]' : 'bg-white'
@@ -535,31 +557,38 @@ export default function AboutPage() {
                     </div>
 
                     <div className="flex-1 min-w-0 pb-1">
-                      <h3 className="m-0 mb-[5px] font-serif text-[19px] font-semibold leading-[1.4] text-[#12233C]">
+                      {/* Year shown on mobile above the title */}
+                      {(ed.year_start || ed.year_end) && (
+                        <bdi dir="ltr" className="sm:hidden block mb-1 font-serif text-[13px] font-semibold text-[#C9A227]">
+                          {yearRange(ed.year_start, ed.year_end)}
+                        </bdi>
+                      )}
+
+                      <h3 className="m-0 mb-[5px] font-serif text-[17px] sm:text-[19px] font-semibold leading-[1.4] text-[#12233C]">
                         {isRTL ? ed.degree_ar || ed.degree_en : ed.degree_en}
                       </h3>
 
                       {(ed.field_en || ed.field_ar) && (
-                        <p className="m-0 mb-[3px] text-[14.5px] text-[#C9A227]">
+                        <p className="m-0 mb-[3px] text-[14px] sm:text-[14.5px] text-[#C9A227]">
                           {isRTL ? ed.field_ar || ed.field_en : ed.field_en}
                         </p>
                       )}
 
-                      <p className="m-0 mb-3 text-[14.5px] text-[#52627A]">
+                      <p className="m-0 mb-3 text-[13.5px] sm:text-[14.5px] text-[#52627A]">
                         {isRTL ? ed.institution_ar || ed.institution_en : ed.institution_en}
                         {ed.country && ` · ${ed.country}`}
                       </p>
 
                       {ed.thesis_title && (
                         <div className="border-s-2 border-[#EDF1F7] ps-[14px] mb-2">
-                          <p className="m-0 font-serif italic text-[14.5px] leading-[1.7] text-[#3D4C63]">
+                          <p className="m-0 font-serif italic text-[13.5px] sm:text-[14.5px] leading-[1.7] text-[#3D4C63]">
                             {ed.thesis_title}
                           </p>
                         </div>
                       )}
 
                       {ed.supervisor && (
-                        <p className="m-0 text-[13px] leading-[1.6] text-[#8C9BB2]">
+                        <p className="m-0 text-[12.5px] sm:text-[13px] leading-[1.6] text-[#8C9BB2]">
                           {isRTL ? 'المشرف: ' : 'Supervisor: '}
                           {ed.supervisor}
                         </p>
@@ -571,23 +600,21 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              POSITIONS
-          ===================================================== */}
+          {/* POSITIONS */}
           <Section id="positions" number="03" title={t.positions} isRTL={isRTL}>
             {positions.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
             ) : (
               <div className="flex flex-col">
                 {positions.map((pos) => (
-                  <div key={pos.id} className="flex gap-6 pb-[26px]">
-                    <div className="flex-[0_0_92px] text-end pt-[3px]">
+                  <div key={pos.id} className="flex gap-3 sm:gap-6 pb-[26px]">
+                    <div className="hidden sm:block flex-[0_0_92px] text-end pt-[3px]">
                       <bdi dir="ltr" className="font-serif text-[15px] font-semibold text-[#12233C]">
                         {yearRange(pos.year_start, pos.year_end, pos.is_current)}
                       </bdi>
                     </div>
 
-                    <div className="flex-[0_0_auto] w-px bg-[#E2E8F1] relative">
+                    <div className="hidden sm:block flex-[0_0_auto] w-px bg-[#E2E8F1] relative">
                       <span
                         className={`absolute top-[6px] -start-1 w-[9px] h-[9px] rounded-full border-2 ${
                           pos.is_current
@@ -598,26 +625,38 @@ export default function AboutPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
+                      {/* Year + current badge on mobile */}
+                      <div className="sm:hidden flex items-center gap-2 mb-1 flex-wrap">
+                        <bdi dir="ltr" className="font-serif text-[13px] font-semibold text-[#C9A227]">
+                          {yearRange(pos.year_start, pos.year_end, pos.is_current)}
+                        </bdi>
+                        {pos.is_current && (
+                          <span className="text-[11px] font-semibold text-[#9C7C15] bg-[rgba(201,162,39,.14)] px-[8px] py-[2px] rounded-[2px]">
+                            {t.current}
+                          </span>
+                        )}
+                      </div>
+
                       <div className="flex items-center gap-2 flex-wrap mb-[5px]">
-                        <h3 className="m-0 font-serif text-[19px] font-semibold leading-[1.4] text-[#12233C]">
+                        <h3 className="m-0 font-serif text-[17px] sm:text-[19px] font-semibold leading-[1.4] text-[#12233C]">
                           {isRTL ? pos.title_ar || pos.title_en : pos.title_en}
                         </h3>
 
                         {pos.is_current && (
-                          <span className="text-[11.5px] font-semibold text-[#9C7C15] bg-[rgba(201,162,39,.14)] px-[9px] py-[3px] rounded-[2px]">
+                          <span className="hidden sm:inline text-[11.5px] font-semibold text-[#9C7C15] bg-[rgba(201,162,39,.14)] px-[9px] py-[3px] rounded-[2px]">
                             {t.current}
                           </span>
                         )}
                       </div>
 
                       {(pos.institution_en || pos.institution_ar) && (
-                        <p className="m-0 text-[14.5px] leading-[1.6] text-[#52627A]">
+                        <p className="m-0 text-[13.5px] sm:text-[14.5px] leading-[1.6] text-[#52627A]">
                           {isRTL ? pos.institution_ar || pos.institution_en : pos.institution_en}
                         </p>
                       )}
 
                       {(pos.department_en || pos.department_ar) && (
-                        <p className="m-0 mt-[2px] text-[13.5px] text-[#8C9BB2]">
+                        <p className="m-0 mt-[2px] text-[13px] sm:text-[13.5px] text-[#8C9BB2]">
                           {isRTL ? pos.department_ar || pos.department_en : pos.department_en}
                         </p>
                       )}
@@ -628,18 +667,16 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              AWARDS
-          ===================================================== */}
+          {/* AWARDS */}
           <Section id="awards" number="04" title={t.awards} isRTL={isRTL}>
             {awards.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 {awards.map((award) => (
                   <div
                     key={award.id}
-                    className="bg-white border border-[#E4EAF3] border-t-2 border-t-[#C9A227] px-[22px] py-[22px]"
+                    className="bg-white border border-[#E4EAF3] border-t-2 border-t-[#C9A227] px-4 sm:px-[22px] py-4 sm:py-[22px]"
                   >
                     {award.year && (
                       <bdi dir="ltr" className="block mb-[9px] font-serif text-[13px] font-semibold text-[#C9A227]">
@@ -647,12 +684,12 @@ export default function AboutPage() {
                       </bdi>
                     )}
 
-                    <h3 className="m-0 mb-[6px] font-serif text-[17px] font-semibold leading-[1.45] text-[#12233C]">
+                    <h3 className="m-0 mb-[6px] font-serif text-[16px] sm:text-[17px] font-semibold leading-[1.45] text-[#12233C]">
                       {isRTL ? award.title_ar || award.title_en : award.title_en}
                     </h3>
 
                     {(award.organization_en || award.organization_ar) && (
-                      <p className="m-0 mb-[10px] text-[13.5px] text-[#52627A]">
+                      <p className="m-0 mb-[10px] text-[13px] sm:text-[13.5px] text-[#52627A]">
                         {isRTL ? award.organization_ar || award.organization_en : award.organization_en}
                       </p>
                     )}
@@ -668,9 +705,7 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              MEMBERSHIPS
-          ===================================================== */}
+          {/* MEMBERSHIPS */}
           <Section id="memberships" number="05" title={t.memberships} isRTL={isRTL}>
             {memberships.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
@@ -679,28 +714,28 @@ export default function AboutPage() {
                 {memberships.map((membership) => (
                   <div
                     key={membership.id}
-                    className="flex items-center gap-[18px] py-[17px] border-b border-[#E7ECF4]"
+                    className="flex items-center gap-3 sm:gap-[18px] py-[14px] sm:py-[17px] border-b border-[#E7ECF4]"
                   >
-                    <bdi dir="ltr" className="flex-[0_0_52px] font-serif text-[13px] font-semibold text-[#C9A227]">
+                    <bdi dir="ltr" className="flex-[0_0_44px] sm:flex-[0_0_52px] font-serif text-[13px] font-semibold text-[#C9A227]">
                       {membership.year_start ?? ''}
                     </bdi>
 
                     <div className="flex-1 min-w-0">
-                      <p className="m-0 text-[15px] font-medium leading-[1.5] text-[#12233C]">
+                      <p className="m-0 text-[14px] sm:text-[15px] font-medium leading-[1.5] text-[#12233C]">
                         {isRTL
                           ? membership.organization_ar || membership.organization_en
                           : membership.organization_en}
                       </p>
 
                       {(membership.role_en || membership.role_ar) && (
-                        <p className="m-0 mt-[2px] text-[13px] text-[#8C9BB2]">
+                        <p className="m-0 mt-[2px] text-[12.5px] sm:text-[13px] text-[#8C9BB2]">
                           {isRTL ? membership.role_ar || membership.role_en : membership.role_en}
                         </p>
                       )}
                     </div>
 
                     {membership.is_current && (
-                      <span className="flex-[0_0_auto] text-[11.5px] font-semibold text-[#9C7C15] bg-[rgba(201,162,39,.14)] px-[9px] py-[3px] rounded-[2px]">
+                      <span className="flex-[0_0_auto] text-[11px] sm:text-[11.5px] font-semibold text-[#9C7C15] bg-[rgba(201,162,39,.14)] px-[8px] py-[3px] rounded-[2px]">
                         {t.active}
                       </span>
                     )}
@@ -710,31 +745,29 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              COMMITTEES
-          ===================================================== */}
+          {/* COMMITTEES */}
           <Section id="committees" number="06" title={t.committees} isRTL={isRTL}>
             {committees.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 {committees.map((committee) => (
                   <div
                     key={committee.id}
-                    className="bg-white border border-[#E4EAF3] px-[22px] py-5"
+                    className="bg-white border border-[#E4EAF3] px-4 sm:px-[22px] py-4 sm:py-5"
                   >
                     {(committee.role_en || committee.role_ar) && (
-                      <p className="m-0 mb-[6px] text-[12.5px] font-semibold text-[#C9A227]">
+                      <p className="m-0 mb-[6px] text-[12px] sm:text-[12.5px] font-semibold text-[#C9A227]">
                         {isRTL ? committee.role_ar || committee.role_en : committee.role_en}
                       </p>
                     )}
 
-                    <h3 className="m-0 mb-[6px] font-serif text-[16.5px] font-semibold leading-[1.45] text-[#12233C]">
+                    <h3 className="m-0 mb-[6px] font-serif text-[15.5px] sm:text-[16.5px] font-semibold leading-[1.45] text-[#12233C]">
                       {isRTL ? committee.name_ar || committee.name_en : committee.name_en}
                     </h3>
 
                     {(committee.institution_en || committee.institution_ar) && (
-                      <p className="m-0 mb-[10px] text-[13.5px] text-[#52627A]">
+                      <p className="m-0 mb-[10px] text-[13px] sm:text-[13.5px] text-[#52627A]">
                         {isRTL
                           ? committee.institution_ar || committee.institution_en
                           : committee.institution_en}
@@ -742,7 +775,7 @@ export default function AboutPage() {
                     )}
 
                     {(committee.year_start || committee.year_end) && (
-                      <bdi dir="ltr" className="block text-[12.5px] text-[#8C9BB2]">
+                      <bdi dir="ltr" className="block text-[12px] sm:text-[12.5px] text-[#8C9BB2]">
                         {yearRange(committee.year_start, committee.year_end, committee.is_current)}
                       </bdi>
                     )}
@@ -752,40 +785,38 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              CONFERENCES
-          ===================================================== */}
+          {/* CONFERENCES */}
           <Section id="conferences" number="07" title={t.conferences} isRTL={isRTL}>
             {conferences.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
             ) : (
               <div className="flex flex-col">
                 {conferences.map((conference) => (
-                  <div key={conference.id} className="flex gap-[22px] py-5 border-b border-[#E7ECF4]">
-                    <bdi dir="ltr" className="flex-[0_0_64px] font-serif text-[22px] font-semibold leading-[1.2] text-[#12233C]">
+                  <div key={conference.id} className="flex gap-3 sm:gap-[22px] py-4 sm:py-5 border-b border-[#E7ECF4]">
+                    <bdi dir="ltr" className="flex-[0_0_48px] sm:flex-[0_0_64px] font-serif text-[18px] sm:text-[22px] font-semibold leading-[1.2] text-[#12233C]">
                       {conference.year ?? ''}
                     </bdi>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-[10px] flex-wrap mb-1">
-                        <span className="text-[11.5px] font-semibold text-[#52627A] bg-[#EEF2F8] px-[9px] py-[3px] rounded-[2px]">
+                      <div className="flex items-center gap-[8px] sm:gap-[10px] flex-wrap mb-1">
+                        <span className="text-[11px] sm:text-[11.5px] font-semibold text-[#52627A] bg-[#EEF2F8] px-[8px] sm:px-[9px] py-[3px] rounded-[2px]">
                           {conference.role}
                         </span>
 
                         {conference.location && (
-                          <span className="text-[12.5px] text-[#8C9BB2]">
+                          <span className="text-[12px] sm:text-[12.5px] text-[#8C9BB2]">
                             {conference.location}
                             {conference.country && `, ${conference.country}`}
                           </span>
                         )}
                       </div>
 
-                      <p className="m-0 mb-1 font-medium text-[15px] leading-[1.55] text-[#12233C]">
+                      <p className="m-0 mb-1 font-medium text-[14px] sm:text-[15px] leading-[1.55] text-[#12233C]">
                         {isRTL ? conference.name_ar || conference.name_en : conference.name_en}
                       </p>
 
                       {conference.paper_title && (
-                        <p className="m-0 font-serif italic text-[14px] leading-[1.7] text-[#52627A]">
+                        <p className="m-0 font-serif italic text-[13px] sm:text-[14px] leading-[1.7] text-[#52627A]">
                           {conference.paper_title}
                         </p>
                       )}
@@ -796,9 +827,7 @@ export default function AboutPage() {
             )}
           </Section>
 
-          {/* =====================================================
-              SUPERVISION
-          ===================================================== */}
+          {/* SUPERVISION */}
           <Section id="supervision" number="08" title={t.supervision} isRTL={isRTL}>
             {supervision.length === 0 ? (
               <Empty isRTL={isRTL} text={t.noData} />
@@ -807,26 +836,26 @@ export default function AboutPage() {
                 {supervision.map((student) => (
                   <div
                     key={student.id}
-                    className="flex gap-5 items-start py-[19px] border-b border-[#E7ECF4]"
+                    className="flex gap-3 sm:gap-5 items-start py-[16px] sm:py-[19px] border-b border-[#E7ECF4]"
                   >
-                    <span className="flex-[0_0_auto] min-w-[46px] text-center text-[11.5px] font-semibold text-[#12233C] bg-[#EEF2F8] px-[9px] py-1 rounded-[2px]">
+                    <span className="flex-[0_0_auto] min-w-[40px] sm:min-w-[46px] text-center text-[11px] sm:text-[11.5px] font-semibold text-[#12233C] bg-[#EEF2F8] px-[7px] sm:px-[9px] py-1 rounded-[2px]">
                       {student.degree_level}
                     </span>
 
                     <div className="flex-1 min-w-0">
-                      <p className="m-0 mb-[3px] text-[15px] font-medium leading-[1.5] text-[#12233C]">
+                      <p className="m-0 mb-[3px] text-[14px] sm:text-[15px] font-medium leading-[1.5] text-[#12233C]">
                         {student.student_name}
                       </p>
 
                       {(student.thesis_title_en || student.thesis_title_ar) && (
-                        <p className="m-0 mb-[6px] font-serif italic text-[14px] leading-[1.7] text-[#52627A]">
+                        <p className="m-0 mb-[6px] font-serif italic text-[13px] sm:text-[14px] leading-[1.7] text-[#52627A]">
                           {isRTL
                             ? student.thesis_title_ar || student.thesis_title_en
                             : student.thesis_title_en}
                         </p>
                       )}
 
-                      <bdi dir="ltr" className="block text-[12.5px] text-[#8C9BB2]">
+                      <bdi dir="ltr" className="block text-[12px] sm:text-[12.5px] text-[#8C9BB2]">
                         {student.institution || ''}
                         {student.institution && (student.year_start || student.year_end) && ' · '}
                         {yearRange(student.year_start, student.year_end)}
@@ -834,7 +863,7 @@ export default function AboutPage() {
                     </div>
 
                     <span
-                      className={`flex-[0_0_auto] text-[11.5px] font-semibold px-[9px] py-[3px] rounded-[2px] ${
+                      className={`flex-[0_0_auto] text-[11px] sm:text-[11.5px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-[2px] ${
                         student.status === 'completed'
                           ? 'text-[#2F6B4A] bg-[rgba(47,107,74,.10)]'
                           : 'text-[#9C7C15] bg-[rgba(201,162,39,.14)]'
@@ -848,7 +877,6 @@ export default function AboutPage() {
             )}
           </Section>
 
-
         </main>
       </div>
     </div>
@@ -856,8 +884,7 @@ export default function AboutPage() {
 }
 
 /* =============================================================
-   SECTION HEADER
-   FIX: gradient direction flips based on RTL
+   SECTION HEADER — unchanged
 ============================================================= */
 function Section({
   id,
@@ -873,20 +900,19 @@ function Section({
   children: ReactNode
 }) {
   return (
-    <section id={id} className="scroll-mt-[100px]">
+    <section id={id} className="scroll-mt-[110px] lg:scroll-mt-[100px]">
       <div className="flex items-baseline gap-[14px] mb-2">
         <span dir="ltr" className="font-serif italic text-[15px] text-[#C9A227]">
           {number}
         </span>
 
-        <h2 className="m-0 font-serif text-[clamp(24px,3.2vw,30px)] font-semibold leading-[1.25] text-[#12233C]">
+        <h2 className="m-0 font-serif text-[clamp(22px,3.2vw,30px)] font-semibold leading-[1.25] text-[#12233C]">
           {title}
         </h2>
       </div>
 
-      {/* FIX: gradient direction respects RTL */}
       <div
-        className="h-px mb-[26px]"
+        className="h-px mb-[20px] sm:mb-[26px]"
         style={{
           background: isRTL
             ? 'linear-gradient(to left, #C9A227 0px, #C9A227 56px, #E2E8F1 56px, #E2E8F1 100%)'
@@ -900,7 +926,7 @@ function Section({
 }
 
 /* =============================================================
-   EMPTY STATE
+   EMPTY STATE — unchanged
 ============================================================= */
 function Empty({ isRTL, text }: { isRTL: boolean; text: string }) {
   return (
