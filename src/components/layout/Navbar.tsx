@@ -1,407 +1,184 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { useCleanPath } from '@/lib/usePath'
+import { Menu, X, GraduationCap, Globe } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
-import { createClient } from '@/lib/supabase/client'
+import type { Brand } from './types'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import Logo from '@/components/ui/Logo'
 
-interface Profile {
-  name_en?: string
-  name_ar?: string
-  title_en?: string
-  title_ar?: string
-  photo_url?: string
+const LINKS = {
+  en: [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/research', label: 'Research' },
+    { href: '/publications', label: 'Publications' },
+    { href: '/courses', label: 'Courses' },
+    { href: '/contact', label: 'Contact' },
+  ],
+  ar: [
+    { href: '/', label: 'الرئيسية' },
+    { href: '/about', label: 'السيرة' },
+    { href: '/research', label: 'الأبحاث' },
+    { href: '/publications', label: 'المنشورات' },
+    { href: '/courses', label: 'المساقات' },
+    { href: '/contact', label: 'تواصل' },
+  ],
 }
 
-export default function Navbar() {
-  const { lang, setLang, isRTL } = useLang()
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const pathname = usePathname()
+function isActive(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
+}
 
-  /* ── scroll shadow ── */
+export default function Navbar({ brand }: { brand: Brand }) {
+  const { lang, setLang, isRTL } = useLang()
+  const pathname = useCleanPath()
+  const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* ── fetch minimal profile for brand ── */
+  // cheap auth hint: Supabase stores the session in an "sb-…-auth-token" cookie
   useEffect(() => {
-    const supabase = createClient()
-    supabase
-      .from('profile')
-      .select('name_en, name_ar, title_en, title_ar, photo_url')
-      .single()
-      .then(({ data }) => { if (data) setProfile(data) })
-  }, [])
+    setLoggedIn(/(^|;\s*)sb-[^=]+-auth-token/.test(document.cookie))
+  }, [pathname])
 
-  /* ── close mobile drawer on route change ── */
-  useEffect(() => { setIsOpen(false) }, [pathname])
-
-  /* ── lock body scroll when drawer is open ── */
+  useEffect(() => setOpen(false), [pathname])
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
-  const navLinks = isRTL
-    ? [
-        { href: '/',             label: 'الرئيسية' },
-        { href: '/about',        label: 'السيرة الأكاديمية' },
-        { href: '/research',     label: 'الأبحاث' },
-        { href: '/publications', label: 'المنشورات' },
-        { href: '/contact',      label: 'تواصل' },
-      ]
-    : [
-        { href: '/',             label: 'Home' },
-        { href: '/about',        label: 'About' },
-        { href: '/research',     label: 'Research' },
-        { href: '/publications', label: 'Publications' },
-        { href: '/contact',      label: 'Contact' },
-      ]
+  if (pathname.startsWith('/admin') || pathname.startsWith('/print')) return null
 
-  const brandName = isRTL
-    ? profile?.name_ar || 'أ.د. أحمد محمد العجو'
-    : profile?.name_en || 'Prof. Ahmad El-Ajou'
-
-  const brandTitle = isRTL
-    ? profile?.title_ar || 'أستاذ الرياضيات التطبيقية'
-    : profile?.title_en || 'Full Professor of Mathematics'
+  const links = LINKS[lang]
+  const name = isRTL ? brand.name_ar : brand.name_en
+  const title = isRTL ? brand.title_ar : brand.title_en
+  const account = loggedIn
+    ? { href: '/dashboard', label: isRTL ? 'لوحتي' : 'My Courses' }
+    : { href: '/login', label: isRTL ? 'دخول الطلاب' : 'Student Login' }
 
   return (
     <>
-      <style jsx global>{`
-        /* ── Desktop nav links visible, hamburger hidden ── */
-        @media (min-width: 769px) {
-          .nav-desktop-links { display: flex !important; }
-          .nav-hamburger      { display: none  !important; }
-        }
-        /* ── Desktop nav links hidden, hamburger visible ── */
-        @media (max-width: 768px) {
-          .nav-desktop-links { display: none  !important; }
-          .nav-hamburger      { display: flex !important; }
-        }
-      `}</style>
-
-      {/* ════════════════ NAVBAR BAR ════════════════ */}
-      <nav
-        dir="ltr"
-        style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0,
-          zIndex: 100,
-          background: '#1B2A4A',
-          borderBottom: scrolled
-            ? '1px solid rgba(201,168,76,0.25)'
-            : '1px solid rgba(255,255,255,0.07)',
-          boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.35)' : 'none',
-          transition: 'border-color 0.3s, box-shadow 0.3s',
-        }}
+      <header
+        className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${
+          scrolled ? 'bg-deep/92 shadow-[0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-md border-b border-[#C9A227]/20' : 'bg-deep border-b border-white/[.06]'
+        }`}
       >
-        <div
-          style={{
-            maxWidth: 1220,
-            margin: '0 auto',
-            padding: '0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: 64,
-          }}
-        >
-          {/* ── Brand ── */}
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              textDecoration: 'none',
-              flexShrink: 0,
-            }}
-          >
-            <div style={{ position: 'relative', width: 38, height: 38, flexShrink: 0 }}>
-              <div
-                style={{
-                  position: 'absolute', inset: 0, borderRadius: '50%',
-                  border: '1.5px solid rgba(201,168,76,0.8)',
-                  background: 'rgba(201,168,76,0.08)',
-                  boxShadow: '0 0 0 2px rgba(201,168,76,0.15)',
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute', bottom: -10, left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 54, height: 54, borderRadius: '50%',
-                  overflow: 'hidden', background: '#122B48',
-                  border: '1.5px solid rgba(201,168,76,0.6)',
-                  zIndex: 2,
-                }}
-              >
-                {profile?.photo_url ? (
-                  <img
-                    src={profile.photo_url} alt={brandName}
-                    style={{ width: '100%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: '100%', height: '100%',
-                      fontFamily: "'Playfair Display', serif",
-                      fontSize: 18, color: '#C9A84C', fontStyle: 'italic',
-                    }}
-                  >A</span>
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span
-                style={{
-                  fontSize: 14, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.3,
-                  fontFamily: isRTL ? "'Noto Kufi Arabic', sans-serif" : "'Playfair Display', serif",
-                  direction: isRTL ? 'rtl' : 'ltr',
-                }}
-              >{brandName}</span>
-              <span style={{ fontSize: 11.5, color: '#C9A84C', lineHeight: 1.3, direction: isRTL ? 'rtl' : 'ltr' }}>
-                {brandTitle}
-              </span>
-            </div>
+        <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px]">
+          <Link href="/" className="group flex min-w-0 items-center gap-3" prefetch>
+            <Logo className="h-10 w-10 shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg] group-hover:scale-105" />
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className={`truncate text-[14px] font-semibold text-white ${isRTL ? 'font-arabic' : 'font-display text-[15.5px]'}`}>{name}</span>
+              <span className="truncate text-[11.5px] text-[#C9A227]">{title}</span>
+            </span>
           </Link>
 
-          {/* ── Desktop nav links ── */}
-          <div className="nav-desktop-links" style={{ alignItems: 'center', gap: 2 }}>
-            {navLinks.map((link) => {
-              const active = pathname === link.href
+          <nav className="hidden items-center lg:flex" aria-label="Main">
+            {links.map((l) => {
+              const active = isActive(pathname, l.href)
               return (
                 <Link
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    fontSize: 13.5,
-                    fontWeight: active ? 600 : 400,
-                    color: active ? '#C9A84C' : '#C4CFDE',
-                    padding: '20px 14px',
-                    lineHeight: 1,
-                    borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    transition: 'color 0.2s, border-color 0.2s',
-                    fontFamily: isRTL ? "'Noto Kufi Arabic', sans-serif" : 'inherit',
-                    direction: isRTL ? 'rtl' : 'ltr',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.color = '#FFFFFF'
-                      e.currentTarget.style.borderBottomColor = 'rgba(201,168,76,0.4)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.color = '#C4CFDE'
-                      e.currentTarget.style.borderBottomColor = 'transparent'
-                    }
-                  }}
-                >{link.label}</Link>
+                  key={l.href}
+                  href={l.href}
+                  prefetch
+                  className={`relative px-3.5 py-5 text-[13.5px] transition-colors ${active ? 'font-semibold text-[#E3C566]' : 'text-[#C4CFDE] hover:text-white'}`}
+                >
+                  {l.label}
+                  <span
+                    className={`absolute inset-x-3 bottom-3 h-[2px] origin-center rounded bg-[#C9A227] transition-transform duration-300 ${active ? 'scale-x-100' : 'scale-x-0'}`}
+                  />
+                </Link>
               )
             })}
-          </div>
+          </nav>
 
-          {/* ── Right side: Lang toggle + hamburger ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Language toggle */}
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={account.href}
+              prefetch={false}
+              className="hidden items-center gap-1.5 rounded-md bg-[#C9A227] px-3.5 py-2 text-[13px] font-semibold text-[#0A1A30] transition hover:bg-[#E0BC4A] sm:inline-flex"
+            >
+              <GraduationCap size={15} />
+              {account.label}
+            </Link>
+            <ThemeToggle className="h-[38px] w-[38px] rounded-md border border-white/25 text-white transition hover:border-[#C9A227] hover:text-[#E3C566]" />
             <button
               onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-              style={{
-                fontSize: 13, color: '#FFFFFF', background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.28)', borderRadius: 4,
-                padding: '8px 16px', cursor: 'pointer', fontFamily: 'inherit',
-                minHeight: 36, whiteSpace: 'nowrap', transition: 'border-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#C9A84C'
-                e.currentTarget.style.color = '#C9A84C'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'
-                e.currentTarget.style.color = '#FFFFFF'
-              }}
-            >{lang === 'en' ? 'عربي' : 'English'}</button>
-
-            {/* Hamburger — mobile only */}
-            <button
-              className="nav-hamburger"
-              onClick={() => setIsOpen(true)}
-              aria-label="Open menu"
-              style={{
-                display: 'none', /* overridden by media query */
-                background: 'transparent', border: 'none',
-                color: '#FFFFFF', cursor: 'pointer', padding: 6,
-                alignItems: 'center', justifyContent: 'center',
-              }}
+              className="rounded-md border border-white/25 px-3 py-2 text-[13px] text-white transition hover:border-[#C9A227] hover:text-[#E3C566]"
             >
+              {lang === 'en' ? 'عربي' : 'English'}
+            </button>
+            <button onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-md p-2 text-white lg:hidden">
               <Menu size={24} />
             </button>
           </div>
         </div>
-      </nav>
+      </header>
+      <div className="h-16" aria-hidden />
 
-      {/* ════════════════ MOBILE DRAWER OVERLAY ════════════════ */}
-      {/* Backdrop */}
+      {/* Mobile drawer */}
       <div
-        onClick={() => setIsOpen(false)}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(0,0,0,0.55)',
-          backdropFilter: 'blur(2px)',
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease',
-        }}
+        onClick={() => setOpen(false)}
+        className={`fixed inset-0 z-[200] bg-black/55 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       />
-
-      {/* Drawer panel — slides in from the right */}
-      <div
-        dir={isRTL ? 'rtl' : 'ltr'}
-        style={{
-          position: 'fixed',
-          top: 0, right: 0, bottom: 0,
-          zIndex: 201,
-          width: 'min(80vw, 300px)',
-          background: '#0F1E35',
-          borderLeft: '1px solid rgba(201,168,76,0.2)',
-          boxShadow: '-8px 0 40px rgba(0,0,0,0.5)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflowY: 'auto',
-        }}
+      <aside
+        className={`fixed bottom-0 top-0 z-[201] flex w-[min(84vw,320px)] flex-col bg-[#0B1A2E] shadow-2xl transition-transform duration-[380ms] ease-[cubic-bezier(.22,1,.36,1)] lg:hidden ${
+          isRTL ? 'left-0 border-r' : 'right-0 border-l'
+        } border-[#C9A227]/20 ${open ? 'translate-x-0' : isRTL ? '-translate-x-full' : 'translate-x-full'}`}
+        aria-hidden={!open}
       >
-        {/* Drawer header */}
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 20px', height: 64,
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-            background: '#1B2A4A',
-            flexShrink: 0,
-          }}
-        >
-          {/* Mini profile in drawer */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <div
-              style={{
-                width: 36, height: 36, borderRadius: '50%',
-                overflow: 'hidden', background: '#122B48', flexShrink: 0,
-                border: '1.5px solid rgba(201,168,76,0.6)',
-              }}
-            >
-              {profile?.photo_url ? (
-                <img
-                  src={profile.photo_url} alt={brandName}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
-                />
-              ) : (
-                <span
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: '100%', height: '100%',
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: 16, color: '#C9A84C', fontStyle: 'italic',
-                  }}
-                >A</span>
-              )}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{
-                margin: 0, fontSize: 13, fontWeight: 600, color: '#FFF',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                fontFamily: isRTL ? "'Noto Kufi Arabic', sans-serif" : "'Playfair Display', serif",
-              }}>{brandName}</p>
-              <p style={{
-                margin: 0, fontSize: 10.5, color: '#C9A84C',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>{brandTitle}</p>
-            </div>
-          </div>
-
-          {/* Close button */}
-          <button
-            onClick={() => setIsOpen(false)}
-            aria-label="Close menu"
-            style={{
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 8, color: '#FFFFFF', cursor: 'pointer',
-              padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex h-16 items-center justify-between border-b border-white/[.07] px-5">
+          <span className={`text-[13px] font-semibold text-white ${isRTL ? 'font-arabic' : 'font-display text-[15px]'}`}>{name}</span>
+          <button onClick={() => setOpen(false)} aria-label="Close menu" className="rounded-lg border border-white/10 bg-white/5 p-2 text-white">
             <X size={20} />
           </button>
         </div>
-
-        {/* Navigation links */}
-        <nav style={{ flex: 1, padding: '12px 0' }}>
-          {navLinks.map((link) => {
-            const active = pathname === link.href
+        <nav className="flex-1 overflow-y-auto py-3">
+          {links.map((l, i) => {
+            const active = isActive(pathname, l.href)
             return (
               <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  fontSize: 15,
-                  fontWeight: active ? 600 : 400,
-                  color: active ? '#C9A84C' : '#C4CFDE',
-                  padding: '14px 24px',
-                  textDecoration: 'none',
-                  borderRight: isRTL
-                    ? (active ? '3px solid #C9A84C' : '3px solid transparent')
-                    : 'none',
-                  borderLeft: !isRTL
-                    ? (active ? '3px solid #C9A84C' : '3px solid transparent')
-                    : 'none',
-                  background: active ? 'rgba(201,168,76,0.07)' : 'transparent',
-                  transition: 'background 0.2s, color 0.2s',
-                  textAlign: isRTL ? 'right' : 'left',
-                  fontFamily: isRTL ? "'Noto Kufi Arabic', sans-serif" : 'inherit',
-                  direction: isRTL ? 'rtl' : 'ltr',
-                }}
+                key={l.href}
+                href={l.href}
+                prefetch
+                style={{ transitionDelay: open ? `${60 + i * 40}ms` : '0ms' }}
+                className={`flex items-center gap-3 border-s-[3px] px-6 py-3.5 text-[15.5px] transition-all duration-500 ${
+                  open ? 'translate-x-0 opacity-100' : (isRTL ? '-translate-x-4' : 'translate-x-4') + ' opacity-0'
+                } ${active ? 'border-[#C9A227] bg-[#C9A227]/[.08] font-semibold text-[#E3C566]' : 'border-transparent text-[#C4CFDE]'}`}
               >
-                {link.label}
+                <span className="font-display text-[12px] italic text-[#C9A227]/70">{String(i + 1).padStart(2, '0')}</span>
+                {l.label}
               </Link>
             )
           })}
         </nav>
-
-        {/* Drawer footer — lang toggle */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderTop: '1px solid rgba(255,255,255,0.07)',
-            flexShrink: 0,
-          }}
-        >
+        <div className="space-y-2.5 border-t border-white/[.07] p-4">
+          <Link href={account.href} prefetch={false} className="flex items-center justify-center gap-2 rounded-lg bg-[#C9A227] py-3 text-[14.5px] font-semibold text-[#0A1A30]">
+            <GraduationCap size={17} /> {account.label}
+          </Link>
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            style={{
-              width: '100%', fontSize: 14, fontWeight: 500,
-              color: '#FFFFFF', background: 'rgba(201,168,76,0.1)',
-              border: '1px solid rgba(201,168,76,0.35)', borderRadius: 8,
-              padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
-              transition: 'background 0.2s',
-            }}
-          >{lang === 'en' ? '🌐 عربي' : '🌐 English'}</button>
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#C9A227]/35 bg-[#C9A227]/10 py-3 text-[14px] text-white"
+          >
+            <Globe size={16} /> {lang === 'en' ? 'عربي' : 'English'}
+          </button>
+          <ThemeToggle
+            label={isRTL ? ['الوضع النهاري', 'الوضع الليلي'] : ['Light mode', 'Dark mode']}
+            className="w-full rounded-lg border border-white/15 bg-white/5 py-3 text-[14px] text-white"
+          />
         </div>
-      </div>
+      </aside>
     </>
   )
 }

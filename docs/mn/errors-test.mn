@@ -1,0 +1,31 @@
+---
+course: Validator test
+lecture: 9
+title: This file contains deliberate mistakes
+---
+
+## Upload me to see the error checker
+
+The reference @ex:missing does not exist.
+
+::: example {#ex:ok}
+This example is fine.
+:::
+
+::: mcq
+Q: This question has no option marked with a star.
+- first
+- second
+:::
+
+```plot
+f(x) = sin(x) +
+```
+
+```pyplot caption="This Python figure has a bug on line 2"
+x = np.linspace(0, 1, 50)
+plt.plot(x, np.sinn(x))
+```
+
+::: definition "This box is never closed"
+The closing ::: line is missing on purpose.

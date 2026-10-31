@@ -1,0 +1,120 @@
+---
+course: المعادلات التفاضلية الكسرية
+chapter: 2
+chapter_title: مدخل إلى حساب التفاضل الكسري
+lecture: 1
+title: دالة غاما ومشتقة كابوتو
+duration: 75
+lang: ar
+author: أ.د. أحمد العجو
+---
+
+::: outcomes
+- تعريف دالة غاما واستخدام خاصيتها الأساسية.
+- حساب مشتقة كابوتو لدوال القوى.
+- تفسير المشتقة الكسرية بيانياً.
+:::
+
+::: timeplan
+0-20  | دالة غاما؛ @def:gamma
+20-50 | مشتقة كابوتو؛ @thm:power
+50-70 | أمثلة ورسومات
+70-75 | أسئلة التقييم الذاتي
+:::
+
+## دالة غاما
+
+::: definition "دالة غاما" {#def:gamma}
+لكل $z>0$ نعرّف [[دالة غاما]] بالتكامل
+$$\Gamma(z)=\int_0^\infty t^{z-1}e^{-t}\,dt.$$ {#eq:gamma}
+:::
+
+::: remarks
+(1) $\Gamma(z+1)=z\,\Gamma(z)$ لكل $z>0$.
+(2) $\Gamma(n+1)=n!$ لكل عدد صحيح $n\ge 0$، لذلك تعمّم دالة غاما المضروب.
+(3) $\Gamma\!\left(\tfrac12\right)=\sqrt{\pi}$.
+:::
+
+```plot x=[0.05,5] y=[0,6] caption="منحنى $\Gamma(x)$ مع النقاط $(n+1,\,n!)$"
+f(x) = gamma(x) color=blue label="$\Gamma(x)$" at=0.85
+point (1,1)
+point (2,1)
+point (3,2)
+point (4,6)
+point (0.5, sqrt(pi)) label="$\sqrt{\pi}$"
+```
+
+## مشتقة كابوتو
+
+::: definition "مشتقة كابوتو" {#def:caputo}
+لتكن $0<\alpha<1$. تُعرَّف [[مشتقة كابوتو الكسرية]] من الرتبة $\alpha$ للدالة $f$ بالصيغة
+$$\D{\alpha}f(t)=\frac{1}{\Gamma(1-\alpha)}\int_0^t\frac{f'(\tau)}{(t-\tau)^{\alpha}}\,d\tau.$$ {#eq:caputo}
+:::
+
+::: theorem "مشتقة دوال القوى" {#thm:power}
+إذا كان $\beta>0$ و $0<\alpha<1$ فإن
+$$\D{\alpha}\,t^{\beta}=\frac{\Gamma(\beta+1)}{\Gamma(\beta+1-\alpha)}\,t^{\beta-\alpha},\qquad \D{\alpha}\,c=0.$$
+:::
+
+::: example {#ex:half}
+احسب $\D{1/2}\,t$ ثم $\D{1/2}\,t^2$.
+:::
+
+::: solution steps space=8
+من @thm:power مع $\beta=1$:
+$$\D{1/2}\,t=\frac{\Gamma(2)}{\Gamma(3/2)}\,t^{1/2}=\frac{1}{\tfrac{\sqrt\pi}{2}}\,t^{1/2}=\frac{2}{\sqrt\pi}\sqrt t.$$
+>>>
+ومع $\beta=2$:
+$$\D{1/2}\,t^2=\frac{\Gamma(3)}{\Gamma(5/2)}\,t^{3/2}=\frac{2}{\tfrac{3\sqrt\pi}{4}}\,t^{3/2}=\boxed{\frac{8}{3\sqrt\pi}\,t^{3/2}}.$$
+:::
+
+::: note "تفسير بياني"
+عندما تتغير $\alpha$ من $0$ إلى $1$ ينتقل المنحنى تدريجياً من $t$ إلى المشتقة العادية $1$. حرّك المنزلق:
+:::
+
+```plot x=[0,2] y=[0,2.2] caption="$\D{\alpha}\,t=\dfrac{t^{1-\alpha}}{\Gamma(2-\alpha)}$"
+slider a = 0.5 in [0, 0.99] step 0.01
+f(x) = x^(1-a)/gamma(2-a) color=blue
+g(x) = x color=gray dash
+h(x) = 1 color=red dash
+```
+
+::: caution
+المشتقة الكسرية **ليست** محلية: قيمتها عند $t$ تعتمد على كل قيم الدالة على $[0,t]$.
+:::
+
+```pyplot caption="منحنى دالة غاما $\Gamma(x)$ على الفترة $(0,5]$، ونلاحظ أن $\Gamma(n+1)=n!$."
+x = np.linspace(0.05, 5, 500)
+plt.plot(x, gamma(x), color=blue, label=r"$\Gamma(x)$")
+n = np.arange(1, 5)
+plt.plot(n + 1, [math.factorial(k) for k in n], "o", color=red, label=r"$(n+1,\ n!)$")
+plt.ylim(0, 26); plt.xlabel("$x$"); plt.legend()
+```
+
+```numberline range=[0,2]
+interval (0, 1) color=blue label="$0<\alpha<1$"
+point 0.5 closed label="$\alpha=\tfrac12$"
+```
+
+::: mcq
+Q: قيمة $\Gamma(5)$ هي
+- $5$
+- $24$ *
+- $120$
+- $4$
+> $\Gamma(n+1)=n!$ إذن $\Gamma(5)=4!=24$.
+
+Q: مشتقة كابوتو لثابت $c$ تساوي
+- $c$
+- $\dfrac{c\,t^{-\alpha}}{\Gamma(1-\alpha)}$
+- $0$ *
+- غير معرّفة
+> لأن $f'(\tau)=0$ في الصيغة (@eq:caputo).
+
+Q: $\Gamma\!\left(\tfrac12\right)=$
+- $\sqrt{\pi}$ *
+- $\pi$
+- $\tfrac12$
+- $1$
+> نتيجة معروفة من تكامل غاوس.
+:::

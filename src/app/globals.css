@@ -1,51 +1,240 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
-
 @import "tailwindcss";
 
+/* ───────────────────────── Design tokens ─────────────────────────
+   Semantic colours switch with [data-theme="dark"] on <html>.
+   Always-dark areas (hero, navbar, footer, boards) use the fixed navy/gold values. */
+@theme {
+  --font-serif: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
+  --color-line: var(--c-line);
+  --color-line-2: var(--c-line-2);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-muted: var(--c-muted);
+  --color-link: var(--c-link);
+  --color-gold-ink: var(--c-gold-ink);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-sky-soft: var(--c-sky-soft);
+  --color-ok: var(--c-ok);
+  --color-ok-soft: var(--c-ok-soft);
+  --color-bad: var(--c-bad);
+  --color-bad-soft: var(--c-bad-soft);
+  /* fixed brand colours (same in both themes) */
+  --color-navy: #12233C;
+  --color-navy-2: #0E2542;
+  --color-deep: #0A1B31;
+  --color-gold: #C9A227;
+  --color-gold-2: #E3C566;
+  --color-sky: #1E9BD0;
+}
+
 :root {
-  --navy: #1B2A4A;
-  --gold: #C9A84C;
-  --gold-light: #E8C97A;
-  --cream: #F8F7F4;
-  --text-dark: #1a1a2e;
-  --text-muted: #6B7280;
-  --border: #E5E7EB;
+  --nav-h: 64px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --gold: #C9A227;
+  --c-bg: #EDF1F6;
+  --c-dots: rgba(20, 40, 70, .11);
+  --c-surface: #FFFFFF;
+  --c-surface-2: #F5F7FA;
+  --c-surface-3: #E8EDF4;
+  --c-line: #DCE3EC;
+  --c-line-2: #C7D1DE;
+  --c-ink: #14233A;
+  --c-ink-2: #46566D;
+  --c-muted: #7B899D;
+  --c-link: #0B6FA4;
+  --c-gold-ink: #8C6E12;
+  --c-gold-soft: #FBF4DF;
+  --c-sky-soft: #E6F3FA;
+  --c-ok: #0E7C6B;
+  --c-ok-soft: #E4F3EF;
+  --c-bad: #A33025;
+  --c-bad-soft: #FCEBE9;
+  --c-shadow: 0 1px 2px rgba(16, 32, 56, .05), 0 6px 18px rgba(16, 32, 56, .06);
+  --c-shadow-lg: 0 18px 44px rgba(16, 32, 56, .12);
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --c-bg: #0A111D;
+  --c-dots: rgba(190, 210, 240, .07);
+  --c-surface: #111B2A;
+  --c-surface-2: #162236;
+  --c-surface-3: #1C2A41;
+  --c-line: #22324A;
+  --c-line-2: #2E415E;
+  --c-ink: #E4EAF2;
+  --c-ink-2: #B3BFCF;
+  --c-muted: #8392A8;
+  --c-link: #63BCE8;
+  --c-gold-ink: #DDBE63;
+  --c-gold-soft: rgba(201, 162, 39, .14);
+  --c-sky-soft: rgba(30, 155, 208, .14);
+  --c-ok: #4CC2A8;
+  --c-ok-soft: rgba(76, 194, 168, .13);
+  --c-bad: #F08A7E;
+  --c-bad-soft: rgba(240, 138, 126, .13);
+  --c-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  --c-shadow-lg: 0 18px 44px rgba(0, 0, 0, .45);
+  color-scheme: dark;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+/* base resets live in a layer so Tailwind utilities always win */
+@layer base {
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--c-bg); }
 body {
-  font-family: 'Source Serif 4', serif;
-  background-color: var(--cream);
-  color: var(--text-dark);
+  margin: 0;
+  font-family: var(--font-body), Georgia, serif;
+  background-color: var(--c-bg);
+  background-image: radial-gradient(var(--c-dots) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  color: var(--c-ink);
+  transition: background-color .3s ease, color .3s ease;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+html[lang='ar'] body { font-family: var(--font-ar), var(--font-body), serif; }
+a { color: inherit; text-decoration: none; }
+::selection { background: rgba(201, 162, 39, 0.28); }
+input, select, textarea { color: inherit; }
+
+.font-arabic { font-family: var(--font-ar), serif; }
+.font-display { font-family: var(--font-display), Georgia, serif; }
+.ac-display { font-family: var(--font-display), Georgia, serif; }
+.ac-arabic { font-family: var(--font-ar), serif; }
+
 }
 
-.font-arabic {
-  font-family: 'Noto Naskh Arabic', serif;
-}
-.font-display {
-  font-family: 'EB Garamond', serif;
+/* scrollbars hidden everywhere (scrolling still works: wheel, touch, keyboard) */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ───────────────────────── Motion system ─────────────────────────
+   .reveal elements fade/slide in when they enter the viewport
+   (see components/motion/Reveal.tsx). Respect reduced-motion. */
+.reveal { opacity: 0; transform: translate3d(0, 22px, 0); transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); transition-delay: var(--d, 0ms); }
+.reveal.in { opacity: 1; transform: none; }
+.reveal-left { transform: translate3d(-28px, 0, 0); }
+.reveal-scale { transform: scale(.96); }
+
+@keyframes page-in { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+.page-enter { animation: page-in .45s var(--ease-out) both; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+/* drawings wait until their .reveal ancestor enters the viewport */
+.reveal:not(.in) .draw-path, .reveal:not(.in).draw-path { animation-play-state: paused; }
+.draw-path { stroke-dasharray: var(--len, 1200); stroke-dashoffset: var(--len, 1200); animation: draw 2.4s var(--ease-out) forwards; animation-delay: var(--d, 0ms); }
+
+@keyframes bar-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bar-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.reveal:not(.in) .anim { animation-play-state: paused !important; }
+/* small SVG motion helpers (also used outside the sheets) */
+.mn-fade-in { animation: mn-fade 1s ease both; }
+.reveal:not(.in) .mn-fade-in { animation-play-state: paused; }
+@keyframes mn-fade { from { filter: opacity(0); } to { filter: opacity(1); } }
+.mn-pop { transform-box: fill-box; transform-origin: center; animation: mn-pop .5s cubic-bezier(.3,1.6,.5,1) both; }
+.reveal:not(.in) .mn-pop { animation-play-state: paused; }
+@keyframes mn-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes pulse-ring { 0% { transform: scale(.85); opacity: .7; } 100% { transform: scale(1.35); opacity: 0; } }
+
+.gold-shimmer {
+  background: linear-gradient(90deg, #C9A227 0%, #F3DC8E 25%, #C9A227 50%, #F3DC8E 75%, #C9A227 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 6s linear infinite;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--navy); border-radius: 3px; }
-
-.gold-underline {
-  position: relative;
+/* ───────────── Surfaces with a mathematical texture ───────────── */
+/* dotted paper — page background; text never sits on it directly (use .card / .sheet-panel) */
+.paper {
+  background-color: var(--c-bg);
+  background-image: radial-gradient(var(--c-dots) 1px, transparent 1.2px);
+  background-size: 22px 22px;
 }
-.gold-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 40px;
-  height: 2px;
-  background: var(--gold);
+/* graph paper — kept for compatibility, now a calm tinted band */
+.paper-grid {
+  background-color: var(--c-surface-3);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--c-line-2) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--c-line-2) 45%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+/* solid reading surface on top of the dotted page */
+.card { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 14px; box-shadow: var(--c-shadow); }
+.panel { background: var(--c-surface-2); border: 1px solid var(--c-line); border-radius: 12px; }
+/* dark "blackboard" sections */
+.board {
+  background-color: #0A1B31;
+  background-image:
+    radial-gradient(80% 120% at 85% 0%, rgba(18, 164, 217, .16) 0%, transparent 60%),
+    radial-gradient(70% 100% at 0% 100%, rgba(201, 162, 39, .08) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+}
+/* two-tone section bar: gold + sky (ties the sheet blue into every page) */
+.bar2 { height: 3px; width: 64px; background: linear-gradient(90deg, #C9A227 0 62%, transparent 62% 70%, #12A4D9 70% 100%); }
+html[dir='rtl'] .bar2 { background: linear-gradient(-90deg, #C9A227 0 62%, transparent 62% 70%, #12A4D9 70% 100%); }
+/* full-width page container */
+.wrap { width: 100%; max-width: 1680px; margin-inline: auto; padding-inline: 16px; }
+@media (min-width: 640px) { .wrap { padding-inline: 28px; } }
+@media (min-width: 1024px) { .wrap { padding-inline: 48px; } }
+@media (min-width: 1440px) { .wrap { padding-inline: 72px; } }
+
+/* Shared hero backdrop used by all inner pages */
+.hero-backdrop {
+  background: radial-gradient(120% 130% at 78% 10%, #153A61 0%, #0E2846 40%, #0A1B31 74%, #061020 100%);
+}
+html[dir='rtl'] .hero-backdrop { background: radial-gradient(120% 130% at 22% 10%, #153A61 0%, #0E2846 40%, #0A1B31 74%, #061020 100%); }
+.hero-grid {
+  background-image:
+    repeating-linear-gradient(to right, rgba(255,255,255,.6) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(rgba(255,255,255,.6) 0 1px, transparent 1px 72px);
+  opacity: .05;
+}
+
+/* Focus ring */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* smooth colour change only while the theme is being switched */
+.theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after {
+  transition: background-color .35s ease, border-color .35s ease, color .35s ease, fill .35s ease, box-shadow .35s ease !important;
+}
+
+/* small dark drawing boards (research-area art) — readable in both themes */
+.art-board {
+  --art-ink: #E6EDF5; --art-blue: #5CB8E6; --art-gold: #E3C566; --art-red: #F08A7E; --art-axis: rgba(255, 255, 255, .2);
+  background-color: #0E2542;
+  background-image:
+    radial-gradient(90% 120% at 90% 0%, rgba(30, 155, 208, .22) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px);
+  background-size: auto, 22px 22px, 22px 22px;
+}
+:root[data-theme='dark'] .bg-navy { background-color: #22406A; }
+:root[data-theme='dark'] .hover\:bg-navy:hover { background-color: #2A4C7C; }
+
+/* admin page header */
+.admin-hero {
+  background-color: #0E2542;
+  background-image:
+    radial-gradient(70% 140% at 100% 0%, rgba(30, 155, 208, .22) 0%, transparent 60%),
+    radial-gradient(50% 120% at 0% 100%, rgba(201, 162, 39, .12) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
 }

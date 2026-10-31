@@ -1,8 +1,7 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
-
-type Lang = 'en' | 'ar'
+import { createContext, useContext } from 'react'
+import { LANG_COOKIE, type Lang } from '@/lib/i18n'
 
 interface LangContextType {
   lang: Lang
@@ -10,45 +9,20 @@ interface LangContextType {
   isRTL: boolean
 }
 
-const LangContext = createContext<LangContextType>({
-  lang: 'en',
-  setLang: () => {},
-  isRTL: false,
-})
+const LangContext = createContext<LangContextType>({ lang: 'en', setLang: () => {}, isRTL: false })
 
-export function LangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>('en')
-  const [mounted, setMounted] = useState(false)
-
-  // قراءة اللغة من localStorage عند أول تحميل
-  useEffect(() => {
-    const saved = localStorage.getItem('site-lang') as Lang | null
-    if (saved === 'en' || saved === 'ar') {
-      setLangState(saved)
-    }
-    setMounted(true)
-  }, [])
-
-  // تحديث dir و lang على document عند تغيير اللغة
-  useEffect(() => {
-    if (!mounted) return
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
-    document.documentElement.lang = lang
-  }, [lang, mounted])
-
-  const setLang = (newLang: Lang) => {
-    setLangState(newLang)
-    localStorage.setItem('site-lang', newLang)
+/**
+ * The language comes from the server (cookie → proxy → /[lang] route), so the
+ * very first HTML is already in the right language and direction. Switching
+ * language stores the cookie and reloads once.
+ */
+export function LangProvider({ lang, children }: { lang: Lang; children: React.ReactNode }) {
+  const setLang = (next: Lang) => {
+    if (next === lang) return
+    document.cookie = `${LANG_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`
+    window.location.reload()
   }
-
-  // نمنع عرض أي شيء حتى يُقرأ localStorage لتجنب الوميض
-  if (!mounted) return null
-
-  return (
-    <LangContext.Provider value={{ lang, setLang, isRTL: lang === 'ar' }}>
-      {children}
-    </LangContext.Provider>
-  )
+  return <LangContext.Provider value={{ lang, setLang, isRTL: lang === 'ar' }}>{children}</LangContext.Provider>
 }
 
 export function useLang() {

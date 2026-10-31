@@ -1,0 +1,133 @@
+---
+course: Fractional Calculus
+chapter: 2
+chapter_title: Fractional Differential Equations
+lecture: 5
+title: Python figures — every kind of plot the AI can write
+duration: 75
+lang: en
+author: Prof. Ahmad El-Ajou
+---
+
+::: outcomes
+- Plot the Mittag-Leffler function for several orders.
+- Compare a numerical solution of a Caputo FDE with its exact solution.
+- Read contour, surface, phase-plane and statistical plots drawn with Python.
+:::
+
+::: timeplan
+0-20 | Mittag-Leffler functions
+20-45 | Numerical solution of Caputo FDEs
+45-75 | Surfaces, contours, phase planes, statistics
+:::
+
+## The Mittag-Leffler function
+
+::: definition "Mittag-Leffler function" {#def:ml}
+For $\alpha>0$, $\beta>0$:
+$$E_{\alpha,\beta}(z)=\sum_{k=0}^{\infty}\frac{z^k}{\Gamma(\alpha k+\beta)},\qquad E_\alpha=E_{\alpha,1}.$$ {#eq:ml}
+:::
+
+```pyplot caption="$E_\alpha(-t^\alpha)$ decays more slowly as $\alpha$ decreases — the memory effect."
+t = np.linspace(0, 6, 400)
+for a in [0.4, 0.6, 0.8, 1.0]:
+    plt.plot(t, ml(-t**a, a), label=rf"$\alpha={a}$")
+plt.plot(t, np.exp(-t), ":", color=gray, lw=1.2, label=r"$e^{-t}$")
+plt.xlabel("$t$"); plt.ylabel(r"$E_\alpha(-t^\alpha)$")
+plt.title("Relaxation for different orders")
+plt.legend()
+```
+
+## Numerical solution of a Caputo FDE
+
+::: example "Relaxation equation" {#ex:relax}
+Solve ${}^{C}D^{\alpha}y=-\lambda y$, $y(0)=1$, and compare with the exact solution $y=E_\alpha(-\lambda t^\alpha)$.
+:::
+
+::: solution space=6
+```pyplot caption="Predictor–corrector (dots) against the exact solution (lines), $\lambda=1$."
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.6))
+for a, c in [(0.5, blue), (0.9, red)]:
+    t, y = fde_solve(lambda t, y: -y, 1.0, a, 5, h=0.02)
+    ax1.plot(t, ml(-t**a, a), color=c, label=rf"exact, $\alpha={a}$")
+    ax1.plot(t[::12], y[::12], "o", color=c, ms=3.5)
+    ax2.semilogy(t[1:], np.abs(y - ml(-t**a, a))[1:] + 1e-16, color=c, label=rf"$\alpha={a}$")
+ax1.set_title("Solutions"); ax1.set_xlabel("$t$"); ax1.legend()
+ax2.set_title("Absolute error"); ax2.set_xlabel("$t$"); ax2.legend()
+```
+::: answer
+$y(t)=E_\alpha(-t^\alpha)$.
+:::
+:::
+
+## Surfaces and contours
+
+```pyplot caption="The surface $z=\sin x\cos y$ (left) and its level curves (right)."
+x = np.linspace(-np.pi, np.pi, 120)
+X, Y = np.meshgrid(x, x)
+Z = np.sin(X) * np.cos(Y)
+fig = plt.figure(figsize=(9, 3.8))
+ax = fig.add_subplot(1, 2, 1, projection="3d")
+ax.plot_surface(X, Y, Z, cmap="viridis", linewidth=0, antialiased=True)
+ax.set_xlabel("$x$"); ax.set_ylabel("$y$"); ax.set_zlabel("$z$", labelpad=-1); ax.set_box_aspect(None, zoom=0.88)
+ax2 = fig.add_subplot(1, 2, 2)
+cs = ax2.contourf(X, Y, Z, 14, cmap="RdBu_r")
+ax2.contour(X, Y, Z, 14, colors="k", linewidths=0.4)
+fig.colorbar(cs, ax=ax2, shrink=0.85)
+ax2.set_aspect("equal"); ax2.set_xlabel("$x$"); ax2.set_ylabel("$y$")
+```
+
+## Phase plane with SciPy
+
+```pyplot caption="Damped pendulum $\theta''+0.3\,\theta'+\sin\theta=0$: stream plot and three trajectories."
+from scipy.integrate import solve_ivp
+th, w = np.meshgrid(np.linspace(-2*np.pi, 2*np.pi, 40), np.linspace(-3, 3, 30))
+plt.streamplot(th, w, w, -0.3*w - np.sin(th), color="#9FB4C7", density=1.2, linewidth=0.7)
+for y0, c in [((-5.5, 2.6), red), ((0.5, 2.9), blue), ((2.8, -2.5), green)]:
+    s = solve_ivp(lambda t, y: [y[1], -0.3*y[1] - np.sin(y[0])], (0, 30), y0, max_step=0.05)
+    plt.plot(s.y[0], s.y[1], color=c, lw=1.8)
+    plt.plot(*y0, "o", color=c)
+pi_ticks(step=1)
+plt.xlabel(r"$\theta$"); plt.ylabel(r"$\theta'$")
+```
+
+## School-style graph
+
+```pyplot caption="$f(x)=\dfrac{x^2-1}{x-2}$ with its vertical and oblique asymptotes." width=520
+x = np.linspace(-4, 8, 2000)
+y = (x**2 - 1) / (x - 2)
+y[np.abs(x - 2) < 0.03] = np.nan
+plt.plot(x, y, color=blue, label=r"$f(x)$")
+plt.axvline(2, ls="--", color=red, lw=1, label="$x=2$")
+plt.plot(x, x + 2, ls="--", color=green, lw=1, label="$y=x+2$")
+plt.ylim(-12, 18)
+axes_through_origin()
+plt.legend(loc="upper left")
+```
+
+## Statistics
+
+```pyplot caption="1000 samples from $N(0,1)$ with the exact density."
+rng = np.random.default_rng(1)
+data = rng.normal(size=1000)
+plt.hist(data, bins=30, density=True, color="#BFE3F2", edgecolor=blue, lw=0.6)
+x = np.linspace(-4, 4, 300)
+plt.plot(x, np.exp(-x**2/2)/np.sqrt(2*np.pi), color=red, label="density")
+plt.xlabel("$x$"); plt.legend()
+```
+
+::: mcq
+Q: $E_1(z)$ equals
+- $\cos z$
+- $e^{z}$ *
+- $\dfrac{1}{1-z}$
+- $\Gamma(z)$
+> Put $\alpha=1$ in (@eq:ml): $\sum z^k/k!=e^z$.
+
+Q: For $0<\alpha<1$, $E_\alpha(-t^\alpha)$ decays
+- exponentially
+- like a power of $t$ *
+- not at all
+- faster than $e^{-t}$
+> For large $t$, $E_\alpha(-t^\alpha)\sim t^{-\alpha}/\Gamma(1-\alpha)$.
+:::

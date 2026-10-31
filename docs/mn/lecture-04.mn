@@ -1,0 +1,198 @@
+---
+course: Methods of Applied Mathematics
+chapter: 1
+chapter_title: Matrix Methods for Linear Systems
+lecture: 4
+title: Homogeneous Systems with Constant Coefficients I
+duration: 75
+lang: en
+author: Prof. Ahmad El-Ajou
+---
+
+::: outcomes
+- Derive the eigenvalue method for $\X'=\A\X$.
+- Solve systems with distinct real eigenvalues, including IVPs.
+- Solve systems with a repeated eigenvalue having a full set of eigenvectors.
+- Use the theorem on real symmetric matrices.
+:::
+
+::: timeplan
+0-15  | The method $\X=\K e^{\lambda t}$
+15-30 | Distinct real eigenvalues; @ex:saddle
+30-45 | A $3\times3$ IVP; @ex:ivp
+45-60 | Repeated eigenvalues, Case I; @ex:case1
+60-72 | Symmetric matrices; @ex:sym
+72-75 | Summary and MCQs
+:::
+
+## The Eigenvalue Method
+
+Consider the homogeneous system with a constant matrix $\A$:
+$$\X'=\A\X.$$ {#eq:hom}
+
+- Try a solution of the form $\X=\K e^{\lambda t}$, where $\lambda$ is a scalar and $\K\neq\mathbf 0$ is a constant vector, both to be determined. Then $\X'=\lambda e^{\lambda t}\K$.
+- Substituting into (@eq:hom): $\lambda e^{\lambda t}\K=e^{\lambda t}\A\K$, i.e. $e^{\lambda t}(\A-\lambda I)\K=\mathbf 0$, so
+  $$(\A-\lambda I)\K=\mathbf 0.$$
+- Since $\K\neq\mathbf 0$, we need $|\A-\lambda I|=0$.
+
+::: keybox
+$\X=\K e^{\lambda t}$ solves $\X'=\A\X$ !!if and only if!! $\lambda$ is an eigenvalue of $\A$ and $\K$ is a corresponding eigenvector.
+:::
+
+The eigenvalues fall into three cases: **distinct real**, **repeated real**, and **complex**.
+
+### Distinct real eigenvalues
+
+::: theorem "Distinct real eigenvalues" {#thm:distinct}
+If the $n\times n$ matrix $\A$ has $n$ distinct real eigenvalues $\lambda_1,\dots,\lambda_n$ with eigenvectors $\K_1,\dots,\K_n$, then $\K_1,\dots,\K_n$ are linearly independent,
+$$\X_1=\K_1e^{\lambda_1t},\quad \X_2=\K_2e^{\lambda_2t},\quad\dots,\quad \X_n=\K_ne^{\lambda_nt}$$
+is a fundamental set of (@eq:hom) on $(-\infty,\infty)$, and the general solution is
+$$\boxed{\X=c_1\K_1e^{\lambda_1t}+c_2\K_2e^{\lambda_2t}+\cdots+c_n\K_ne^{\lambda_nt}}$$
+:::
+
+::: example {#ex:saddle}
+Find a general solution of $\dfrac{dx}{dt}=2x+3y,\quad \dfrac{dy}{dt}=2x+y.$
+:::
+
+::: solution steps space=10
+Here $\A=\begin{pmatrix}2&3\\2&1\end{pmatrix}$ and $|\A-\lambda I|=(2-\lambda)(1-\lambda)-6=\lambda^2-3\lambda-4=(\lambda-4)(\lambda+1)=0$, so $\lambda_1=4,\ \lambda_2=-1$.
+>>>
+$\lambda_1=4$: $\begin{pmatrix}-2&3\\2&-3\end{pmatrix}\K=\mathbf 0\Rightarrow 2k_1=3k_2,\quad \K_1=\begin{pmatrix}3\\2\end{pmatrix}.$
+
+$\lambda_2=-1$: $\begin{pmatrix}3&3\\2&2\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=-k_2,\quad \K_2=\begin{pmatrix}1\\-1\end{pmatrix}.$
+>>>
+Therefore
+$$\X=c_1\begin{pmatrix}3\\2\end{pmatrix}e^{4t}+c_2\begin{pmatrix}1\\-1\end{pmatrix}e^{-t},\qquad\text{i.e.}\qquad x=3c_1e^{4t}+c_2e^{-t},\quad y=2c_1e^{4t}-c_2e^{-t}.$$
+>>>
+The origin is a **saddle point**: trajectories come in along $\K_2$ and leave along $\K_1$.
+
+```field x=[-4,4] y=[-4,4] caption="Phase portrait of $\X'=\begin{pmatrix}2&3\\2&1\end{pmatrix}\X$"
+matrix [2 3; 2 1]
+trajectories from (1,0.2) (-1,-0.2) (0.2,1) (-0.2,-1) (2,-2.3) (-2,2.3) (3,-2) (-3,2) (0.5,-0.6) (-0.5,0.6)
+eigenlines on
+classify on
+```
+:::
+
+::: example {#ex:ivp}
+Solve the initial-value problem
+$$\X'(t)=\begin{pmatrix}1&2&-1\\1&0&1\\4&-4&5\end{pmatrix}\X(t),\qquad \X(0)=\begin{pmatrix}-1\\0\\0\end{pmatrix}.$$
+:::
+
+::: solution space=16
+Expanding along the first row,
+$$|\A-\lambda I|=(1-\lambda)(\lambda^2-5\lambda+4)-2(1-\lambda)+4(1-\lambda)=(1-\lambda)(\lambda^2-5\lambda+6)=-(\lambda-1)(\lambda-2)(\lambda-3).$$
+
+$\lambda_1=1$: $\begin{pmatrix}0&2&-1\\1&-1&1\\4&-4&4\end{pmatrix}\K=\mathbf 0\Rightarrow k_3=2k_2,\ k_1=k_2-k_3=-k_2;\quad \K_1=(-1,1,2)^T.$
+
+$\lambda_2=2$: $\begin{pmatrix}-1&2&-1\\1&-2&1\\4&-4&3\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=2k_2-k_3,\ 4k_2-k_3=0;\quad \K_2=(-2,1,4)^T.$
+
+$\lambda_3=3$: $\begin{pmatrix}-2&2&-1\\1&-3&1\\4&-4&2\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=-k_2,\ k_3=4k_2;\quad \K_3=(-1,1,4)^T.$
+
+General solution:
+$$\X=c_1\begin{pmatrix}-1\\1\\2\end{pmatrix}e^{t}+c_2\begin{pmatrix}-2\\1\\4\end{pmatrix}e^{2t}+c_3\begin{pmatrix}-1\\1\\4\end{pmatrix}e^{3t}.$$
+Initial condition $\X(0)=(-1,0,0)^T$:
+$$-c_1-2c_2-c_3=-1,\qquad c_1+c_2+c_3=0,\qquad 2c_1+4c_2+4c_3=0.$$
+From the last two equations $c_1=0$ and $c_3=-c_2$; then the first gives $c_2=1,\ c_3=-1$. Hence
+$$\X(t)=\begin{pmatrix}-2\\1\\4\end{pmatrix}e^{2t}-\begin{pmatrix}-1\\1\\4\end{pmatrix}e^{3t}=\begin{pmatrix}-2e^{2t}+e^{3t}\\e^{2t}-e^{3t}\\4e^{2t}-4e^{3t}\end{pmatrix}.$$
+
+```plot x=[0,1] y=[-12,2] caption="The three components of $\X(t)$"
+f(x) = -2exp(2x) + exp(3x) color=blue label="$x_1$" at=0.75
+g(x) = exp(2x) - exp(3x) color=red label="$x_2$" at=0.85
+h(x) = 4exp(2x) - 4exp(3x) color=green label="$x_3$" at=0.55
+```
+:::
+
+### Repeated eigenvalues
+
+If $(\lambda-\lambda_1)^m$ is a factor of the characteristic polynomial but $(\lambda-\lambda_1)^{m+1}$ is not, $\lambda_1$ is an eigenvalue of [[multiplicity $m$]]. We discuss two situations:
+
+- **Case I:** $\lambda_1$ has $m$ linearly independent eigenvectors (in particular, $\A_{n\times n}$ has $n$ independent eigenvectors).
+- **Case II:** $\lambda_1$ has only one independent eigenvector (Lecture 5).
+
+In Case I, with independent eigenvectors $\K_1,\dots,\K_m$ for $\lambda_1$, the general solution contains $c_1\K_1e^{\lambda_1t}+\cdots+c_m\K_me^{\lambda_1t}$, exactly as in the distinct case.
+
+::: example {#ex:case1}
+Find a general solution of $\X'=\A\X$, where $\A=\begin{pmatrix}2&0&0\\1&1&2\\1&-1&4\end{pmatrix}$.
+:::
+
+::: solution space=12
+Expanding along the first row, $|\A-\lambda I|=(2-\lambda)\big[(1-\lambda)(4-\lambda)+2\big]=(2-\lambda)(\lambda^2-5\lambda+6)=-(\lambda-2)^2(\lambda-3)$. So $\lambda_1=\lambda_2=2$ (multiplicity 2) and $\lambda_3=3$.
+
+$\lambda=2$: $\begin{pmatrix}0&0&0\\1&-1&2\\1&-1&2\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=k_2-2k_3$, with $k_2,k_3$ free:
+$$\K=k_2\begin{pmatrix}1\\1\\0\end{pmatrix}+k_3\begin{pmatrix}-2\\0\\1\end{pmatrix}\Rightarrow \K_1=\begin{pmatrix}1\\1\\0\end{pmatrix},\ \K_2=\begin{pmatrix}-2\\0\\1\end{pmatrix}\quad\text{(Case I).}$$
+
+$\lambda=3$: $\begin{pmatrix}-1&0&0\\1&-2&2\\1&-1&1\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=0,\ k_2=k_3;\quad \K_3=(0,1,1)^T.$
+
+::: answer
+$\X=c_1\begin{pmatrix}1\\1\\0\end{pmatrix}e^{2t}+c_2\begin{pmatrix}-2\\0\\1\end{pmatrix}e^{2t}+c_3\begin{pmatrix}0\\1\\1\end{pmatrix}e^{3t}.$
+:::
+:::
+
+::: recall "Transpose and symmetric matrices" from="Matrix Theory"
+- The transpose of $A=[a_{ij}]$ is $A^T=[a_{ji}]$; e.g. $A=\begin{pmatrix}2&13\\-9&11\\3&17\end{pmatrix}_{3\times2}\Rightarrow A^T=\begin{pmatrix}2&-9&3\\13&11&17\end{pmatrix}_{2\times3}.$
+- A [[real symmetric matrix]] is a matrix with real entries satisfying $A=A^T$; e.g. $A=A^T=\begin{pmatrix}1&-2&2\\-2&1&2\\2&2&1\end{pmatrix}$.
+:::
+
+::: theorem "Eigenvectors of a real symmetric matrix" {#thm:sym}
+If $\A$ is an $n\times n$ real symmetric matrix, then all its eigenvalues are real and $\A$ always has $n$ linearly independent eigenvectors. Consequently, a repeated eigenvalue of a symmetric matrix is always of Case I.
+:::
+
+::: example {#ex:sym}
+Find a general solution of $\X'(t)=\A\X(t)$, where $\A=\begin{pmatrix}1&-2&2\\-2&1&2\\2&2&1\end{pmatrix}$.
+
+*Hint:* $\lambda_1=\lambda_2=3,\ \lambda_3=-3$.
+:::
+
+::: solution space=12
+(Indeed $|\A-\lambda I|=-(\lambda-3)^2(\lambda+3)$.)
+
+$\lambda=3$: $\begin{pmatrix}-2&-2&2\\-2&-2&2\\2&2&-2\end{pmatrix}\K=\mathbf 0\Rightarrow k_1+k_2-k_3=0$:
+$$\K=k_3\begin{pmatrix}1\\0\\1\end{pmatrix}+k_2\begin{pmatrix}-1\\1\\0\end{pmatrix}\Rightarrow\K_1=\begin{pmatrix}1\\0\\1\end{pmatrix},\ \K_2=\begin{pmatrix}-1\\1\\0\end{pmatrix}.$$
+
+$\lambda=-3$: $\begin{pmatrix}4&-2&2\\-2&4&2\\2&2&4\end{pmatrix}\K=\mathbf 0\Rightarrow k_1=-k_3,\ k_2=-k_3;\quad\K_3=(-1,-1,1)^T.$
+
+As predicted by @thm:sym (two eigenvectors for the double eigenvalue),
+$$\X=c_1\begin{pmatrix}1\\0\\1\end{pmatrix}e^{3t}+c_2\begin{pmatrix}-1\\1\\0\end{pmatrix}e^{3t}+c_3\begin{pmatrix}-1\\-1\\1\end{pmatrix}e^{-3t}.$$
+:::
+
+::: teacher
+Draw the saddle portrait (@ex:saddle) before writing the formula — students remember the geometry.
+:::
+
+::: mcq
+Q: Substituting $\X=\K e^{\lambda t}$ into $\X'=\A\X$ leads to
+- $(\A+\lambda I)\K=\mathbf 0$
+- $(\A-\lambda I)\K=\mathbf 0$ *
+- $\A\K=\mathbf 0$
+- $\lambda\A=\K$
+> $\lambda e^{\lambda t}\K=e^{\lambda t}\A\K$.
+
+Q: The general solution of $\X'=\begin{pmatrix}1&0\\0&-3\end{pmatrix}\X$ is
+- $c_1\begin{pmatrix}1\\0\end{pmatrix}e^{t}+c_2\begin{pmatrix}0\\1\end{pmatrix}e^{-3t}$ *
+- $c_1\begin{pmatrix}1\\0\end{pmatrix}e^{-3t}+c_2\begin{pmatrix}0\\1\end{pmatrix}e^{t}$
+- $c_1\begin{pmatrix}1\\1\end{pmatrix}e^{t}+c_2\begin{pmatrix}1\\-1\end{pmatrix}e^{-3t}$
+- $c\begin{pmatrix}1\\-3\end{pmatrix}e^{t}$
+> Diagonal matrix: eigenvalues $1,-3$ with eigenvectors $\mathbf e_1,\mathbf e_2$.
+
+Q: The general solution of $\X'=\begin{pmatrix}1&2\\2&1\end{pmatrix}\X$ is
+- $c_1\begin{pmatrix}1\\1\end{pmatrix}e^{-t}+c_2\begin{pmatrix}1\\-1\end{pmatrix}e^{3t}$
+- $c_1\begin{pmatrix}1\\1\end{pmatrix}e^{3t}+c_2\begin{pmatrix}1\\-1\end{pmatrix}e^{-t}$ *
+- $c_1\begin{pmatrix}1\\2\end{pmatrix}e^{t}+c_2\begin{pmatrix}2\\1\end{pmatrix}e^{t}$
+- $c_1\begin{pmatrix}1\\0\end{pmatrix}e^{3t}+c_2\begin{pmatrix}0\\1\end{pmatrix}e^{-t}$
+> Eigenvalues $3$ and $-1$, with eigenvectors $(1,1)^T$ and $(1,-1)^T$.
+
+Q: A real symmetric $3\times3$ matrix $\A$ has eigenvalues $2,2,5$. The general solution of $\X'=\A\X$ has the form
+- $c_1\K_1e^{2t}+c_2\K_2e^{2t}+c_3\K_3e^{5t}$ (no $te^{2t}$ terms) *
+- $c_1\K_1e^{2t}+c_2(\K_1te^{2t}+\K_2e^{2t})+c_3\K_3e^{5t}$
+- $c_1\K_1e^{2t}+c_2\K_3e^{5t}$
+- it cannot be determined
+> @thm:sym: a symmetric matrix always has a full set of eigenvectors (Case I).
+
+Q: The solution of $\X'=\begin{pmatrix}2&0\\0&3\end{pmatrix}\X,\ \X(0)=\begin{pmatrix}1\\-1\end{pmatrix}$, is
+- $\begin{pmatrix}e^{3t}\\-e^{2t}\end{pmatrix}$
+- $\begin{pmatrix}e^{2t}\\-e^{3t}\end{pmatrix}$ *
+- $\begin{pmatrix}e^{2t}\\e^{3t}\end{pmatrix}$
+- $\begin{pmatrix}-e^{2t}\\e^{3t}\end{pmatrix}$
+> $\X=c_1\mathbf e_1e^{2t}+c_2\mathbf e_2e^{3t}$ with $c_1=1,\ c_2=-1$.
+:::
