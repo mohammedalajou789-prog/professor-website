@@ -2,7 +2,7 @@
 export default function LoadingLecture() {
   return (
     <div className="paper min-h-screen">
-      <div className="sticky top-16 z-30 h-[92px] border-b border-line bg-surface/92 backdrop-blur-md" />
+      <div className="sticky top-16 z-30 h-[92px] border-b border-line bg-surface" />
       <div className="px-0 py-5 sm:px-6 sm:py-8">
         <div className="mx-auto w-full max-w-[980px] overflow-hidden rounded-lg bg-surface p-6 shadow-[var(--c-shadow)] sm:p-12">
           <div className="mb-6 h-3 w-1/2 animate-pulse rounded bg-surface-3" />

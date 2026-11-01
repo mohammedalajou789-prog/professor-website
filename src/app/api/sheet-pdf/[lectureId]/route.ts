@@ -47,28 +47,34 @@ export async function GET(req: Request, { params }: { params: Promise<{ lectureI
 
   const fileName = `${(course?.code || course?.name_en || 'course').replace(/[^\w\- ]+/g, '').trim()} - Lecture ${lec.number}.pdf`
   const base = `courses/pdf/${createHash('sha256').update(`${PDF_VERSION}|${key}|${mode}|${lang}`).digest('hex').slice(0, 32)}.pdf`
+  let step = 'storage check'
   try {
     if (!(await exists(base))) {
+      step = 'render'
       const pdf = await renderSheetPdf({
         origin: url.origin, key, mode, lang,
         footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou`,
       })
-      await put(base, new Blob([pdf as BlobPart]), 'application/pdf')
+      step = 'save'
+      await put(base, pdf, 'application/pdf')
     }
     let out = base
     if (!isAdmin && student) {
+      step = 'watermark'
       out = `wm/${student.id}/sheet-${base.split('/').pop()}`
       if (!(await exists(out))) {
         const src = await getBytes(base)
         if (!src) throw new Error('pdf missing')
-        await put(out, new Blob([(await stampPdf(src, student.university_id, student.email)) as BlobPart]), 'application/pdf')
+        await put(out, await stampPdf(src, student.university_id, student.email), 'application/pdf')
       }
     }
+    step = 'link'
     const signed = await presign(out, 'GET', 300, { filename: fileName })
     if (wantsJson) return NextResponse.json({ url: signed }, { headers: { 'cache-control': 'no-store' } })
     return NextResponse.redirect(signed, { headers: { 'cache-control': 'no-store' } })
-  } catch (e: any) {
-    console.error('[sheet-pdf]', e)
-    return NextResponse.json({ error: 'PDF could not be created', detail: isAdmin ? String(e?.message || e) : undefined }, { status: 500 })
+  } catch (e0: any) {
+    console.error('[sheet-pdf]', step, e0)
+    // the reason is shown in the toast (no secrets in it) so a failure can be fixed quickly
+    return NextResponse.json({ error: 'PDF could not be created', step, detail: String(e0?.message || e0).slice(0, 300) }, { status: 500 })
   }
 }

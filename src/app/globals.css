@@ -93,7 +93,6 @@ body {
   background-image: radial-gradient(var(--c-dots) 1px, transparent 1.2px);
   background-size: 22px 22px;
   color: var(--c-ink);
-  transition: background-color .3s ease, color .3s ease;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
@@ -210,10 +209,8 @@ html[dir='rtl'] .hero-backdrop { background: radial-gradient(120% 130% at 22% 10
   .reveal { opacity: 1; transform: none; }
 }
 
-/* smooth colour change only while the theme is being switched */
-.theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after {
-  transition: background-color .35s ease, border-color .35s ease, color .35s ease, fill .35s ease, box-shadow .35s ease !important;
-}
+/* theme switch: a single cross-fade of the page (View Transitions) */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; }
 
 /* small dark drawing boards (research-area art) — readable in both themes */
 .art-board {

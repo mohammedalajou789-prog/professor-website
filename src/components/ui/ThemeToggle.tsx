@@ -13,11 +13,13 @@ export function useTheme() {
   const toggle = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     const root = document.documentElement
-    root.classList.add('theme-anim')
-    root.dataset.theme = next
+    const apply = () => { root.dataset.theme = next }
+    // one cheap cross-fade of the whole screen (no per-element colour transitions → instant even on long sheets)
+    const d = document as Document & { startViewTransition?: (cb: () => void) => unknown }
+    if (d.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) d.startViewTransition(apply)
+    else apply()
     try { localStorage.setItem('theme', next) } catch {}
     setTheme(next)
-    window.setTimeout(() => root.classList.remove('theme-anim'), 450)
   }
   return { theme, toggle }
 }

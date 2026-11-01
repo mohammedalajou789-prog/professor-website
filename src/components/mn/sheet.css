@@ -25,7 +25,6 @@
   font-family: 'KaTeX_Main', var(--font-sheet), 'STIX Two Text', 'Times New Roman', Times, serif;
   font-size: calc(18.5px * var(--mn-scale, 1));
   font-kerning: normal;
-  text-rendering: optimizeLegibility;
   line-height: 1.55;
   padding: 30px clamp(28px, 5vw, 64px) 44px;
   border-radius: 8px;
@@ -389,4 +388,10 @@ button.mn-opt:hover { background: #fff; border-color: #EFC3A3; }
 }
 @media print {
   .mn-h2, .mn-h3 { break-after: avoid; }
+}
+
+/* ───────── speed: long sheets only lay out / paint what is on screen ───────── */
+@media screen {
+  .mn-sheet > :not(.mn-watermark):not(.mn-running):not(.mn-banner) { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+  .mn-watermark { contain: strict; will-change: transform; }
 }

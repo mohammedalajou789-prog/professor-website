@@ -41,7 +41,7 @@ export default async function MnGuide({ searchParams }: { searchParams: Promise<
         {draft ? <span className="text-[13px] font-semibold text-gold-ink">Draft preview</span> : Object.entries(SAMPLES).map(([k, v]) => chip(`/admin/mn-guide?s=${k}&mode=${mode}`, k === sample, v.label))}
       </div>
       {!draft && <p className="mx-auto mb-3 max-w-[980px] text-[13px] leading-relaxed text-ink-2">{SAMPLES[sample].desc}</p>}
-      <div className="sticky top-16 z-30 -mx-3 mb-5 border-b border-line bg-bg/90 px-3 py-2 backdrop-blur-md sm:-mx-5 sm:px-5 lg:-mx-7 lg:px-7">
+      <div className="sticky top-16 z-30 -mx-3 mb-5 border-b border-line bg-bg px-3 py-2 sm:-mx-5 sm:px-5 lg:-mx-7 lg:px-7">
         <div className="mx-auto flex max-w-[980px] flex-wrap items-center gap-2">
           {chip(`${base}&mode=doctor`, mode === 'doctor', 'Doctor version · المحلولة')}
           {chip(`${base}&mode=student`, mode === 'student', 'Student version · الطالب')}

@@ -31,7 +31,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       const src = await getBytes(file.r2_key)
       if (!src) return NextResponse.json({ error: 'File missing' }, { status: 404 })
       const stamped = await stampPdf(src, student.university_id, student.email)
-      await put(wmKey, new Blob([stamped as BlobPart]), 'application/pdf')
+      await put(wmKey, stamped, 'application/pdf')
     }
     return NextResponse.redirect(await presign(wmKey, 'GET', 300, { filename: niceName, inline }), { headers: { 'cache-control': 'no-store' } })
   }

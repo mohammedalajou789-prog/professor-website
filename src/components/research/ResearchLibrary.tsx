@@ -47,7 +47,7 @@ export default function ResearchLibrary({ pubs }: { pubs: Pub[] }) {
 
   return (
     <div>
-      <div className="sticky top-16 z-20 -mx-4 mb-6 border-b border-line bg-surface-2/92 px-4 py-3 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-4">
+      <div className="sticky top-16 z-20 -mx-4 mb-6 border-b border-line bg-surface-2 px-4 py-3 sm:mx-0 sm:rounded-xl sm:border sm:px-4">
         <div className="relative">
           <Search size={17} className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
           <input

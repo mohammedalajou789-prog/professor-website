@@ -13,6 +13,9 @@ import {
 import Link from 'next/link'
 import { uploadToR2, revalidateSite } from '@/lib/admin-client'
 
+/** in-memory cache: switching sections shows the last data instantly, then refreshes in the background */
+const MEM: Record<string, any> = {}
+
 type Section = 'overview' | 'profile' | 'publications' | 'news' | 'education' |
   'positions' | 'awards' | 'memberships' | 'committees' | 'conferences' | 'supervision' | 'interests'
 
@@ -20,8 +23,8 @@ export default function DashboardPage() {
   const sp = useSearchParams()
   const section = (sp.get('s') || 'overview') as Section
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({ publications: 0, news: 0, courses: 0, interests: 0, students: 0, pending: 0 })
+  const [loading, setLoading] = useState(!MEM.stats)
+  const [stats, setStats] = useState(MEM.stats || { publications: 0, news: 0, courses: 0, interests: 0, students: 0, pending: 0 })
   const router = useRouter()
   const setSection = (x: Section) => router.push(x === 'overview' ? '/admin/dashboard' : `/admin/dashboard?s=${x}`)
 
@@ -29,9 +32,11 @@ export default function DashboardPage() {
     async function init() {
       try {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user ?? null
       if (!user && process.env.NEXT_PUBLIC_ADMIN_PREVIEW !== '1') { router.push('/login'); return }
       setUser(user)
+      if (MEM.stats) { setStats(MEM.stats); setLoading(false) }
       const head = { count: 'exact', head: true }
       const [pub, news, interests, courses, students, pending] = await Promise.all([
         supabase.from('publications').select('id', head),
@@ -41,7 +46,7 @@ export default function DashboardPage() {
         supabase.from('students').select('id', head),
         supabase.from('enrollments').select('id', head).eq('status', 'pending'),
       ])
-      setStats({
+      setStats(MEM.stats = {
         publications: pub.count || 0,
         news: news.count || 0,
         courses: courses.count || 0,
@@ -160,8 +165,8 @@ export default function DashboardPage() {
 
 // ============ PROFILE SECTION ============
 function ProfileSection() {
-  const [data, setData] = useState<any>({})
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<any>(MEM.profile || {})
+  const [loading, setLoading] = useState(!MEM.profile)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -171,7 +176,7 @@ function ProfileSection() {
     async function fetch() {
       const supabase = createClient()
       const { data } = await supabase.from('profile').select('*').single()
-      if (data) setData(data)
+      if (data) setData(MEM.profile = data)
       setLoading(false)
     }
     fetch()
@@ -288,8 +293,8 @@ function ProfileSection() {
 
 // ============ PUBLICATIONS SECTION ============
 function PublicationsSection() {
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState<any[]>(MEM.publications || [])
+  const [loading, setLoading] = useState(!MEM.publications)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
   const empty = {
@@ -303,7 +308,7 @@ function PublicationsSection() {
   async function load() {
     const supabase = createClient()
     const { data } = await supabase.from('publications').select('*').order('year', { ascending: false })
-    if (data) setItems(data)
+    if (data) setItems(MEM.publications = data)
     setLoading(false)
   }
 
@@ -420,8 +425,8 @@ function PublicationsSection() {
 
 // ============ GENERIC LIST SECTIONS ============
 function GenericSection({ table, title, fields }: { table: string; title: string; fields: any[] }) {
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems] = useState<any[]>(MEM[table] || [])
+  const [loading, setLoading] = useState(!MEM[table])
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
   const empty = fields.reduce((acc, f) => ({ ...acc, [f.key]: f.default ?? '' }), {})
@@ -430,7 +435,7 @@ function GenericSection({ table, title, fields }: { table: string; title: string
   async function load() {
     const supabase = createClient()
     const { data } = await supabase.from(table).select('*').order('sort_order', { ascending: true })
-    if (data) setItems(data)
+    if (data) setItems(MEM[table] = data)
     setLoading(false)
   }
 

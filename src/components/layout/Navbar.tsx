@@ -72,7 +72,7 @@ export default function Navbar({ brand }: { brand: Brand }) {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${
-          scrolled ? 'bg-deep/92 shadow-[0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-md border-b border-[#C9A227]/20' : 'bg-deep border-b border-white/[.06]'
+          scrolled ? 'bg-deep shadow-[0_8px_30px_rgba(0,0,0,.35)] border-b border-[#C9A227]/20' : 'bg-deep border-b border-white/[.06]'
         }`}
       >
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px]">

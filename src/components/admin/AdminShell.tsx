@@ -80,7 +80,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div dir="ltr" lang="en" className="admin min-h-screen bg-bg">
-      <header className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${scrolled ? 'border-b border-[#C9A227]/20 bg-deep/92 shadow-[0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-md' : 'border-b border-white/[.06] bg-deep'}`}>
+      <header className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${scrolled ? 'border-b border-[#C9A227]/20 bg-deep shadow-[0_8px_30px_rgba(0,0,0,.35)]' : 'border-b border-white/[.06] bg-deep'}`}>
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px]">
           <Link href="/admin/dashboard" className="group flex min-w-0 items-center gap-3">
             <Logo className="h-10 w-10 shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg] group-hover:scale-105" />

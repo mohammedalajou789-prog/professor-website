@@ -78,7 +78,7 @@ export default function Bibliography({ pubs }: { pubs: Pub[] }) {
   return (
     <div className="mx-auto max-w-[1680px] px-4 sm:px-7 lg:px-12 2xl:px-[72px]">
       {/* mobile year chips */}
-      <div className="sticky top-16 z-20 -mx-4 border-b border-line bg-surface/92 backdrop-blur-md lg:hidden">
+      <div className="sticky top-16 z-20 -mx-4 border-b border-line bg-surface lg:hidden">
         <div ref={chipsRef} className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 py-2.5">
           {byYear.map(([y, ps]) => (
             <button

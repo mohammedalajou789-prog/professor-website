@@ -59,8 +59,10 @@ export async function exists(key: string) {
   return res.ok
 }
 
-export async function put(key: string, body: BodyInit, contentType: string) {
-  const res = await r2().fetch(objectUrl(key), { method: 'PUT', body, headers: { 'content-type': contentType } })
+export async function put(key: string, body: string | Uint8Array | ArrayBuffer | Blob, contentType: string) {
+  // aws4fetch signs the payload hash: it accepts strings and byte arrays only (a Blob throws)
+  const data = body instanceof Blob ? new Uint8Array(await body.arrayBuffer()) : body
+  const res = await r2().fetch(objectUrl(key), { method: 'PUT', body: data as BodyInit, headers: { 'content-type': contentType } })
   if (!res.ok) throw new Error(`R2 PUT ${key}: ${res.status} ${await res.text()}`)
 }
 

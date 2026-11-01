@@ -82,7 +82,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   return (
     <div className="paper min-h-screen">
       {/* lecture header + tabs */}
-      <div className="sticky top-16 z-30 border-b border-line bg-surface/92 backdrop-blur-md">
+      <div className="sticky top-16 z-30 border-b border-line bg-surface">
         <div className="mx-auto flex max-w-[1680px] items-center gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px] pt-2.5">
           <Link href={`/courses/${course.slug}`} className="hidden shrink-0 rounded-md px-2 py-1 text-[12.5px] text-ink-2 hover:bg-surface-2 sm:inline-block">
             {ar ? course.name_ar || course.name_en : course.name_en}
@@ -110,7 +110,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
                 href={`?v=${t.id}`}
                 replace
                 scroll={false}
-                prefetch
+                prefetch={true}
                 className={`relative flex shrink-0 items-center gap-1.5 px-3.5 py-3 text-[13.5px] font-medium transition ${is ? 'text-link' : 'text-ink-2 hover:text-ink'}`}
               >
                 <Icon size={16} /> {t.label}

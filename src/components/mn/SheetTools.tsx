@@ -104,11 +104,11 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
     try {
       const r = await fetch(pdfHref, { headers: { accept: 'application/json' } })
       const j = await r.json().catch(() => ({}))
-      if (!r.ok || !j.url) throw new Error(j.error || 'failed')
+      if (!r.ok || !j.url) throw new Error(j.step ? `${j.step}: ${j.detail || j.error}` : j.error || 'failed')
       window.location.href = j.url
-    } catch {
-      setErr(L.failed)
-      setTimeout(() => setErr(''), 6000)
+    } catch (e: any) {
+      setErr(`${L.failed}${e?.message ? `\n(${e.message})` : ''}`)
+      setTimeout(() => setErr(''), 15000)
     }
     setBusy(false)
   }
@@ -132,7 +132,7 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
           {busy ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
           <span className="hidden sm:inline">{L.pdf}</span>
           <span className="sm:hidden">PDF</span>
-          {err && <span className="absolute end-0 top-full z-50 mt-2 w-64 rounded-lg bg-bad px-3 py-2 text-start text-[12.5px] font-normal text-white shadow-lg">{err}</span>}
+          {err && <span dir="auto" className="absolute end-0 top-full z-50 mt-2 w-72 whitespace-pre-line rounded-lg bg-bad px-3 py-2 text-start text-[12.5px] font-normal text-white shadow-lg">{err}</span>}
         </button>
       )}
 
