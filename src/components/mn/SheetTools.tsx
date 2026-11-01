@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Download, List, Minus, Plus, X, Loader2, ChevronsLeftRight, Maximize, Minimize } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 
@@ -12,6 +12,13 @@ import { useLang } from '@/context/LangContext'
 const KEY = 'mn-zoom'
 const MIN = 0.5, MAX = 2.5
 const STEPS = [0.5, 0.67, 0.75, 0.85, 1, 1.1, 1.25, 1.4, 1.6, 1.8, 2, 2.25, 2.5]
+
+const isPhone = () => document.documentElement.clientWidth <= 720
+/** the zoom saved on a computer — ignored on phones */
+function readSaved() {
+  if (isPhone()) return null
+  try { return localStorage.getItem(KEY) } catch { return null }
+}
 
 function fitZoom() {
   const w = document.documentElement.clientWidth
@@ -43,6 +50,7 @@ function applyZoom(z: number) {
 export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id: string; html: string }[]; pdfHref?: string; ar?: boolean; /** bilingual sheet: quick EN / ع switch (= the site language switch) */ langSwitch?: boolean }) {
   const { setLang } = useLang()
   const [zoom, setZoom] = useState(1)
+  const phoneManual = useRef<number | null>(null)
   const [fit, setFit] = useState(true)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -53,21 +61,21 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
     ? { contents: 'المحتويات', pdf: 'تحميل الشيت PDF', smaller: 'تصغير', larger: 'تكبير', fit: 'ملء العرض', full: 'ملء الشاشة', exitFull: 'الخروج من ملء الشاشة', failed: 'تعذّر تجهيز الملف، حاول بعد قليل.' }
     : { contents: 'Contents', pdf: 'Download PDF', smaller: 'Zoom out', larger: 'Zoom in', fit: 'Fit width', full: 'Full screen', exitFull: 'Exit full screen', failed: 'Could not prepare the PDF — please try again in a moment.' }
 
-  // initial zoom: saved choice, otherwise fit-to-width
+  // initial zoom: on a computer the saved choice (otherwise fit-to-width);
+  // on a phone ALWAYS fit the screen — a zoom saved on the computer (e.g. 110 %) must never make
+  // the sheet wider than the phone. A zoom picked on the phone lasts only while the page is open.
   useEffect(() => {
-    let saved: string | null = null
-    try { saved = localStorage.getItem(KEY) } catch {}
-    const z = saved && saved !== 'fit' ? Number(saved) : fitZoom()
-    setFit(!saved || saved === 'fit')
-    setZoom(z)
-    document.documentElement.style.setProperty('--mn-zoom', String(z))
-    const onResize = () => {
-      let s: string | null = null
-      try { s = localStorage.getItem(KEY) } catch {}
-      if (!s || s === 'fit') { const f = fitZoom(); setZoom(f); document.documentElement.style.setProperty('--mn-zoom', String(f)) }
+    const apply = () => {
+      const saved = readSaved()
+      const manual = isPhone() && phoneManual.current !== null
+      const z = manual ? phoneManual.current! : saved && saved !== 'fit' ? Number(saved) : fitZoom()
+      setFit(!manual && (!saved || saved === 'fit'))
+      setZoom(z)
+      document.documentElement.style.setProperty('--mn-zoom', String(z))
     }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    apply()
+    window.addEventListener('resize', apply)
+    return () => window.removeEventListener('resize', apply)
   }, [])
 
   // full screen (like F11) — hidden where the browser does not allow it (iPhone)
@@ -100,7 +108,8 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
     const v = Math.max(MIN, Math.min(MAX, Math.round(z * 100) / 100))
     setZoom(v)
     setFit(asFit)
-    try { localStorage.setItem(KEY, asFit ? 'fit' : String(v)) } catch {}
+    if (isPhone()) phoneManual.current = asFit ? null : v // phones: remembered only for this visit
+    else try { localStorage.setItem(KEY, asFit ? 'fit' : String(v)) } catch {}
     applyZoom(v)
   }, [])
 
