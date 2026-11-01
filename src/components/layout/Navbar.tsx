@@ -66,7 +66,7 @@ export default function Navbar({ brand }: { brand: Brand }) {
   const title = isRTL ? brand.title_ar : brand.title_en
   const account = loggedIn
     ? { href: '/dashboard', label: isRTL ? 'لوحتي' : 'My Courses' }
-    : { href: '/login', label: isRTL ? 'دخول الطلاب' : 'Student Login' }
+    : { href: '/login', label: isRTL ? 'تسجيل الدخول' : 'Sign in' }
 
   return (
     <>

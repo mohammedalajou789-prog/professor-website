@@ -4,15 +4,15 @@ import AuthShell from '@/components/student/AuthShell'
 import LoginForm from '@/components/student/LoginForm'
 import { isLang } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Student login' }
+export const metadata: Metadata = { title: 'Sign in' }
 
 export default async function LoginPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
   const ar = isLang(lang) && lang === 'ar'
   return (
     <AuthShell
-      title={ar ? 'دخول الطلاب' : 'Student sign in'}
-      subtitle={ar ? 'ادخل إلى مساقاتك ومحاضراتك وأوراق العمل.' : 'Access your courses, lectures and sheets.'}
+      title={ar ? 'تسجيل الدخول' : 'Sign in'}
+      subtitle={ar ? 'للطلاب وللدكتور — صفحة دخول واحدة.' : 'One sign-in for students and the professor.'}
       aside={
         <>
           <p className="font-display text-[44px] italic leading-tight text-[#E3C566]">X′ = AX</p>

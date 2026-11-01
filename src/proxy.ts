@@ -45,10 +45,9 @@ export async function proxy(request: NextRequest) {
         },
       }
     )
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      const login = pathname.startsWith('/admin') ? '/admin/login' : '/login'
-      const url = new URL(login, request.url)
+    const { data } = await supabase.auth.getClaims()
+    if (!data?.claims?.sub) {
+      const url = new URL('/login', request.url)
       url.searchParams.set('next', pathname)
       return NextResponse.redirect(url)
     }

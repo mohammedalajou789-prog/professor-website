@@ -1,7 +1,7 @@
 # دليل استخدام الموقع — أ.د. أحمد العجو
 ### Website Guide — Prof. Ahmad El-Ajou
 
-> **ahmadelajou.com** · لوحة التحكم: **ahmadelajou.com/admin/login**
+> **ahmadelajou.com** · تسجيل الدخول (للطلاب وللدكتور): **ahmadelajou.com/login**
 > النسخة العربية أولاً، ثم الإنجليزية (English version below).
 
 ---
@@ -20,11 +20,13 @@
 يعمل الموقع بالعربية والإنجليزية (زر **عربي / English** أعلى الصفحة)، وفيه **وضع ليلي** (زر القمر 🌙).
 
 ## 2. الدخول إلى لوحة التحكم
-1. افتح **ahmadelajou.com/admin/login**.
-2. أدخل بريدك وكلمة المرور.
-3. على اليسار قائمة بقسمين:
-   - **التدريس:** المساقات والطلاب، ودليل الشيتات.
-   - **الموقع:** نظرة عامة، الملف الشخصي، المنشورات، مجالات البحث، الأخبار، التعليم، المناصب، الجوائز، العضويات، اللجان، المؤتمرات، الإشراف.
+1. افتح **ahmadelajou.com/login**. هي نفس صفحة دخول الطلاب، والموقع يعرف أنك المسؤول فيأخذك إلى لوحة التحكم.
+2. في الأعلى شريط بنفس شكل الموقع، فيه:
+   - **Overview:** نظرة عامة وطلبات الطلاب المنتظرة.
+   - **Courses & students:** المساقات والطلاب.
+   - **Website content:** قائمة فيها الملف الشخصي، المنشورات، مجالات البحث، الأخبار، التعليم، المناصب، الجوائز، العضويات، اللجان، المؤتمرات، الإشراف.
+   - **Sheet guide:** أمثلة جاهزة للشيتات.
+   - **View site:** الانتقال إلى الموقع كما يراه الزائر.
 
 على الهاتف تُفتح القائمة من زر ☰.
 
@@ -51,10 +53,13 @@
 - يسجّل الطالب بنفسه: الاسم، الرقم الجامعي، البريد الجامعي، الهاتف.
 - **لا يُقبل إلا بريد ينتهي بـ `@std.bau.edu.jo`.**
 - يفتح الطالب المساق ويضغط **طلب الانضمام**. لا يرى أي محاضرة حتى **توافق أنت**.
-- الطلبات تظهر في **Courses & students → Requests**، وفي الصفحة الرئيسية للوحة التحكم.
-  - **Approve:** قبول الطالب.
+- **الموافقة لكل مساق على حدة:** قبول طالب في مساق لا يعني قبوله في مساق آخر.
+- الطلبات تظهر في **Courses & students → Requests**، مجمّعة حسب المساق:
+  - **Approve:** قبول الطالب في هذا المساق.
   - **Reject:** رفض الطلب.
-- تبويب **Students** يُظهر كل الطلاب، ومنه يمكنك **إيقاف** حساب طالب أو إعادته.
+  - **Revoke:** سحب القبول لاحقاً.
+- تبويب **Students** يُظهر كل طالب ومساقاته وحالة كل منها: ✓ مقبول، … ينتظر، ✕ مرفوض.
+- **Block account:** يوقف حساب الطالب في كل المساقات دفعة واحدة.
 
 ## 6. المحاضرات
 داخل المساق → **Lectures** → **Add lecture**. لكل محاضرة:
@@ -114,9 +119,13 @@
 ## 8. ماذا يرى الطالب؟
 - لوحته: مساقاته وحالة كل طلب (بانتظار الموافقة / مقبول).
 - صفحة المحاضرة فيها أربعة تبويبات: شيت الطالب، الشيت المحلول (إن أصدرته)، الفيديوهات، الملفات.
-- الشيت في منتصف الشاشة وبعرض كبير. فيه فهرس للمحتويات، وشريط تقدّم القراءة، وتكبير وتصغير للخط، والوضع الليلي.
+- **عرض الشيت مثل ملف PDF:** أزرار التكبير والتصغير في أعلى الصفحة تكبّر الشيت كله، النص والمعادلات والرسومات معاً. وفيه زر "ملء العرض" وزر للمحتويات.
 - **رقمه الجامعي مطبوع كعلامة مائية** على الشيت.
-- **زر "تحميل PDF":** ينتج ملف PDF حقيقياً من الشيت (A4، نص قابل للتحديد، نفس التصميم) مختوماً برقم الطالب. هذه ليست صورة شاشة.
+- **زر "تحميل الشيت PDF":**
+  - يظهر في **شيت الطالب فقط**. الشيت المحلول لا يمكن تحميله أبداً.
+  - الملف المحمَّل **بلا حلول**: أماكن الحلول أسطر فارغة للكتابة.
+  - ملف PDF حقيقي يبنيه الموقع من الشيت: A4، نص قابل للتحديد، نفس التصميم، مختوم برقم الطالب. ليس صورة.
+- زر الرجوع في المتصفح يخرج الطالب من المحاضرة إلى صفحة المساق، مهما تنقّل بين التبويبات.
 
 ## 9. أسئلة شائعة
 - **عدّلت شيئاً ولم يظهر؟** حدّث الصفحة. التعديلات تظهر فوراً، وإن تأخرت فالحد الأقصى ساعة.
@@ -146,10 +155,13 @@
 Arabic/English switch at the top, and a **dark mode** (🌙).
 
 ## 2. Signing in
-1. Open **ahmadelajou.com/admin/login** and sign in with your email and password.
-2. The left menu has two groups:
-   - **Teaching:** Courses & students, Sheet guide.
-   - **Website:** Overview, Profile, Publications, Research areas, News, Education, Positions, Awards, Memberships, Committees, Conferences, Supervision.
+1. Open **ahmadelajou.com/login**. Students and you use the same page; the site recognises the admin and opens the admin area.
+2. The top bar looks like the public site:
+   - **Overview:** numbers and waiting student requests.
+   - **Courses & students**
+   - **Website content:** Profile, Publications, Research areas, News, Education, Positions, Awards, Memberships, Committees, Conferences, Supervision.
+   - **Sheet guide:** example sheets.
+   - **View site:** the website as visitors see it.
 
 On a phone, ☰ opens the menu.
 
@@ -172,8 +184,9 @@ In **Courses & students** → **New course** (name EN/AR, code). Inside a course
 ## 5. Students
 - Students register with name, university ID, university email (**only `@std.bau.edu.jo`**) and phone.
 - They press **Request access** on a course. They see nothing until **you approve**.
-- Requests appear in **Courses & students → Requests** and on the Overview: **Approve** or **Reject**.
-- The **Students** tab lists everyone. From there you can suspend or restore an account.
+- **Approval is per course:** approving a student in one course does not open any other course.
+- Requests appear in **Courses & students → Requests**, grouped by course: **Approve**, **Reject**, or later **Revoke**.
+- The **Students** tab shows each student with a status per course (✓ / … / ✕). **Block account** closes all courses for that student.
 
 ## 6. Lectures
 **Lectures → Add lecture**. For each lecture:
@@ -229,9 +242,13 @@ You don't need to learn the format. A Claude project is prepared for you:
 ## 8. What students see
 - Their dashboard: their courses and the status of each request.
 - Each lecture has four tabs: student sheet, solved sheet (once released), videos, files.
-- The sheet is large and centred, with contents, reading progress, text size and dark mode.
+- **The sheet works like a PDF viewer:** the zoom buttons at the top scale the whole sheet (text, maths, figures), with Fit width and Contents.
 - **Their university ID is printed as a watermark** on the sheet.
-- **Download PDF** builds a real A4 PDF from the sheet: selectable text, same design, stamped with their ID. It is not a screenshot.
+- **Download PDF:**
+  - available on the **student sheet only**. The solved sheet can never be downloaded.
+  - the file has **no solutions**: writing lines in their place.
+  - a real A4 PDF built from the sheet: selectable text, same design, stamped with their ID. Not a screenshot.
+- The browser Back button leaves the lecture and returns to the course page, however many tabs they opened.
 
 ## 9. FAQ
 - **A change doesn't show?** Refresh the page. Changes are immediate, and never take more than an hour.

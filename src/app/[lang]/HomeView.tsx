@@ -144,7 +144,7 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
         }
       `}</style>
 
-      <div className="page-wrap" style={{ overflowX: 'hidden' }}>
+      <div className="page-wrap" style={{ overflowX: 'clip' }}>
 
         {/* ═══════════════════════════════════
             DESKTOP HERO
@@ -217,7 +217,7 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
         {/* ═══════════════════════════════════
             MOBILE HERO
         ═══════════════════════════════════ */}
-        <div className="mobile-only" dir={isRTL ? 'rtl' : 'ltr'} style={{ background: '#0A1B31', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
+        <div className="mobile-only" dir={isRTL ? 'rtl' : 'ltr'} style={{ background: '#0A1B31', width: '100%', maxWidth: '100vw', overflowX: 'clip', boxSizing: 'border-box' }}>
 
           {/* 1. PHOTO BANNER */}
           <div style={{ position: 'relative', height: 360, width: '100%', overflow: 'hidden', background: 'linear-gradient(145deg,#0E2846,#0A1A30)' }}>

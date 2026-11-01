@@ -32,7 +32,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 export async function renderSheetPdf(opts: { origin: string; key: string; mode: 'student' | 'doctor'; lang: 'en' | 'ar'; footer: string }) {
   const token = signPrint({ key: opts.key, mode: opts.mode })
-  const url = `${opts.origin}/${opts.lang}/print/sheet?t=${encodeURIComponent(token)}`
+  const url = `${opts.origin}/print/sheet?t=${encodeURIComponent(token)}`
   const browser = await launch()
   try {
     const page = await browser.newPage()

@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import Sheet from '@/components/mn/Sheet'
+import Sheet, { sheetToc } from '@/components/mn/Sheet'
+import SheetTools from '@/components/mn/SheetTools'
 import { parseMN } from '@/lib/mn/parse'
 import { SAMPLES } from '@/lib/mn/samples'
 import { requireAdmin } from '@/lib/auth'
@@ -28,15 +29,24 @@ export default async function MnGuide({ searchParams }: { searchParams: Promise<
     <div className="min-h-screen p-3 sm:p-5 lg:p-7">
       <header className="admin-hero mb-5 overflow-hidden rounded-2xl px-5 py-6 text-white sm:px-7">
         <p className="text-[12px] font-semibold uppercase tracking-[.14em] text-[#E3C566]">MN sheets · دليل الشيتات</p>
-        <h1 className="mt-1 font-display text-[clamp(22px,2.6vw,30px)] font-semibold">{draft ? 'Draft preview' : 'Sample sheets — every element, both versions'}</h1>
-        <p className="mt-1 text-[13.5px] text-[#AEBBCC]">Each tab is a real .mn file from docs/mn. Switch between the doctor and the student version.</p>
+        <h1 className="mt-1 font-display text-[clamp(22px,2.6vw,30px)] font-semibold">{draft ? 'Draft preview · معاينة قبل النشر' : 'Example sheets · أمثلة جاهزة'}</h1>
+        <p className="mt-1 max-w-3xl text-[13.5px] leading-relaxed text-[#AEBBCC]">
+          {draft
+            ? 'This is how the sheet will look. Nothing is published until you press Save.'
+            : 'These are examples only — they are not part of any course. They show what a sheet can contain, in both versions (doctor / student). Claude uses the same files as a model.'}
+          <span className="mt-0.5 block font-arabic">{draft ? 'هكذا سيظهر الشيت. لا يُنشر شيء حتى تضغط Save.' : 'هذه أمثلة فقط وليست جزءاً من أي مساق: تُظهر ما يمكن أن يحتويه الشيت بنسختيه.'}</span>
+        </p>
       </header>
       <div className="mx-auto mb-3 flex max-w-[980px] flex-wrap items-center gap-2">
         {draft ? <span className="text-[13px] font-semibold text-gold-ink">Draft preview</span> : Object.entries(SAMPLES).map(([k, v]) => chip(`/admin/mn-guide?s=${k}&mode=${mode}`, k === sample, v.label))}
       </div>
-      <div className="mx-auto mb-5 flex max-w-[980px] flex-wrap gap-2">
-        {chip(`${base}&mode=doctor`, mode === 'doctor', 'Doctor version')}
-        {chip(`${base}&mode=student`, mode === 'student', 'Student version (watermark demo)')}
+      {!draft && <p className="mx-auto mb-3 max-w-[980px] text-[13px] leading-relaxed text-ink-2">{SAMPLES[sample].desc}</p>}
+      <div className="sticky top-16 z-30 -mx-3 mb-5 border-b border-line bg-bg/90 px-3 py-2 backdrop-blur-md sm:-mx-5 sm:px-5 lg:-mx-7 lg:px-7">
+        <div className="mx-auto flex max-w-[980px] flex-wrap items-center gap-2">
+          {chip(`${base}&mode=doctor`, mode === 'doctor', 'Doctor version · المحلولة')}
+          {chip(`${base}&mode=student`, mode === 'student', 'Student version · الطالب')}
+          <div className="ms-auto flex items-center gap-2"><SheetTools toc={sheetToc(doc)} /></div>
+        </div>
       </div>
       {doc.errors.length > 0 && (
         <div className="mx-auto mb-4 max-w-[980px] rounded-xl border border-bad/30 bg-bad-soft p-4 text-[13px] text-bad">

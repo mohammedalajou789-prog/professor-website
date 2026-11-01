@@ -17,16 +17,17 @@ export type Lecture = {
 export type CourseFile = { id: string; course_id: string; lecture_id: string | null; title_en: string; title_ar: string | null; kind: 'file' | 'link'; r2_key: string | null; url: string | null; mime: string | null; size_bytes: number | null; created_at: string }
 export type Video = { id: string; lecture_id: string; youtube_id: string; title_en: string | null; title_ar: string | null; sort_order: number }
 
-/** Course + the viewer's access level. RLS does the real enforcement. */
+/** Course + the viewer's access level (course and enrolment fetched in parallel). RLS does the real enforcement. */
 export async function getCourseForViewer(slug: string) {
   const v = await getViewer()
-  const { data: course } = await v.supabase.from('courses').select('*').eq('slug', slug).maybeSingle()
+  const [{ data: course }, enr] = await Promise.all([
+    v.supabase.from('courses').select('*').eq('slug', slug).maybeSingle(),
+    v.student
+      ? v.supabase.from('enrollments').select('status, courses!inner(slug)').eq('student_id', v.user!.id).eq('courses.slug', slug).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
   if (!course) return { ...v, course: null as Course | null, status: null as string | null, access: false }
-  let status: string | null = null
-  if (v.student) {
-    const { data: e } = await v.supabase.from('enrollments').select('status').eq('student_id', v.user!.id).eq('course_id', course.id).maybeSingle()
-    status = e?.status || null
-  }
+  const status: string | null = (enr as any)?.data?.status || null
   const access = v.isAdmin || (status === 'approved' && v.student?.status === 'active')
   return { ...v, course: course as Course, status, access }
 }

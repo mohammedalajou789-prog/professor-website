@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Upload, Pencil, Eye, Save, Trash2, Copy, CheckCircle2, AlertTriangle, X, FileCode2 } from 'lucide-react'
 import { parseMN } from '@/lib/mn/parse'
 import { prepareFigures } from '@/lib/py/prepare'
@@ -34,6 +34,10 @@ export default function SheetEditor({ lectureId, which, sheetKey, onSaved, onRem
   const [progress, setProgress] = useState('')
   const [errBox, setErrBox] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  // Python figures: start loading Python in the background as soon as the editor opens
+  useEffect(() => {
+    if (open && /```\s*(pyplot|python|py|matplotlib)\b/.test(text)) import('@/lib/py/client').then((m) => m.warmUpPy())
+  }, [open, text])
   const check = useMemo(() => {
     if (!text) return null
     try {

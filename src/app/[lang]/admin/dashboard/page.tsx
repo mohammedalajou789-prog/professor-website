@@ -30,7 +30,7 @@ export default function DashboardPage() {
       try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user && process.env.NEXT_PUBLIC_ADMIN_PREVIEW !== '1') { router.push('/admin/login'); return }
+      if (!user && process.env.NEXT_PUBLIC_ADMIN_PREVIEW !== '1') { router.push('/login'); return }
       setUser(user)
       const head = { count: 'exact', head: true }
       const [pub, news, interests, courses, students, pending] = await Promise.all([
@@ -59,7 +59,7 @@ export default function DashboardPage() {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/admin/login')
+    router.push('/login')
   }
 
   const menuItems = [

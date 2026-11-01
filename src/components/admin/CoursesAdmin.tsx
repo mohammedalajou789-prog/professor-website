@@ -112,11 +112,11 @@ export default function CoursesAdmin({ courses, rows, students, r2 }: { courses:
 
         {tab === 'students' && (
           <Card
-            title="All students"
+            title={<span>All students <span className="ms-1 text-[12.5px] font-normal text-muted">course access is decided per course (Requests tab) · الموافقة لكل مساق على حدة</span></span>}
             actions={
               <span className="relative">
                 <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-56 rounded-lg border border-line ps-8 text-[13px] outline-none focus:border-[#C9A227]" />
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-56 rounded-lg border border-line bg-surface ps-8 text-[13px] text-ink outline-none focus:border-[#C9A227]" />
               </span>
             }
           >
@@ -131,17 +131,26 @@ export default function CoursesAdmin({ courses, rows, students, r2 }: { courses:
                   {students
                     .filter((s) => !q || [s.full_name, s.university_id, s.email, s.phone].some((x: string) => x?.toLowerCase().includes(q.toLowerCase())))
                     .map((s) => (
-                      <tr key={s.id} className="border-b border-[#F3F6FA]">
+                      <tr key={s.id} className="border-b border-line">
                         <td className="py-2.5 font-medium text-ink">{s.full_name} {s.status === 'blocked' && <span className="ms-1 rounded bg-bad-soft px-1.5 text-[11px] text-bad">blocked</span>}</td>
                         <td className="font-mono text-[12.5px]">{s.university_id}</td>
                         <td><a className="hover:underline" href={`mailto:${s.email}`}>{s.email}</a></td>
                         <td><a className="hover:underline" href={`tel:${s.phone}`}>{s.phone}</a></td>
-                        <td className="text-[12.5px] text-muted">{rows.filter((r) => r.student_id === s.id && r.status === 'approved').length}</td>
+                        <td className="py-2">
+                          <span className="flex flex-wrap gap-1">
+                            {rows.filter((r) => r.student_id === s.id).map((r) => (
+                              <span key={r.course_id} title={r.status} className={`rounded-full px-2 py-0.5 text-[11.5px] font-medium ${r.status === 'approved' ? 'bg-ok-soft text-ok' : r.status === 'pending' ? 'bg-gold-soft text-gold-ink' : 'bg-bad-soft text-bad'}`}>
+                                {r.courses?.code || r.courses?.name_en} · {r.status === 'approved' ? '✓' : r.status === 'pending' ? '…' : '✕'}
+                              </span>
+                            ))}
+                            {!rows.some((r) => r.student_id === s.id) && <span className="text-[12px] text-muted">—</span>}
+                          </span>
+                        </td>
                         <td className="text-end">
                           {s.status === 'blocked' ? (
                             <Btn small kind="ghost" onClick={() => setStudent(s.id, 'active')}><RotateCcw size={12} /> Unblock</Btn>
                           ) : (
-                            <Btn small kind="danger" onClick={() => confirm(`Block ${s.full_name}? They lose access to all courses.`) && setStudent(s.id, 'blocked')}><Ban size={12} /> Block</Btn>
+                            <Btn small kind="danger" onClick={() => confirm(`Block ${s.full_name}? They lose access to all courses.`) && setStudent(s.id, 'blocked')}><Ban size={12} /> Block account</Btn>
                           )}
                         </td>
                       </tr>
@@ -151,7 +160,7 @@ export default function CoursesAdmin({ courses, rows, students, r2 }: { courses:
             </div>
           </Card>
         )}
-        <p className="pt-2 text-center text-[12px] text-[#A9B6C9]">
+        <p className="pt-2 text-center text-[12px] text-muted">
           <button onClick={() => { revalidateSite(); alert('Public pages refreshed.') }} className="inline-flex items-center gap-1 hover:text-ink"><ExternalLink size={12} /> Refresh public pages now</button>
         </p>
       </main>

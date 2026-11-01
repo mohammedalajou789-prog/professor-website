@@ -319,6 +319,11 @@ function watermarkUrl(text: string) {
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`
 }
 
+/** table of contents (## headings) — used by the toolbar in the page header */
+export function sheetToc(doc: Doc) {
+  return doc.nodes.filter((n): n is Extract<Node, { t: 'h2' }> => n.t === 'h2').map((n) => ({ id: n.id, html: inline(n.text, doc.labels) }))
+}
+
 export default function Sheet({
   doc,
   mode,
@@ -327,13 +332,10 @@ export default function Sheet({
   footer,
   pyLive = false,
   bare = false,
-  pdfHref,
 }: {
   doc: Doc
   /** print/PDF page: no reading chrome around the sheet */
   bare?: boolean
-  /** link that downloads this sheet as a PDF */
-  pdfHref?: string
   mode: SheetMode
   /** admin: run missing Python figures in the browser ('upload' also stores them) */
   pyLive?: PyLiveMode
@@ -385,7 +387,7 @@ export default function Sheet({
   )
   if (bare) return article
   return (
-    <SheetChrome toc={toc} mode={mode} pdfHref={pdfHref} ar={ar}>
+    <SheetChrome toc={toc} mode={mode} ar={ar}>
       {article}
     </SheetChrome>
   )

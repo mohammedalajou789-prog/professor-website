@@ -2,6 +2,7 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { getText, r2Configured } from '@/lib/r2'
 import { collectPy, type Doc } from './parse'
+import { SAMPLE_FIGS } from './sample-figs'
 
 export const pyKey = (hash: string) => `courses/figs/${hash}.svg`
 export const PY_HASH_RE = /^[0-9a-z]{16,30}$/
@@ -23,7 +24,8 @@ export async function attachPy(doc: Doc) {
   if (!figs.length) return doc
   const ok = r2Configured()
   await Promise.all(figs.map(async (f) => {
-    f.svg = ok && PY_HASH_RE.test(f.hash) ? await readFig(f.hash).catch(() => null) : null
+    // example sheets ship with pre-rendered figures; everything else comes from R2
+    f.svg = SAMPLE_FIGS[f.hash] ?? (ok && PY_HASH_RE.test(f.hash) ? await readFig(f.hash).catch(() => null) : null)
   }))
   return doc
 }

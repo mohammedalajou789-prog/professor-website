@@ -34,6 +34,7 @@ onmessage = async (e) => {
   try {
     booting = booting || boot(bases, prelude);
     await booting;
+    if (!code) { postMessage({ id, svg: '' }); return; }
     postMessage({ progress: 'Running Python…' });
     await py.loadPackagesFromImports(code);
     py.globals.set('__mn_code', code);
@@ -117,4 +118,12 @@ export function scopeSvg(svg: string, hash: string) {
     .replace(/\bid="([^"]+)"/g, `id="${P}$1"`)
     .replace(/((?:xlink:)?href)="#([^"]+)"/g, `$1="#${P}$2"`)
     .replace(/url\(#([^)]+)\)/g, `url(#${P}$1)`)
+}
+
+/** Start downloading Python in the background (e.g. when the sheet editor opens). */
+export function warmUpPy() {
+  if (worker) return
+  const id = ++seq
+  pending.set(id, { resolve: () => {}, reject: () => {}, timer: null })
+  getWorker().postMessage({ id, code: '', bases: BASES, prelude: PY_PRELUDE })
 }

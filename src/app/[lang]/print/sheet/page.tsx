@@ -25,7 +25,7 @@ export default async function PrintSheet({ searchParams }: { searchParams: Promi
   const v = verifyPrint(t)
   if (!v) notFound()
   let src: string | null = null
-  if (v.key.startsWith('sample:')) src = process.env.MN_DEMO_PUBLIC === '1' ? SAMPLES[v.key.slice(7)]?.src ?? null : null
+  if (v.key.startsWith('sample:')) src = SAMPLES[v.key.slice(7)]?.src ?? null
   else src = await readSheet(v.key).catch(() => null)
   if (!src) notFound()
   const doc = await attachPy(parseMN(src))

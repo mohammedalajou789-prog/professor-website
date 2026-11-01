@@ -21,8 +21,11 @@
   margin: 0 auto;
   background: #fff;
   color: #111;
-  font-family: var(--font-sheet), 'STIX Two Text', 'Times New Roman', Times, serif;
-  font-size: calc(17.5px * var(--mn-scale, 1));
+  /* text in the same typeface as the mathematics (Computer Modern — the LaTeX look of the doctor's PDFs) */
+  font-family: 'KaTeX_Main', var(--font-sheet), 'STIX Two Text', 'Times New Roman', Times, serif;
+  font-size: calc(18.5px * var(--mn-scale, 1));
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
   line-height: 1.55;
   padding: 30px clamp(28px, 5vw, 64px) 44px;
   border-radius: 8px;
@@ -31,7 +34,7 @@
   text-align: justify;
   hyphens: auto;
 }
-.mn-sheet .katex { font-size: 1.07em; }
+.mn-sheet .katex { font-size: 1.02em; }
 .mn-sheet a { color: var(--mn-blue); }
 
 /* Arabic sheets: Arabic text font, mathematics stays left-to-right */
@@ -260,7 +263,7 @@ button.mn-opt:hover { background: #fff; border-color: #EFC3A3; }
 /* ─────────────── phones ─────────────── */
 @media (max-width: 720px) {
   .mn-box, .mn-sheet .mn-p { text-align: start; hyphens: manual; }
-  .mn-sheet { font-size: calc(16.5px * var(--mn-scale, 1)); padding: 14px 14px 26px; border-radius: 0; box-shadow: none; text-align: start; }
+  .mn-sheet { font-size: calc(17.5px * var(--mn-scale, 1)); padding: 14px 14px 26px; border-radius: 0; box-shadow: none; text-align: start; }
   .mn-running { font-size: 11.5px; margin-bottom: 16px; }
   .mn-banner { padding: 16px 18px; border-radius: 10px; }
   .mn-banner-top { font-size: 11px; }
@@ -367,4 +370,23 @@ button.mn-opt:hover { background: #fff; border-color: #EFC3A3; }
   .mn-style-tab .mn-box-body { padding-top: 8px; }
   .mn-tab { position: relative; top: 0; display: inline-block; margin-inline-start: 18px; border-radius: 0 0 6px 6px; }
   .mn-opts { grid-template-columns: 1fr 1fr; }
+}
+
+/* ───────── PDF-like zoom (SheetTools sets --mn-zoom on <html>) ─────────
+   The sheet has a fixed page width; zoom scales everything (text, maths, figures).
+   Wider than the screen → it pans sideways inside .mn-zoom-scroll, like a PDF. */
+.mn-zoom-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
+.mn-zoom-wrap { zoom: var(--mn-zoom, 1); width: max-content; margin-inline: auto; }
+.mn-zoom-wrap > .mn-sheet { width: 980px; max-width: none; }
+@media (max-width: 720px) {
+  /* phones: 100% = the frame width (measured: --mn-cw) */
+  .mn-zoom-wrap > .mn-sheet { width: var(--mn-cw, 100vw); }
+}
+@media print {
+  .mn-zoom-scroll { overflow: visible; }
+  .mn-zoom-wrap { zoom: 1 !important; width: auto; }
+  .mn-zoom-wrap > .mn-sheet { width: auto; }
+}
+@media print {
+  .mn-h2, .mn-h3 { break-after: avoid; }
 }

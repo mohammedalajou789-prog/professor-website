@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { FileText, FileCheck2, PlayCircle, Paperclip, ChevronLeft, ChevronRight, Lock } from 'lucide-react'
-import Sheet from '@/components/mn/Sheet'
+import Sheet, { sheetToc } from '@/components/mn/Sheet'
+import SheetTools from '@/components/mn/SheetTools'
 import FileRow from '@/components/student/FileRow'
 import { parseMN } from '@/lib/mn/parse'
 import { attachPy } from '@/lib/mn/pyfigs'
+import { getViewer } from '@/lib/auth'
 import { getCourseForViewer, readSheet, type CourseFile, type Lecture, type Video } from '@/lib/courses'
 import { isLang } from '@/lib/i18n'
 
@@ -17,22 +19,29 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   const [{ lang: l, slug, lecture: num }, sp] = await Promise.all([params, searchParams])
   const lang = isLang(l) ? l : 'en'
   const ar = lang === 'ar'
-  const { course, access, isAdmin, student, supabase } = await getCourseForViewer(slug)
+  // round-trip 1: viewer · round-trip 2: course + enrolment + lectures (parallel)
+  const viewer = await getViewer()
+  const [{ course, access, isAdmin, student, supabase }, { data: all }] = await Promise.all([
+    getCourseForViewer(slug),
+    viewer.supabase.from('lectures').select('*, courses!inner(slug)').eq('courses.slug', slug).order('number'),
+  ])
   if (!course) notFound()
   if (!access) redirect(`/courses/${slug}`)
 
-  let lq = supabase.from('lectures').select('*').eq('course_id', course.id).order('number')
-  if (!isAdmin) lq = lq.eq('is_published', true)
-  const { data: all } = await lq
-  const lectures = (all || []) as Lecture[]
+  const lectures = ((all || []) as Lecture[]).filter((x) => isAdmin || x.is_published)
   const idx = lectures.findIndex((x) => String(x.number) === num)
   if (idx < 0) notFound()
   const lec = lectures[idx]
   const prev = lectures[idx - 1], next = lectures[idx + 1]
 
-  const [{ data: videos }, { data: files }] = await Promise.all([
+  // round-trip 3: videos + files + the sheet source (parallel)
+  const requested0 = sp.v
+  const wantDoctor = requested0 === 'doctor'
+  const sheetKey = wantDoctor ? lec.doctor_sheet_key || lec.student_sheet_key : lec.student_sheet_key || lec.doctor_sheet_key
+  const [{ data: videos }, { data: files }, src0] = await Promise.all([
     supabase.from('lecture_videos').select('*').eq('lecture_id', lec.id).order('sort_order'),
     supabase.from('course_files').select('*').eq('lecture_id', lec.id).order('sort_order'),
+    sheetKey && (!requested0 || requested0 === 'student' || requested0 === 'doctor') ? readSheet(sheetKey).catch(() => null) : Promise.resolve(null),
   ])
 
   const canStudent = !!lec.student_sheet_key && (isAdmin || lec.show_student_sheet)
@@ -47,11 +56,13 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   const active: Tab = requested && tabs.find((t) => t.id === requested && t.on) ? requested : tabs.find((t) => t.on)?.id || 'student'
 
   let sheet: React.ReactNode = null
+  let toc: { id: string; html: string }[] = []
   if (active === 'student' || active === 'doctor') {
     const key = active === 'doctor' ? lec.doctor_sheet_key || lec.student_sheet_key : lec.student_sheet_key || lec.doctor_sheet_key
-    const src = key ? await readSheet(key).catch(() => null) : null
+    const src = key === sheetKey ? src0 : key ? await readSheet(key).catch(() => null) : null
     if (src) {
       const doc = await attachPy(parseMN(src))
+      toc = sheetToc(doc)
       sheet = (
         <Sheet
           doc={doc}
@@ -59,11 +70,12 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
           courseName={course.name_en}
           watermark={student && !isAdmin ? student.university_id : null}
           pyLive={isAdmin ? 'upload' : false}
-          pdfHref={`/api/sheet-pdf/${lec.id}?v=${active}&lang=${lang}`}
         />
       )
     }
   }
+  // only the blank (student) sheet can be downloaded — never the solved one
+  const pdfHref = sheet && active === 'student' ? `/api/sheet-pdf/${lec.id}?lang=${lang}` : undefined
 
   const title = ar ? lec.title_ar || lec.title_en : lec.title_en
 
@@ -72,18 +84,21 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
       {/* lecture header + tabs */}
       <div className="sticky top-16 z-30 border-b border-line bg-surface/92 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1680px] items-center gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px] pt-2.5">
-          <Link href={`/courses/${course.slug}`} className="shrink-0 rounded-md px-2 py-1 text-[12.5px] text-ink-2 hover:bg-surface-2">
+          <Link href={`/courses/${course.slug}`} className="hidden shrink-0 rounded-md px-2 py-1 text-[12.5px] text-ink-2 hover:bg-surface-2 sm:inline-block">
             {ar ? course.name_ar || course.name_en : course.name_en}
           </Link>
-          <span className="text-line-2">/</span>
+          <span className="hidden text-line-2 sm:inline">/</span>
           <p className="min-w-0 truncate text-[13.5px] font-semibold text-ink">
             <span className="text-link">{ar ? 'محاضرة' : 'Lecture'} {lec.number}</span> · {title}
           </p>
-          {isAdmin && (
-            <Link href={`/admin/courses/${course.id}?lecture=${lec.id}`} className="ms-auto shrink-0 rounded-md bg-navy px-2.5 py-1 text-[12px] text-white">
-              Edit
-            </Link>
-          )}
+          <div className="ms-auto flex shrink-0 items-center gap-2">
+            {sheet && <SheetTools toc={toc} pdfHref={pdfHref} ar={ar} />}
+            {isAdmin && (
+              <Link href={`/admin/courses/${course.id}?lecture=${lec.id}`} className="hidden shrink-0 rounded-md bg-navy px-2.5 py-1.5 text-[12px] text-white sm:inline-block">
+                Edit
+              </Link>
+            )}
+          </div>
         </div>
         <nav className="no-scrollbar mx-auto flex max-w-[1680px] gap-1 overflow-x-auto px-4 sm:px-7 lg:px-12 2xl:px-[72px]" aria-label="Lecture sections">
           {tabs.map((t) => {
@@ -93,6 +108,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
               <Link
                 key={t.id}
                 href={`?v=${t.id}`}
+                replace
                 scroll={false}
                 prefetch
                 className={`relative flex shrink-0 items-center gap-1.5 px-3.5 py-3 text-[13.5px] font-medium transition ${is ? 'text-link' : 'text-ink-2 hover:text-ink'}`}
@@ -147,7 +163,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
         {/* prev / next */}
         <div className="mx-auto mt-8 flex max-w-[860px] items-stretch justify-between gap-3 px-4 sm:px-0">
           {prev ? (
-            <Link href={`/courses/${course.slug}/${prev.number}`} className="group flex max-w-[48%] items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-start transition hover:border-[#0B6FA4]/40">
+            <Link replace href={`/courses/${course.slug}/${prev.number}`} className="group flex max-w-[48%] items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-start transition hover:border-[#0B6FA4]/40">
               <ChevronLeft size={18} className="shrink-0 text-link transition group-hover:-translate-x-0.5 rtl:rotate-180" />
               <span className="min-w-0">
                 <span className="block text-[11.5px] text-muted">{ar ? 'السابقة' : 'Previous'} · {prev.number}</span>
@@ -156,7 +172,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
             </Link>
           ) : <span />}
           {next ? (
-            <Link href={`/courses/${course.slug}/${next.number}`} className="group flex max-w-[48%] items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-end transition hover:border-[#0B6FA4]/40">
+            <Link replace href={`/courses/${course.slug}/${next.number}`} className="group flex max-w-[48%] items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-end transition hover:border-[#0B6FA4]/40">
               <span className="min-w-0">
                 <span className="block text-[11.5px] text-muted">{ar ? 'التالية' : 'Next'} · {next.number}</span>
                 <span className="block truncate text-[13.5px] font-medium text-ink">{ar ? next.title_ar || next.title_en : next.title_en}</span>

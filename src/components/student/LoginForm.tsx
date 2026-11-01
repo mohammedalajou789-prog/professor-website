@@ -9,8 +9,8 @@ import { useLang } from '@/context/LangContext'
 import { inputCls } from './AuthShell'
 
 const T = {
-  en: { email: 'University email', pass: 'Password', go: 'Sign in', no: 'No account yet?', reg: 'Create one', bad: 'Wrong email or password.', unconf: 'Please confirm your email first (check your inbox).' },
-  ar: { email: 'البريد الجامعي', pass: 'كلمة المرور', go: 'تسجيل الدخول', no: 'ليس لديك حساب؟', reg: 'أنشئ حساباً', bad: 'البريد أو كلمة المرور غير صحيحة.', unconf: 'يرجى تأكيد بريدك الإلكتروني أولاً.' },
+  en: { email: 'Email', pass: 'Password', go: 'Sign in', no: 'No account yet?', reg: 'Create one', bad: 'Wrong email or password.', unconf: 'Please confirm your email first (check your inbox).' },
+  ar: { email: 'البريد الإلكتروني', pass: 'كلمة المرور', go: 'تسجيل الدخول', no: 'ليس لديك حساب؟', reg: 'أنشئ حساباً', bad: 'البريد أو كلمة المرور غير صحيحة.', unconf: 'يرجى تأكيد بريدك الإلكتروني أولاً.' },
 }
 
 export default function LoginForm({ admin = false }: { admin?: boolean }) {
