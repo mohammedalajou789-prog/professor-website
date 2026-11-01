@@ -40,9 +40,16 @@ export async function renderSheetPdf(opts: { origin: string; key: string; mode: 
     if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) headers['x-vercel-protection-bypass'] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
     if (Object.keys(headers).length) await page.setExtraHTTPHeaders(headers)
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }])
-    const res = await page.goto(url, { waitUntil: 'networkidle0', timeout: 40_000 })
-    if (!res || !res.ok()) throw new Error(`print page ${res?.status()}`)
-    await page.waitForFunction('window.__mnPrintReady === true', { timeout: 25_000 })
+    const logs: string[] = []
+    page.on('pageerror', (e) => logs.push(String((e as Error)?.message || e)))
+    // 'load' (not network-idle): in development the hot-reload connection never goes idle
+    const res = await page.goto(url, { waitUntil: 'load', timeout: process.env.VERCEL ? 40_000 : 120_000 })
+    if (!res || !res.ok()) throw new Error(`print page answered ${res?.status()} (${url.split('?')[0]})`)
+    try {
+      await page.waitForFunction('window.__mnPrintReady === true', { timeout: 30_000 })
+    } catch {
+      throw new Error(`print page did not finish loading${logs.length ? ': ' + logs.slice(0, 3).join(' | ') : ''}`)
+    }
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
