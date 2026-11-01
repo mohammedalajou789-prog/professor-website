@@ -86,8 +86,9 @@
 
 **لا تحتاج أن تتعلم الصيغة.** جُهّز لك مشروع على Claude يكتبها عنك:
 1. افتح مشروع **"شيتات المحاضرات"** على Claude.
-2. أرسل له مادة المحاضرة: ملف PDF أو Word أو شرائح، أو صوراً من دفترك، أو نصاً، أو حتى عنواناً فقط. مثلاً: *"حوّل هذه المحاضرة إلى شيت، المحاضرة 5، مساق التفاضل الكسري"*. ويمكنك أن تطلب تعديلاً: *"أضف رسمة"*، *"اجعله بالعربي"*، *"أضف 3 أمثلة"*.
-3. يعطيك Claude ملف `.mn` كاملاً. احفظه على جهازك.
+2. أرسل له مادة المحاضرة: ملف PDF أو Word أو شرائح، أو صوراً من دفترك، أو نصاً، أو حتى عنواناً فقط. **يمكنك إرسال عدة محاضرات معاً** وتكتب فقط: *"صيغهم"*. ويمكنك أن تطلب تعديلاً: *"أضف رسمة"*، *"أضف 3 أمثلة"*.
+3. يعطيك Claude ملفاً لكل محاضرة (`lecture-05.mn`…)، **بالعربية والإنجليزية دائماً** دون أن تطلب: الطالب يرى الشيت بلغة الموقع التي اختارها. احفظ الملفات على جهازك.
+   - بعد كل تسليم يقترح عليك Claude أفكاراً لتحسين المحاضرة وقد يسألك سؤالاً أو اثنين؛ أجب بكلمة («نفّذ»، «الأولى فقط») أو تجاهلها.
 4. في لوحة التحكم → المحاضرة → **Student sheet** → **Upload .mn**.
 5. للمعاينة قبل النشر: **Edit** ثم **Preview**.
 
@@ -114,7 +115,7 @@
 - **رسومات متحركة:** مستوى طور تتحرك فيه المسارات، ومنزلق تفاعلي.
 - **أخرى:** جداول، أعمدة، صور (برابط)، فيديو يوتيوب، Desmos.
 - **شيتات بالعربية:** ضع `lang: ar` في رأس الملف، فتظهر العناوين بالعربية والرياضيات من اليسار لليمين.
-- **شيت بلغتين (عربي + إنجليزي) في ملف واحد:** اطلب من Claude: «اكتب الشيت بالعربية والإنجليزية». يكتب `lang: both`، والطالب يرى الشيت بلغة الموقع؛ إذا بدّل لغة الموقع (أو ضغط زر **ع / EN** فوق الشيت) تتبدّل لغة الشيت، وملف PDF ينزل بلغته. الرياضيات والرسومات مكتوبة مرة واحدة. في المعاينة (Preview) زر **EN / ع** لرؤية النسختين.
+- **كل شيت بلغتين (عربي + إنجليزي) في ملف واحد:** يكتبه Claude هكذا تلقائياً، والطالب يرى الشيت بلغة الموقع؛ إذا بدّل لغة الموقع (أو ضغط زر **ع / EN** فوق الشيت) تتبدّل لغة الشيت، وملف PDF ينزل بلغته. الرياضيات والرسومات مكتوبة مرة واحدة. في المعاينة (Preview) زر **EN / ع** لرؤية النسختين.
 
 **رسومات بايثون:**
 - تُرسم مرة واحدة على جهازك عند الضغط على **Save** أو **Preview**.
@@ -217,8 +218,8 @@ The separate solved file under **Advanced** is only for the rare case where the 
 ## 7. Writing sheets (MN) with Claude
 You don't need to learn the format. A Claude project is prepared for you:
 1. Open the **"Lecture sheets"** project on Claude.
-2. Send the lecture material: a PDF, Word file or slides, photos of your notes, text, or just a topic. For example: *"Turn this into the sheet for Lecture 5, Fractional Calculus"*. You can also ask for changes: *"add a figure"*, *"make it Arabic"*, *"add 3 examples"*.
-3. Claude returns a complete `.mn` file. Save it.
+2. Send the lecture material: a PDF, Word file or slides, photos of your notes, text, or just a topic. **You can send several lectures at once** and simply write *"format them"*. You can also ask for changes: *"add a figure"*, *"add 3 examples"*.
+3. Claude returns one complete file per lecture (`lecture-05.mn`…), **always in Arabic and English** without you asking — each student sees the sheet in the site language. Save the files. After each delivery Claude suggests improvements and may ask a question or two; answer in a word ("do it", "only the first") or ignore them.
 4. Admin → lecture → **Student sheet** → **Upload .mn**. Use **Edit → Preview** to check before students see it.
 5. If a red error box appears, copy the message back to Claude in the same chat and it fixes the file.
 
@@ -243,7 +244,7 @@ You don't need to learn the format. A Claude project is prepared for you:
 - **Animated figures:** phase portraits with moving trajectories, interactive sliders.
 - **Other:** tables, columns, images (link), YouTube, Desmos.
 - **Arabic sheets:** put `lang: ar` in the file header. Headings appear in Arabic and the mathematics stays left-to-right.
-- **Bilingual sheet (Arabic + English) in one file:** ask Claude: "write the sheet in Arabic and English". It writes `lang: both`; each student sees the sheet in the site's language, switching the site language (or the **ع / EN** button above the sheet) switches the sheet, and the PDF downloads in that language. Mathematics and figures are written once. In Preview, the **EN / ع** switch shows both versions.
+- **Every sheet is bilingual (Arabic + English) in one file:** Claude writes it that way automatically; each student sees the sheet in the site's language, switching the site language (or the **ع / EN** button above the sheet) switches the sheet, and the PDF downloads in that language. Mathematics and figures are written once. In Preview, the **EN / ع** switch shows both versions.
 
 **Python figures:**
 - They are drawn once, on your computer, when you press **Save** or **Preview**.
