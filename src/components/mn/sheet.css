@@ -392,6 +392,7 @@ button.mn-opt:hover { background: #fff; border-color: #EFC3A3; }
 
 /* ───────── speed: long sheets only lay out / paint what is on screen ───────── */
 @media screen {
-  .mn-sheet > :not(.mn-watermark):not(.mn-running):not(.mn-banner) { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+  /* boxes with a tab (Solution / Proof) are skipped: content-visibility clips anything drawn outside the box */
+  .mn-sheet > :not(.mn-watermark):not(.mn-running):not(.mn-banner):not(.mn-style-tab) { content-visibility: auto; contain-intrinsic-size: auto 260px; }
   .mn-watermark { contain: strict; will-change: transform; }
 }

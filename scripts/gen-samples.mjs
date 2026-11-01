@@ -1,6 +1,7 @@
 // Regenerates src/lib/mn/samples.ts from docs/mn/*.mn  →  node scripts/gen-samples.mjs
 import { readFileSync, writeFileSync } from 'node:fs'
 const list = [
+  ['complete', 'Complete sheet (every element)', 'complete-sheet.mn', 'One full lecture that uses every MN element: all box types, step-by-step solutions, row operations, MCQs, a table, a video and many figures (Python, animated phase portraits, 3D, slider, statistics, diagrams). · شيت كامل يستخدم كل عناصر اللغة وعدة رسومات.'],
   ['lecture1', 'Full lecture example', 'lecture-01.mn', 'A complete lecture rebuilt from the doctor’s PDF (linear systems): every box type, numbered equations, solutions, MCQs. · محاضرة كاملة من شيت الدكتور الأصلي: كل أنواع الصناديق والحلول والأسئلة.'],
   ['lecture4', 'Second example (phase portraits)', 'lecture-04.mn', 'Eigenvalues and phase portraits, with an animated phase plane. · مثال ثانٍ: القيم الذاتية ومستوى الطور المتحرك.'],
   ['python', 'Python figures', 'python-figures.mn', 'Figures written in Python: Mittag-Leffler, fractional ODE solver, surfaces, phase planes, statistics. · رسومات مكتوبة ببايثون.'],

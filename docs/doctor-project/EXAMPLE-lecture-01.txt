@@ -1,0 +1,219 @@
+---
+course: Methods of Applied Mathematics
+chapter: 1
+chapter_title: Matrix Methods for Linear Systems
+lecture: 1
+title: Linear Systems in Normal Form & Matrix Review I
+duration: 75
+lang: en
+author: Prof. Ahmad El-Ajou
+---
+
+::: outcomes
+- Recognise a first-order linear system and classify it (homogeneous / nonhomogeneous, constant / variable coefficients).
+- Write a linear system, or a higher-order linear system, in matrix form.
+- State the existence–uniqueness theorem and find the largest interval of existence.
+- Compute $2\times 2$ and $3\times 3$ determinants.
+- Find an inverse matrix by elementary row operations.
+:::
+
+::: timeplan
+0-10  | Linear systems; terminology
+10-25 | Matrix form; @ex:matrix-form
+25-40 | IVPs; @thm:exist; @ex:interval
+40-55 | Determinants; Examples 1.3–1.4
+55-70 | Identity and inverse; @ex:inverse
+70-75 | Summary and MCQs
+:::
+
+## Linear Systems in Normal Form
+
+::: definition "First-order linear system" {#def:linsys}
+The system of differential equations
+$$
+\begin{aligned}
+\frac{dx_1}{dt} &= a_{11}(t)x_1 + a_{12}(t)x_2 + \cdots + a_{1n}(t)x_n + f_1(t),\\
+\frac{dx_2}{dt} &= a_{21}(t)x_1 + a_{22}(t)x_2 + \cdots + a_{2n}(t)x_n + f_2(t),\\
+&\;\;\vdots\\
+\frac{dx_n}{dt} &= a_{n1}(t)x_1 + a_{n2}(t)x_2 + \cdots + a_{nn}(t)x_n + f_n(t)
+\end{aligned}
+$$ {#eq:system}
+is called a [[first-order system of $n$ linear differential equations]] in the $n$ unknown functions $x_i(t)$, $i=1,2,\dots,n$. The coefficients $a_{ij}(t)$, $i,j=1,\dots,n$, and the functions $f_i(t)$, $i=1,\dots,n$, are known functions of the independent variable $t$.
+:::
+
+::: remarks
+(1) If $f_i(t)=0$ for all $i=1,\dots,n$, system (@eq:system) is [[homogeneous]]; otherwise it is [[nonhomogeneous]].
+(2) If all $a_{ij}$ are constants, system (@eq:system) has [[constant coefficients]]; otherwise it has [[variable coefficients]].
+(3) A system written in the form (@eq:system) (each derivative isolated on the left) is said to be in [[normal form]].
+(4) System (@eq:system) can be written in [[matrix form]]
+    $$
+    \frac{d}{dt}\begin{pmatrix}x_1\\x_2\\\vdots\\x_n\end{pmatrix}=
+    \begin{pmatrix}a_{11}(t)&a_{12}(t)&\cdots&a_{1n}(t)\\a_{21}(t)&a_{22}(t)&\cdots&a_{2n}(t)\\\vdots&&&\vdots\\a_{n1}(t)&a_{n2}(t)&\cdots&a_{nn}(t)\end{pmatrix}
+    \begin{pmatrix}x_1\\x_2\\\vdots\\x_n\end{pmatrix}+\begin{pmatrix}f_1(t)\\f_2(t)\\\vdots\\f_n(t)\end{pmatrix},
+    $$
+    or simply
+    $$\boxed{\X'(t)=\A(t)\X(t)+\F(t)}$$ {#eq:matrix}
+    where $\X=(x_1,\dots,x_n)^T$, $\F=(f_1,\dots,f_n)^T$, and $\A(t)=[a_{ij}(t)]$ is the [[coefficient matrix]].
+(5) If system (@eq:system) is homogeneous, its matrix form is
+    $$\boxed{\X'(t)=\A(t)\X(t)}$$ {#eq:hom}
+:::
+
+::: example {#ex:matrix-form}
+Express each of the following systems in matrix form.
+
+::: columns
+(a)
+$$\frac{dx}{dt}=6x+y+z+t,\quad \frac{dy}{dt}=8x+7y-z+10t,\quad \frac{dz}{dt}=2x+9y-z+6t;$$
++++
+(b)
+$$2\frac{d^2x}{dt^2}+6x-2y=\sin t,\qquad \frac{d^2y}{dt^2}+2y-2x=0.$$
+:::
+:::
+
+::: solution space=12
+(a) With $\X=(x,y,z)^T$,
+$$\X'=\begin{pmatrix}6&1&1\\8&7&-1\\2&9&-1\end{pmatrix}\X+\begin{pmatrix}t\\10t\\6t\end{pmatrix}=\begin{pmatrix}6&1&1\\8&7&-1\\2&9&-1\end{pmatrix}\X+t\begin{pmatrix}1\\10\\6\end{pmatrix}.$$
+
+(b) The system is of *second* order, so we first reduce it to a first-order system. Put
+$$x_1=x,\qquad x_2=x',\qquad x_3=y,\qquad x_4=y'.$$
+Then $x_1'=x_2$, $x_2'=x''=\tfrac12(\sin t-6x+2y)=-3x_1+x_3+\tfrac12\sin t$, $x_3'=x_4$, $x_4'=y''=2x-2y=2x_1-2x_3$. Hence
+$$\begin{pmatrix}x_1\\x_2\\x_3\\x_4\end{pmatrix}'=\begin{pmatrix}0&1&0&0\\-3&0&1&0\\0&0&0&1\\2&0&-2&0\end{pmatrix}\begin{pmatrix}x_1\\x_2\\x_3\\x_4\end{pmatrix}+\begin{pmatrix}0\\\tfrac12\sin t\\0\\0\end{pmatrix}.$$
+:::
+
+::: remark
+In the same way, the $n$th-order linear equation $y^{(n)}+p_{n-1}(t)y^{(n-1)}+\cdots+p_0(t)y=g(t)$ becomes a first-order system with $x_1=y,\ x_2=y',\ \dots,\ x_n=y^{(n-1)}$. Hence systems include all linear higher-order equations as a special case.
+:::
+
+::: definition "Initial-value problem" {#def:ivp}
+Let $t_0$ be a point of an interval $I$ and let
+$$\X(t_0)=\begin{pmatrix}x_1(t_0)\\\vdots\\x_n(t_0)\end{pmatrix},\qquad \X_0=\begin{pmatrix}\gamma_1\\\vdots\\\gamma_n\end{pmatrix},$$
+where $\gamma_i$, $i=1,\dots,n$, are given constants. The problem
+$$\text{Solve: }\ \X'=\A(t)\X+\F(t)\qquad\text{subject to: }\ \X(t_0)=\X_0$$ {#eq:ivp}
+is an [[initial-value problem]] (IVP) on the interval $I$.
+:::
+
+::: theorem "Existence of a unique solution" {#thm:exist}
+Let the entries of $\A(t)$ and $\F(t)$ be continuous on a common interval $I$ that contains the point $t_0$. Then there exists a !!unique!! solution of the initial-value problem (@eq:ivp) on $I$.
+:::
+
+::: example {#ex:interval}
+Determine the largest open interval on which the following IVP is guaranteed to have a unique solution:
+$$\X'=\begin{pmatrix}\cos t&0&1\\\frac{1}{\sqrt{5-t}}&e^t&0\\t&-1&\sin t\end{pmatrix}\X+\begin{pmatrix}\cos t\\\ln(t-1)\\\sin t\end{pmatrix},\qquad \X(2)=\begin{pmatrix}-3\\2\\1\end{pmatrix}.$$
+:::
+
+::: solution space=7
+All entries of $\A(t)$ are continuous on $\R$ except $\frac{1}{\sqrt{5-t}}$, which is continuous only for $t<5$. In $\F(t)$, the entry $\ln(t-1)$ is continuous only for $t>1$; the others are continuous on $\R$. Both conditions hold for $1<t<5$, and $t_0=2$ lies in this set:
+
+```numberline range=[-1,7]
+interval (1, 5) color=blue label="$I$"
+point 2 closed label="$t_0=2$"
+```
+
+By @thm:exist the largest open interval is
+$$\boxed{I=(1,5)}$$
+:::
+
+## Recall from Matrix Theory I
+
+::: recall "Determinants" from="Matrix Theory"
+- If $A=\begin{pmatrix}a&b\\c&d\end{pmatrix}$, then $|A|=\det A=\color{#C0392B}{ad-bc}$.
+- If $A=\begin{pmatrix}a_{11}&a_{12}&a_{13}\\a_{21}&a_{22}&a_{23}\\a_{31}&a_{32}&a_{33}\end{pmatrix}$, then (expansion along the first row)
+  $$|A|=a_{11}\begin{vmatrix}a_{22}&a_{23}\\a_{32}&a_{33}\end{vmatrix}-a_{12}\begin{vmatrix}a_{21}&a_{23}\\a_{31}&a_{33}\end{vmatrix}+a_{13}\begin{vmatrix}a_{21}&a_{22}\\a_{31}&a_{32}\end{vmatrix}.$$
+  The expansion may be done along any row or column, with the sign pattern $(-1)^{i+j}$.
+:::
+
+::: example
+Let $A=\begin{pmatrix}1&2\\3&4\end{pmatrix}$. Find $|A|$.
+:::
+
+::: solution space=3
+$|A|=(1)(4)-(2)(3)=4-6=-2.$
+:::
+
+::: example
+Let $A=\begin{pmatrix}3&\sin t&-\cos t\\4&\cos t&\sin t\\0&-\sin t&\cos t\end{pmatrix}$. Find $|A|$.
+:::
+
+::: solution steps space=6
+Expanding along the first row,
+$$|A|=3\begin{vmatrix}\cos t&\sin t\\-\sin t&\cos t\end{vmatrix}-\sin t\begin{vmatrix}4&\sin t\\0&\cos t\end{vmatrix}+(-\cos t)\begin{vmatrix}4&\cos t\\0&-\sin t\end{vmatrix}$$
+>>>
+$$=3(\cos^2t+\sin^2t)-\sin t\,(4\cos t)-\cos t\,(-4\sin t)$$
+>>>
+$$=\boxed{3}.$$
+:::
+
+::: recall "Identity and inverse matrices" from="Matrix Theory"
+- The matrix $I_n=[a_{ij}]_{n\times n}$ with $a_{ij}=\begin{cases}1,&i=j\\0,&i\neq j\end{cases}$ is the [[identity matrix]]; e.g.
+  $$I_2=\begin{pmatrix}1&0\\0&1\end{pmatrix},\qquad I_3=\begin{pmatrix}1&0&0\\0&1&0\\0&0&1\end{pmatrix}.$$
+  For every $n\times n$ matrix $A$: $AI_n=I_nA=A$.
+- An $n\times n$ matrix $A$ is [[invertible]] if there is an $n\times n$ matrix $B$ with $AB=BA=I_n$. Such $B$ is unique; it is denoted by $A^{-1}$.
+- $A$ is invertible !!if and only if!! $|A|\neq 0$. For $2\times2$ matrices: $\begin{pmatrix}a&b\\c&d\end{pmatrix}^{-1}=\dfrac{1}{ad-bc}\begin{pmatrix}d&-b\\-c&a\end{pmatrix}$.
+- **Gauss–Jordan method:** apply elementary row operations to the augmented matrix $[\,A\mid I\,]$ until it becomes $[\,I\mid A^{-1}\,]$.
+:::
+
+::: example {#ex:inverse}
+Use elementary row operations to find the inverse of
+$$(1)\ \ A=\begin{pmatrix}1&5&-9\\0&1&0\\0&-1&1\end{pmatrix},\qquad\qquad (2)\ \ B=\begin{pmatrix}1&-1\\4&-2\end{pmatrix}.$$
+:::
+
+::: solution space=14
+(1)
+```rowops
+[1 5 -9 | 1 0 0; 0 1 0 | 0 1 0; 0 -1 1 | 0 0 1]
+R3+R2, R1-5R2
+[1 0 -9 | 1 -5 0; 0 1 0 | 0 1 0; 0 0 1 | 0 1 1]
+R1+9R3
+[1 0 0 | 1 4 9; 0 1 0 | 0 1 0; 0 0 1 | 0 1 1]
+```
+Hence $A^{-1}=\begin{pmatrix}1&4&9\\0&1&0\\0&1&1\end{pmatrix}$. (Check: $AA^{-1}=I_3$.)
+
+(2)
+```rowops
+[1 -1 | 1 0; 4 -2 | 0 1]
+R2-4R1
+[1 -1 | 1 0; 0 2 | -4 1]
+1/2R2
+[1 -1 | 1 0; 0 1 | -2 1/2]
+R1+R2
+[1 0 | -1 1/2; 0 1 | -2 1/2]
+```
+Hence $B^{-1}=\begin{pmatrix}-1&\tfrac12\\-2&\tfrac12\end{pmatrix}$, which agrees with the $2\times2$ formula since $|B|=-2+4=2$.
+:::
+
+::: mcq
+Q: The system $x'=tx+y+e^t,\ \ y'=x-(\sin t)y$ is
+- homogeneous with constant coefficients
+- nonhomogeneous with variable coefficients *
+- homogeneous with variable coefficients
+- nonhomogeneous with constant coefficients
+> The forcing term $(e^t,0)^T\neq\mathbf 0$ and the coefficients $t,\,-\sin t$ depend on $t$.
+
+Q: The largest interval on which $\X'=\begin{pmatrix}\frac{1}{t-3}&0\\0&t\end{pmatrix}\X+\begin{pmatrix}\ln t\\1\end{pmatrix},\ \X(1)=\X_0$, has a unique solution is
+- $(0,3)$ *
+- $(0,\infty)$
+- $(3,\infty)$
+- $(-\infty,3)$
+> We need $t\neq3$ and $t>0$; the piece containing $t_0=1$ is $(0,3)$.
+
+Q: $\begin{vmatrix}2&-1\\3&4\end{vmatrix}=$
+- $5$
+- $11$ *
+- $-11$
+- $-5$
+> $ad-bc=8-(-3)=11$.
+
+Q: The inverse of $A=\begin{pmatrix}2&1\\5&3\end{pmatrix}$ is
+- $\begin{pmatrix}3&1\\5&2\end{pmatrix}$
+- $\begin{pmatrix}-3&1\\5&-2\end{pmatrix}$
+- $\begin{pmatrix}3&-1\\-5&2\end{pmatrix}$ *
+- $\begin{pmatrix}2&-1\\-5&3\end{pmatrix}$
+> $|A|=1$, so $A^{-1}=\begin{pmatrix}3&-1\\-5&2\end{pmatrix}$.
+
+Q: With $x_1=y,\ x_2=y'$, the equation $y''+3y'+2y=0$ becomes $\X'=A\X$ with $A=$
+- $\begin{pmatrix}0&1\\-2&-3\end{pmatrix}$ *
+- $\begin{pmatrix}0&1\\2&3\end{pmatrix}$
+- $\begin{pmatrix}1&0\\-3&-2\end{pmatrix}$
+- $\begin{pmatrix}-3&-2\\1&0\end{pmatrix}$
+> $x_1'=x_2$ and $x_2'=y''=-2x_1-3x_2$.
+:::

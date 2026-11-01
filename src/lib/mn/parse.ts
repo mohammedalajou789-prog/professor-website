@@ -387,7 +387,7 @@ export function parseMN(src: string): Doc {
   const nodes = parseBlockLines(lines)
 
   // unresolved refs
-  const refRe = /(?<![\w\\])@([a-z]+:[\w.-]+)/g
+  const refRe = /(?<![\w\\])@([a-z]+:[\w.-]*\w)/g
   for (const m of text.matchAll(refRe)) if (!labels[m[1]]) errors.push(`Reference @${m[1]} has no matching {#${m[1]}}`)
 
   return { meta, nodes, labels, errors }

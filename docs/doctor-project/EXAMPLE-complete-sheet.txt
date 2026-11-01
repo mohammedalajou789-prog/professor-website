@@ -1,0 +1,430 @@
+---
+course: Methods of Applied Mathematics
+chapter: 2
+chapter_title: Homogeneous Linear Systems
+lecture: 6
+title: The Eigenvalue Method — Mixing Tanks, Phase Portraits and Fractional Models
+duration: 75
+lang: en
+author: Prof. Ahmad El-Ajou
+---
+
+::: outcomes
+- Build the linear system that models two connected tanks.
+- Find eigenvalues and eigenvectors, and write the general solution of $\X'=\A\X$.
+- Solve an initial-value problem and interpret the solution with graphs.
+- Classify the critical point $\X=\mathbf 0$ from the eigenvalues (node, saddle, spiral, center).
+- Compare the classical model with its fractional (Caputo) version.
+:::
+
+::: timeplan
+0-10  | The tank model; @def:compartment
+10-30 | Eigenvalue method; @thm:distinct; @ex:tanks
+30-45 | Phase portraits; @thm:classify
+45-60 | Complex eigenvalues; @ex:complex
+60-70 | Fractional model; @ex:fractional
+70-75 | Summary and MCQs
+:::
+
+## Modelling Two Connected Tanks
+
+Two tanks, each holding $50$ L of brine, are connected by pipes. Pure water enters tank $A$ at $150$ L/h, brine is pumped from $A$ to $B$ at $200$ L/h and from $B$ back to $A$ at $50$ L/h, and the mixture leaves $B$ at $150$ L/h. Both tanks are kept **well stirred**, so the volumes stay *constant*.
+
+```graph layout=force
+In -> A : 150
+A -> B : 200
+B -> A : 50
+B -> Out : 150
+```
+
+::: definition "Compartment model" {#def:compartment}
+Let $x_i(t)$ be the amount of salt (kg) in tank $i$ at time $t$ (h). The [[compartment model]] is the balance law
+$$\frac{dx_i}{dt}=(\text{rate in})-(\text{rate out}),\qquad \text{rate}=\text{flow}\times\frac{x_i}{V_i}.$$ {#eq:balance}
+:::
+
+Applying (@eq:balance) with $V_A=V_B=50$ gives
+$$
+\begin{aligned}
+x_1' &= -\tfrac{200}{50}x_1+\tfrac{50}{50}x_2=-4x_1+x_2,\\
+x_2' &= \tfrac{200}{50}x_1-\tfrac{200}{50}x_2=4x_1-4x_2,
+\end{aligned}
+\qquad\text{i.e.}\qquad
+\boxed{\X'=\begin{pmatrix}-4&1\\4&-4\end{pmatrix}\X}
+$$ {#eq:tanks}
+
+::: illustration "Where each coefficient comes from"
+(1) $-4x_1$: salt leaving $A$ through the $200$ L/h pipe.
+(2) $+x_2$: salt returning from $B$ through the $50$ L/h pipe.
+(3) $+4x_1$ and $-4x_2$: the same pipes seen from tank $B$ ($50+150=200$ L/h leave $B$).
+:::
+
+## The Eigenvalue Method
+
+::: recall "Eigenvalues and eigenvectors" from="Linear Algebra"
+- $\lambda$ is an [[eigenvalue]] of $\A$ !!if and only if!! $\det(\A-\lambda I)=0$.
+- A nonzero $\K$ with $(\A-\lambda I)\K=\mathbf 0$ is a corresponding [[eigenvector]].
+- For a $2\times2$ matrix: $\lambda^2-(\tr\A)\lambda+\det\A=0$.
+:::
+
+::: lemma "Exponential solutions" {#lem:exp}
+$\X=\K e^{\lambda t}$ with $\K\neq\mathbf 0$ solves $\X'=\A\X$ if and only if $\A\K=\lambda\K$.
+:::
+
+::: proof
+$\X'=\lambda\K e^{\lambda t}$ and $\A\X=\A\K e^{\lambda t}$. Since $e^{\lambda t}\neq0$, the two are equal exactly when $\A\K=\lambda\K$.
+:::
+
+::: theorem "Distinct real eigenvalues" {#thm:distinct}
+If $\A$ ($n\times n$) has $n$ distinct real eigenvalues $\lambda_1,\dots,\lambda_n$ with eigenvectors $\K_1,\dots,\K_n$, then
+$$\X(t)=c_1\K_1e^{\lambda_1t}+c_2\K_2e^{\lambda_2t}+\cdots+c_n\K_ne^{\lambda_nt}$$ {#eq:general}
+is the general solution of $\X'=\A\X$ on $(-\infty,\infty)$.
+:::
+
+::: proof hide
+By @lem:exp each term is a solution. Eigenvectors of distinct eigenvalues are linearly independent, so the Wronskian $W(t)=\det[\K_1,\dots,\K_n]\,e^{(\lambda_1+\cdots+\lambda_n)t}\neq0$, and the $n$ solutions form a fundamental set.
+:::
+
+::: corollary {#cor:decay}
+If every eigenvalue in (@eq:general) is negative, then $\X(t)\to\mathbf 0$ as $t\to\infty$ for **every** initial condition.
+:::
+
+::: howto "Solving $\X'=\A\X$ in four steps"
+1. Solve the characteristic equation $\det(\A-\lambda I)=0$.
+2. For each $\lambda$, solve $(\A-\lambda I)\K=\mathbf 0$ (row reduction).
+3. Write the general solution (@eq:general).
+4. Use $\X(0)=\X_0$ to find $c_1,\dots,c_n$.
+:::
+
+```diagram
+flow: Find det(A − λI) -> Solve for λ -> Find each K -> {distinct?} -yes-> X = Σ cᵢKᵢ e^(λᵢt)
+```
+
+::: example "Salt in the two tanks" {#ex:tanks}
+Initially tank $A$ contains $20$ kg of salt and tank $B$ contains pure water. Solve (@eq:tanks) and find the largest amount of salt in tank $B$.
+:::
+
+::: solution steps space=14
+**Eigenvalues.** $\det(\A-\lambda I)=(-4-\lambda)^2-4=0\iff\lambda+4=\pm2$, so
+$$\lambda_1=-2,\qquad \lambda_2=-6.$$
+>>>
+**Eigenvector for $\lambda_1=-2$.** Row-reduce $\A+2I$:
+```rowops
+[-2 1 | 0; 4 -2 | 0]
+R2+2R1
+[-2 1 | 0; 0 0 | 0]
+```
+so $-2k_1+k_2=0$ and $\K_1=\begin{pmatrix}1\\2\end{pmatrix}$. In the same way $\A+6I=\begin{pmatrix}2&1\\4&2\end{pmatrix}$ gives $\K_2=\begin{pmatrix}1\\-2\end{pmatrix}$.
+>>>
+**General solution** by @thm:distinct:
+$$\X(t)=c_1\begin{pmatrix}1\\2\end{pmatrix}e^{-2t}+c_2\begin{pmatrix}1\\-2\end{pmatrix}e^{-6t}.$$
+>>>
+**Initial condition** $\X(0)=(20,0)^T$: $c_1+c_2=20$ and $2c_1-2c_2=0$, so $c_1=c_2=10$:
+$$x_1(t)=10e^{-2t}+10e^{-6t},\qquad x_2(t)=20e^{-2t}-20e^{-6t}.$$ {#eq:tank-sol}
+>>>
+**Maximum in $B$.** $x_2'(t)=-40e^{-2t}+120e^{-6t}=0\iff e^{-4t}=\tfrac13\iff t^*=\tfrac{\ln3}{4}\approx0.275$ h, and
+$$x_2(t^*)=20\cdot3^{-1/2}\left(1-\tfrac13\right)=\frac{40}{3\sqrt3}\approx7.70\ \text{kg}.$$
+>>>
+```pyplot caption="Salt in each tank, (@eq:tank-sol). Tank $B$ peaks at $t^*=\ln 3/4$." width=600
+t = np.linspace(0, 2.5, 400)
+x1 = 10*np.exp(-2*t) + 10*np.exp(-6*t)
+x2 = 20*np.exp(-2*t) - 20*np.exp(-6*t)
+ts = np.log(3)/4
+plt.plot(t, x1, color=blue, label="$x_1(t)$ — tank A")
+plt.plot(t, x2, color=red, label="$x_2(t)$ — tank B")
+plt.plot([ts], [40/(3*np.sqrt(3))], "o", color=red)
+plt.annotate(r"$\max x_2\approx 7.70$", (ts, 40/(3*np.sqrt(3))), xytext=(0.6, 11), arrowprops=dict(arrowstyle="->", color=gray))
+plt.axvline(ts, ls=":", color=gray, lw=1)
+plt.xlabel("$t$ (hours)"); plt.ylabel("salt (kg)")
+plt.legend()
+```
+::: answer
+$x_1=10e^{-2t}+10e^{-6t}$, $x_2=20e^{-2t}-20e^{-6t}$; the largest amount in $B$ is $\dfrac{40}{3\sqrt3}\approx7.70$ kg at $t=\dfrac{\ln3}{4}$ h.
+:::
+:::
+
+::: caution
+The zero vector is **never** an eigenvector. If row reduction leaves only $\K=\mathbf 0$, the number you used is *not* an eigenvalue — recheck the characteristic equation.
+:::
+
+::: columns
+```vectors x=[-1.5,2] y=[-2.5,2.5] caption="Eigenvectors $\K_1$ and $\K_2$"
+K1 = (1,2) color=blue
+K2 = (1,-2) color=red
+sum K1 K2 parallelogram
+```
++++
+```numberline range=[-7,1] caption="Both eigenvalues are negative"
+point -6 closed label="$\lambda_2$"
+point -2 closed label="$\lambda_1$"
+interval [-7, 0) color=green label="stable"
+mark 0
+```
+:::
+
+### Watching the solution evolve
+
+Move the slider to change the initial amount $a$ in tank $A$ (tank $B$ starts empty): $x_2(t)=a\,(e^{-2t}-e^{-6t})$.
+
+```plot x=[0,3] y=[0,12] caption="Interactive: $x_2(t)$ for different initial amounts $a$"
+slider a = 20 in [5, 40] step 1
+f(x) = a*(exp(-2x) - exp(-6x)) color=red label="$x_2$"
+g(x) = (a/2)*(exp(-2x) + exp(-6x)) color=blue dash label="$x_1/2$" at=0.6
+area f from 0 to 1 color=gold
+asymptote y = 0
+```
+
+---page---
+
+## Phase Portraits
+
+::: theorem "Classification of the critical point" {#thm:classify}
+Let $\A$ be a real $2\times2$ matrix with $\det\A\neq0$ and eigenvalues $\lambda_1,\lambda_2$. The origin of $\X'=\A\X$ is
+(a) a [[node]] if $\lambda_1,\lambda_2$ are real with the same sign (stable if negative);
+(b) a [[saddle point]] if they are real with opposite signs (always unstable);
+(c) a [[spiral point]] if $\lambda=\alpha\pm i\beta$ with $\alpha\neq0$ (stable if $\alpha<0$);
+(d) a [[center]] if $\lambda=\pm i\beta$.
+:::
+
+```tree
+Eigenvalues
+  Real
+    Node : same sign
+    Saddle : opposite signs
+  Complex
+    Spiral : Re λ ≠ 0
+    Center : Re λ = 0
+```
+
+For the tanks, $\lambda_1=-2$ and $\lambda_2=-6$ are both negative, so the origin is a **stable node**: all the salt is eventually washed out (@cor:decay).
+
+```field x=[-3,3] y=[-3,3] caption="Stable node of (@eq:tanks): every trajectory enters the origin tangent to $\K_1$"
+matrix [-4 1; 4 -4]
+trajectories from (2.5,2.8) (-2.5,-2.8) (2.8,-2.5) (-2.8,2.5) (0.5,2.9) (-0.5,-2.9)
+eigenlines on
+classify on
+flow on
+```
+
+::: example "Saddle point" {#ex:saddle} homework
+Show that the origin of $x'=2x+3y,\ y'=2x+y$ is a saddle point.
+:::
+
+::: solution space=6
+$\lambda^2-3\lambda-4=(\lambda-4)(\lambda+1)$, so $\lambda_1=4>0>\lambda_2=-1$: a saddle (@thm:classify (b)).
+
+```field x=[-4,4] y=[-4,4] caption="Saddle: trajectories follow the eigenlines"
+matrix [2 3; 2 1]
+trajectories from (1,0.2) (-1,-0.2) (0.2,1) (-0.2,-1) (2,-2.2) (-2,2.2)
+eigenlines on
+classify on
+nullclines on
+```
+:::
+
+::: keybox
+$\det\A<0\ \Rightarrow$ saddle.  $\det\A>0$ and $\tr\A<0\ \Rightarrow$ stable node or spiral.
+:::
+
+The characteristic polynomial of the tank matrix is $p(\lambda)=\lambda^2+8\lambda+12=(\lambda+2)(\lambda+6)$. Its sign chart and variation table show that $p<0$ exactly **between** the two eigenvalues, with minimum $p(-4)=-4$:
+
+::: columns
+```signchart
+factors (x+6) (x+2)
+p(x) = (x+6)(x+2)
+```
++++
+```variation
+x: -inf | -4 | +inf
+p'(x): - 0 +
+p(x): down -4 up
+```
+:::
+
+## Complex Eigenvalues
+
+::: proposition "Real solutions from a complex pair" {#prop:complex}
+If $\lambda=\alpha+i\beta$ ($\beta\neq0$) has eigenvector $\K=\B_1+i\B_2$, then
+$$\X_1=\big[\B_1\cos\beta t-\B_2\sin\beta t\big]e^{\alpha t},\qquad \X_2=\big[\B_2\cos\beta t+\B_1\sin\beta t\big]e^{\alpha t}$$ {#eq:complex}
+are linearly independent real solutions.
+:::
+
+::: example {#ex:complex}
+Solve $\X'=\begin{pmatrix}-1&1\\-1&-1\end{pmatrix}\X$ and classify the origin.
+:::
+
+::: solution space=8
+$\lambda^2+2\lambda+2=0\Rightarrow\lambda=-1\pm i$. For $\lambda=-1+i$: $\K=\begin{pmatrix}1\\i\end{pmatrix}$, so $\B_1=(1,0)^T$, $\B_2=(0,1)^T$ and by (@eq:complex)
+$$\X(t)=c_1\begin{pmatrix}\cos t\\-\sin t\end{pmatrix}e^{-t}+c_2\begin{pmatrix}\sin t\\\cos t\end{pmatrix}e^{-t}.$$
+Since $\alpha=-1<0$ the origin is a **stable spiral**.
+
+```complex x=[-2,2] y=[-1.6,1.6] caption="The eigenvalues $-1\pm i$ lie in the left half-plane"
+z1 = -1+i ; z2 = -1-i
+point z1
+point z2
+circle |z| = 1.4142 dash
+polar-form z1
+```
+:::
+
+::: columns
+```field x=[-2,2] y=[-2,2] caption="Stable spiral"
+system x' = -x + y ; y' = -x - y
+trajectories from (1.8,0) (-1.8,0)
+classify on
+```
++++
+```plot3d x=[-1.2,1.2] y=[-1.2,1.2] caption="The same solution in $(x,y,t)$ space"
+curve (exp(-0.3t)*cos(t), -exp(-0.3t)*sin(t), t/5 - 1) t=[0,10] color=red
+point (1,0,-1)
+```
+:::
+
+::: note "Why spirals?"
+The factor $e^{\alpha t}$ shrinks (or grows) the solution, while $\cos\beta t$ and $\sin\beta t$ rotate it. Rotation + shrinking = a spiral.
+:::
+
+## Geometry of Eigenvectors
+
+For a **symmetric** matrix, eigenvectors of distinct eigenvalues are orthogonal. With $\A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$: $\K_1=(1,1)^T$, $\K_2=(1,-1)^T$, $\K_1\cdot\K_2=0$.
+
+```geometry x=[-1.5,1.5] y=[-1.5,1.5] axes=on caption="Orthogonal eigenvectors of a symmetric matrix"
+O = (0,0); P = (1,1); Q = (1,-1)
+segment O P label="$\K_1$"
+segment O Q label="$\K_2$"
+angle Q O P label="$90^\circ$"
+circle center=O radius=1.4142 dash
+```
+
+```venn caption="Real 2×2 matrices"
+Symmetric = {S} ; Diagonalizable = {S,D} ; Invertible = {I,D}
+shade Symmetric ∩ Diagonalizable
+```
+
+## A Fractional Model
+
+::: remarks
+(1) Real mixing often has **memory**: what happened earlier still affects the present. Replacing $d/dt$ by the Caputo derivative ${}^{C}D^{\alpha}$, $0<\alpha\le1$, models this.
+(2) For $\alpha=1$ we recover the classical model (@eq:tanks).
+:::
+
+::: example "Fractional tanks" {#ex:fractional}
+Solve ${}^{C}D^{\alpha}\X=\A\X$, $\X(0)=(20,0)^T$, with $\A$ from (@eq:tanks).
+:::
+
+::: solution space=8
+Diagonalising $\A$ as before, each mode $e^{\lambda t}$ becomes the Mittag-Leffler function $E_\alpha(\lambda t^\alpha)$:
+$$x_2(t)=20\left[E_\alpha(-2t^\alpha)-E_\alpha(-6t^\alpha)\right].$$ {tag=*}
+
+```pyplot caption="Tank $B$ for several orders $\alpha$: smaller $\alpha$ gives a lower peak and a much slower wash-out (memory)." width=600
+t = np.linspace(0, 3, 300)
+for a, c in [(1.0, red), (0.9, orange), (0.7, purple), (0.5, blue)]:
+    plt.plot(t, 20*(ml(-2*t**a, a) - ml(-6*t**a, a)), color=c, label=rf"$\alpha={a}$")
+plt.xlabel("$t$ (hours)"); plt.ylabel("$x_2(t)$ (kg)")
+plt.legend()
+```
+
+The numerical solver gives the same curve (dots):
+
+```pyplot caption="Predictor–corrector solution (dots) against the exact formula (line), $\alpha=0.8$." width=600
+a = 0.8
+t, X = fde_solve(lambda t, x: [-4*x[0] + x[1], 4*x[0] - 4*x[1]], [20.0, 0.0], a, 3, h=0.01)
+x2 = X[:, 1]
+plt.plot(t, 20*(ml(-2*t**a, a) - ml(-6*t**a, a)), color=blue, label="exact")
+plt.plot(t[::15], x2[::15], "o", color=red, ms=3.5, label="numerical")
+plt.xlabel("$t$"); plt.ylabel("$x_2$"); plt.legend()
+```
+::: answer
+$x_2(t)=20\left[E_\alpha(-2t^\alpha)-E_\alpha(-6t^\alpha)\right]$, which reduces to (@eq:tank-sol) when $\alpha=1$.
+:::
+:::
+
+### Checking the model against measurements
+
+For $t\ge1$ the term $e^{-6t}$ is negligible, so $\ln x_2\approx\ln20-2t$: the measured points should lie on a line of slope $\lambda_1=-2$.
+
+```stats caption="Measured $\ln x_2$ for $t\ge1$ with the least-squares line (slope $\approx-2=\lambda_1$)"
+scatter data=[(1,0.98),(1.25,0.47),(1.5,0.01),(1.75,-0.52),(2,-0.99)] regression=linear
+```
+
+```stats caption="Peak amount in tank $B$ (kg) for each order $\alpha$"
+bar labels=[1,0.9,0.7,0.5] values=[7.70,7.21,6.43,5.89]
+```
+
+```pyplot caption="A surface view: $x_2(t)$ as a function of time and of the order $\alpha$." width=620
+ts = np.linspace(0.02, 3, 60)
+al = np.linspace(0.5, 1.0, 26)
+T, Al = np.meshgrid(ts, al)
+Z = np.array([[20*(ml(-2*tt**a, a) - ml(-6*tt**a, a)) for tt in ts] for a in al])
+ax = plt.figure(figsize=(7, 4.2)).add_subplot(projection="3d")
+ax.plot_surface(T, Al, Z, cmap="viridis", linewidth=0)
+ax.set_xlabel("$t$"); ax.set_ylabel(r"$\alpha$"); ax.set_zlabel("$x_2$")
+```
+
+## Summary and Review
+
+| Eigenvalues of $\A$ | Critical point | Stability |
+|:---:|:---:|:---:|
+| real, both $<0$ | node | stable |
+| real, opposite signs | saddle | unstable |
+| $\alpha\pm i\beta$, $\alpha<0$ | spiral | stable |
+| $\pm i\beta$ | center | stable (not asymptotically) |
+
+::: summary
+► The tank model is $\X'=\A\X$ with $\A$ from the balance law (@eq:balance).
+► Distinct eigenvalues give $\X=\sum c_i\K_ie^{\lambda_it}$ (@thm:distinct).
+► The eigenvalues decide the phase portrait (@thm:classify).
+► Complex pairs give rotation (@prop:complex); the fractional model replaces $e^{\lambda t}$ by $E_\alpha(\lambda t^\alpha)$.
+:::
+
+For a visual explanation of eigenvectors, see [3Blue1Brown — Eigenvectors and eigenvalues](https://www.youtube.com/watch?v=PFDu9oVAE-g):
+
+@video(youtube:PFDu9oVAE-g)
+
+---
+
+::: homework
+i. Solve $\X'=\begin{pmatrix}1&2\\4&3\end{pmatrix}\X$, $\X(0)=(1,0)^T$.
+ii. Redo @ex:tanks when tank $B$ initially contains $10$ kg of salt.
+iii. Classify the origin of $\X'=\begin{pmatrix}0&1\\-4&0\end{pmatrix}\X$ and sketch its phase portrait.
+:::
+
+::: teacher
+Doctor only: start with the tank picture, let students guess who peaks first, then reveal the graph in @ex:tanks (last step). Spend at most 5 minutes on the fractional part.
+:::
+
+::: mcq
+Q: The eigenvalues of $\begin{pmatrix}-4&1\\4&-4\end{pmatrix}$ are
+- $2$ and $6$
+- $-2$ and $-6$ *
+- $-4\pm i$
+- $0$ and $-8$
+> $(-4-\lambda)^2=4\Rightarrow\lambda=-4\pm2$.
+
+Q: If $\lambda_1=3$ and $\lambda_2=-1$, the origin is
+- a stable node
+- an unstable node
+- a saddle point *
+- a center
+> Real eigenvalues of opposite signs give a saddle (@thm:classify).
+
+Q: The eigenvalues $-1\pm i$ give
+- a stable spiral *
+- an unstable spiral
+- a center
+- a saddle
+> $\alpha=-1<0$ and $\beta\neq0$.
+
+Q: In the tank model, the salt in tank $B$ reaches its maximum at
+- $t=0$
+- $t=\ln3/4$ *
+- $t=\ln2$
+- it never reaches a maximum
+> $x_2'=0\iff e^{-4t}=1/3$.
+
+Q: For $\alpha=1$, $E_\alpha(\lambda t^\alpha)$ equals
+- $\cos\lambda t$
+- $e^{\lambda t}$ *
+- $1/(1-\lambda t)$
+- $t^{\lambda}$
+> $E_1(z)=e^z$.
+:::

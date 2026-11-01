@@ -244,3 +244,5 @@ html[data-nav-hidden] .site-nav { transform: translateY(-100%); box-shadow: none
 .under-nav { top: 4rem; transition: top .32s var(--ease-out); }
 html[data-nav-hidden] .under-nav { top: 0; }
 :fullscreen, ::backdrop { background-color: var(--c-bg); }
+/* full screen: the top bar is hidden, so its spacer goes too (no empty band above the sheet) */
+html[data-fs] .nav-spacer { display: none; }

@@ -153,7 +153,7 @@ export default function Navbar({ brand }: { brand: Brand }) {
           </div>
         </div>
       </header>
-      <div className="h-16" aria-hidden />
+      <div className="nav-spacer h-16" aria-hidden />
 
       {/* Mobile drawer */}
       <div

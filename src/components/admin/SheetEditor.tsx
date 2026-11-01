@@ -6,7 +6,7 @@ import { parseMN } from '@/lib/mn/parse'
 import { prepareFigures } from '@/lib/py/prepare'
 import { Btn } from './ui'
 
-export const AI_PROMPT = `You are converting lecture material into MN Syntax v1.2 (spec attached).
+export const AI_PROMPT = `You are converting lecture material into MN Syntax v1.3 (spec attached). Use every MN element that fits the content (see complete-sheet.mn in the Sheet guide).
 Rules:
 1. Start with the YAML header (course, chapter, chapter_title, lecture, title, duration, lang).
 2. Begin with ::: outcomes and ::: timeplan blocks.

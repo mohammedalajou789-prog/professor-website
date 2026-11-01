@@ -27,6 +27,8 @@
    - **Website content:** قائمة فيها الملف الشخصي، المنشورات، مجالات البحث، الأخبار، التعليم، المناصب، الجوائز، العضويات، اللجان، المؤتمرات، الإشراف.
    - **Sheet guide:** أمثلة جاهزة للشيتات.
    - **View site:** الانتقال إلى الموقع كما يراه الزائر.
+   - **Student view:** واجهة الطالب كما يراها، مع كل المساقات مفتوحة لك. للعودة اضغط **Back to admin**، أو زر **Admin panel** الذهبي الظاهر لك في أعلى أي صفحة من الموقع.
+   - زر الخروج ⟶ في أعلى اليمين.
 
 على الهاتف تُفتح القائمة من زر ☰.
 
@@ -84,12 +86,14 @@
 
 **لا تحتاج أن تتعلم الصيغة.** جُهّز لك مشروع على Claude يكتبها عنك:
 1. افتح مشروع **"شيتات المحاضرات"** على Claude.
-2. أرسل له مادة المحاضرة: ملف PDF، أو صوراً من دفترك، أو نصاً، أو حتى عناوين فقط. مثلاً: *"حوّل هذه المحاضرة إلى شيت، المحاضرة 5، مساق التفاضل الكسري"*.
+2. أرسل له مادة المحاضرة: ملف PDF أو Word أو شرائح، أو صوراً من دفترك، أو نصاً، أو حتى عنواناً فقط. مثلاً: *"حوّل هذه المحاضرة إلى شيت، المحاضرة 5، مساق التفاضل الكسري"*. ويمكنك أن تطلب تعديلاً: *"أضف رسمة"*، *"اجعله بالعربي"*، *"أضف 3 أمثلة"*.
 3. يعطيك Claude ملف `.mn` كاملاً. احفظه على جهازك.
 4. في لوحة التحكم → المحاضرة → **Student sheet** → **Upload .mn**.
 5. للمعاينة قبل النشر: **Edit** ثم **Preview**.
 
 **إن ظهر خطأ:** يظهر صندوق أحمر يذكر المشكلة ورقم السطر. انسخ الرسالة وأرسلها لـ Claude في نفس المحادثة، فيصلح الملف.
+
+**مثال كامل:** في لوحة التحكم ← **Sheet guide** ← **Complete sheet (every element)** تجد محاضرة واحدة فيها كل ما يمكن أن يحتويه الشيت، بنسختيها.
 
 **ما يمكن أن يحتويه الشيت:**
 - **صناديق:**
@@ -119,7 +123,8 @@
 ## 8. ماذا يرى الطالب؟
 - لوحته: مساقاته وحالة كل طلب (بانتظار الموافقة / مقبول).
 - صفحة المحاضرة فيها أربعة تبويبات: شيت الطالب، الشيت المحلول (إن أصدرته)، الفيديوهات، الملفات.
-- **عرض الشيت مثل ملف PDF:** أزرار التكبير والتصغير في أعلى الصفحة تكبّر الشيت كله، النص والمعادلات والرسومات معاً. وفيه زر "ملء العرض" وزر للمحتويات.
+- **عرض الشيت مثل ملف PDF:** أزرار التكبير والتصغير في أعلى الصفحة تكبّر الشيت كله، النص والمعادلات والرسومات معاً. وفيه زر "ملء العرض" ↔، وزر **ملء الشاشة** ⛶ (مثل F11)، وزر للمحتويات.
+- **التركيز على القراءة:** عند النزول في الشيت يختفي شريط الموقع العلوي، ويعود عند الصعود.
 - **رقمه الجامعي مطبوع كعلامة مائية** على الشيت.
 - **زر "تحميل الشيت PDF":**
   - يظهر في **شيت الطالب فقط**. الشيت المحلول لا يمكن تحميله أبداً.
@@ -162,6 +167,8 @@ Arabic/English switch at the top, and a **dark mode** (🌙).
    - **Website content:** Profile, Publications, Research areas, News, Education, Positions, Awards, Memberships, Committees, Conferences, Supervision.
    - **Sheet guide:** example sheets.
    - **View site:** the website as visitors see it.
+   - **Student view:** the student area exactly as students see it, with every course open to you. Return with **Back to admin**, or the gold **Admin panel** button shown to you at the top of every page.
+   - Sign out: the ⟶ button at the top right.
 
 On a phone, ☰ opens the menu.
 
@@ -209,10 +216,12 @@ The separate solved file under **Advanced** is only for the rare case where the 
 ## 7. Writing sheets (MN) with Claude
 You don't need to learn the format. A Claude project is prepared for you:
 1. Open the **"Lecture sheets"** project on Claude.
-2. Send the lecture material: a PDF, photos of your notes, text, or just an outline. For example: *"Turn this into the sheet for Lecture 5, Fractional Calculus"*.
+2. Send the lecture material: a PDF, Word file or slides, photos of your notes, text, or just a topic. For example: *"Turn this into the sheet for Lecture 5, Fractional Calculus"*. You can also ask for changes: *"add a figure"*, *"make it Arabic"*, *"add 3 examples"*.
 3. Claude returns a complete `.mn` file. Save it.
 4. Admin → lecture → **Student sheet** → **Upload .mn**. Use **Edit → Preview** to check before students see it.
 5. If a red error box appears, copy the message back to Claude in the same chat and it fixes the file.
+
+**A complete example:** Admin → **Sheet guide** → **Complete sheet (every element)** shows one lecture that uses everything a sheet can contain, in both versions.
 
 **What a sheet can contain:**
 - **Boxes:**
@@ -242,7 +251,8 @@ You don't need to learn the format. A Claude project is prepared for you:
 ## 8. What students see
 - Their dashboard: their courses and the status of each request.
 - Each lecture has four tabs: student sheet, solved sheet (once released), videos, files.
-- **The sheet works like a PDF viewer:** the zoom buttons at the top scale the whole sheet (text, maths, figures), with Fit width and Contents.
+- **The sheet works like a PDF viewer:** the zoom buttons at the top scale the whole sheet (text, maths, figures), with Fit width ↔, **Full screen** ⛶ (like F11) and Contents.
+- **Reading focus:** the site's top bar slides away while scrolling down the sheet and returns when scrolling up.
 - **Their university ID is printed as a watermark** on the sheet.
 - **Download PDF:**
   - available on the **student sheet only**. The solved sheet can never be downloaded.

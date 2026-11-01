@@ -143,7 +143,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </header>
-      <div className="h-16" aria-hidden />
+      <div className="nav-spacer h-16" aria-hidden />
 
       {/* phone / tablet drawer */}
       <div onClick={() => setOpen(false)} className={`fixed inset-0 z-[200] bg-black/55 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`} />

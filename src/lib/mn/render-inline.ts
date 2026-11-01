@@ -66,7 +66,7 @@ export function inline(src: string, labels: Record<string, { text: string; id: s
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^*\w])\*(?!\s)(.+?)\*(?!\w)/g, '$1<em>$2</em>')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/(^|[^\w\\])@([a-z]+:[\w.-]+)/g, (_, pre, lab) => {
+    .replace(/(^|[^\w\\])@([a-z]+:[\w.-]*\w)/g, (_, pre, lab) => {
       const l = labels[lab]
       return l ? `${pre}<a class="mn-ref" href="#${esc(l.id)}">${esc(l.text)}</a>` : `${pre}<span class="mn-ref mn-ref-missing">@${esc(lab)}</span>`
     })

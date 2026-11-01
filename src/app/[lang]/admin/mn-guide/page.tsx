@@ -16,7 +16,7 @@ export default async function MnGuide({ searchParams }: { searchParams: Promise<
   if (!demo) await requireAdmin()
   const sp = await searchParams
   const draft = sp.key && sp.key.startsWith('courses/') ? await getText(sp.key).catch(() => null) : null
-  const sample = sp.s && SAMPLES[sp.s] ? sp.s : 'lecture1'
+  const sample = sp.s && SAMPLES[sp.s] ? sp.s : 'complete'
   const src = draft ?? SAMPLES[sample].src
   const mode = sp.mode === 'student' ? 'student' : 'doctor'
   const doc = await attachPy(parseMN(src))

@@ -29,7 +29,11 @@ export default function FocusReading() {
         last = y
       })
     }
-    const onFs = () => set(!!document.fullscreenElement || window.scrollY > 80)
+    const onFs = () => {
+      if (document.fullscreenElement) html.dataset.fs = '1'
+      else delete html.dataset.fs
+      set(!!document.fullscreenElement || window.scrollY > 80)
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     document.addEventListener('fullscreenchange', onFs)
     return () => {
@@ -38,6 +42,7 @@ export default function FocusReading() {
       cancelAnimationFrame(raf)
       delete html.dataset.focus
       delete html.dataset.navHidden
+      delete html.dataset.fs
     }
   }, [])
   return null

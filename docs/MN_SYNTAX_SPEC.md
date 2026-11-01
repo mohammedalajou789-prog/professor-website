@@ -1,4 +1,4 @@
-# MN Syntax — v1.2
+# MN Syntax — v1.3
 ### لغة كتابة شيتات الرياضيات لموقع Prof. Ahmad El-Ajou
 
 > **MN = Math Notes.** ملف نصي واحد (`.mn`) يكتبه الدكتور أو يولّده الذكاء الاصطناعي، ثم يُرفع من لوحة التحكم فيتحوّل إلى شيت بنفس تصميم شيتات الدكتور (ألوان الصناديق نفسها مأخوذة من ملف Chapter 1 الأصلي) مع رسومات تفاعلية وحركة.
@@ -9,7 +9,7 @@
 >
 > رفع ملف منفصل للنسخة المحلولة اختياري.
 >
-> **مرجع حيّ:** لوحة التحكم ← MN guide (فيها Lecture 1 كاملة بهذه اللغة، ومعرض لكل أنواع الرسومات). الملفات المصدرية موجودة في `docs/mn/lecture-01.mn` و `docs/mn/python-figures.mn` و `docs/mn/showcase.mn`.
+> **مرجع حيّ:** لوحة التحكم ← Sheet guide. أول مثال فيه **Complete sheet (every element)** = `docs/mn/complete-sheet.mn`: محاضرة واحدة تستخدم **كل** عناصر اللغة و19 رسمة. باقي الأمثلة: `lecture-01.mn` (مطابقة لشيت الدكتور الأصلي)، `python-figures.mn`، `showcase.mn` (كل الرسومات المدمجة)، `arabic-sample.mn`، `lecture-04.mn`.
 
 ---
 
@@ -51,6 +51,7 @@ author: Prof. Ahmad El-Ajou
 | مصطلح مُعرَّف | `[[eigenvalue]]` | أحمر غامق (يقبل رياضيات داخله) |
 | تمييز | `!!if and only if!!` | أحمر غامق |
 | رابط | `[text](https://…)` | |
+| إشارة | `@label` | يمكن أن تأتي في آخر الجملة (`… in @ex:tanks.`) — النقطة لا تُحسب منها |
 | فاصل صفحة للطباعة | `---page---` | |
 | خط فاصل | `---` | |
 
@@ -88,10 +89,10 @@ author: Prof. Ahmad El-Ajou
 |---|---|---|
 | `definition` | شريط أخضر غامق | مرقّم |
 | `theorem` `lemma` `corollary` `proposition` | شريط أحمر نبيذي | مرقّمة (عدّاد مشترك) |
-| `example` | شريط أزرق | مرقّم · خاصية `homework` تضيف شارة |
+| `example` | شريط أزرق | مرقّم · `::: example "Title" {#ex:x} homework` تضيف شارة Homework |
 | `solution` | تبويب أخضر "Solution" | **يُخفى للطالب** ويظهر مكانه سطور كتابة. `space=8` عدد السطور. `steps` لعرض الحل خطوة بخطوة |
 | `answer` | داخل solution | "Answer." باللون الأخضر — للدكتور فقط |
-| `proof` | تبويب رمادي + ∎ | `hide` ⇐ يُخفى للطالب |
+| `proof` | تبويب رمادي + ∎ | `::: proof hide` ⇐ يُخفى للطالب ويظهر مكانه سطور كتابة |
 | `remark` / `remarks` / `howto` / `illustration` | خط جانبي بنفسجي | العنوان يُكتب بين علامتي تنصيص |
 | `recall "Determinants" from="Matrix Theory"` | شريط رمادي مزرق | يظهر: Recall from Matrix Theory: Determinants |
 | `caution` | شريط برتقالي | |
@@ -347,6 +348,9 @@ flow: Find |A − λI| -> Solve for λ -> {distinct?} -yes-> Use Theorem 4.1
 ```
 ````
 
+في `tree`: كل مستوى = إزاحة بمسافتين؛ السطر `اسم : نص` يعني عقدة باسمها، والنص بعد `:` يُكتب على الفرع المؤدي إليها (احتمال أو شرط).
+في `venn`: مجموعتان على الأقل. في `graph`: `A -> B : 3` سهم بوزن، `A -- B` خط بلا اتجاه. في `diagram`: `{سؤال؟}` معيّن قرار، و `-yes->` سهم بعنوان.
+
 ### جداول وصور وفيديو
 ```
 | $\lambda$ | Eigenvector |
@@ -370,6 +374,7 @@ flow: Find |A − λI| -> Solve for λ -> {distinct?} -yes-> Use Theorem 4.1
 - **العرض مثل PDF:** تكبير وتصغير الشيت كله من أعلى الصفحة.
 - **الخط:** نص الشيت بخط Computer Modern (خط LaTeX نفسه)، فيتطابق النص مع المعادلات.
 - **الوضع الليلي:** الشيت يتحوّل لألوان داكنة مريحة، والرسومات تُعرض بألوان معكوسة متناسقة. الطباعة و PDF دائماً بالألوان الأصلية.
+- **التركيز:** الشريط العلوي للموقع يختفي عند النزول في الشيت ويعود عند الصعود، وزر ⛶ يملأ الشاشة (مثل F11).
 - **التحقق قبل النشر:** المحرر في لوحة التحكم يعرض الأخطاء فوراً (صندوق غير مغلق، `@ref` غير موجود، MCQ بلا إجابة…) + زر Preview.
 
 ---
@@ -401,6 +406,7 @@ Rules:
 ---
 
 ## 9. Changelog
+- **v1.3 (2026-11-01):** شيت مرجعي كامل `complete-sheet.mn` (كل العناصر) وأصبح أول مثال في Sheet guide. الإشارة `@label` تقبل نقطة بعدها. توضيح `tree` و `graph` و `diagram` و `proof hide` و `homework`. وضع التركيز وملء الشاشة. تعليمات مشروع Claude للدكتور: `docs/doctor-project/INSTRUCTIONS.md`.
 - **v1.2 (2026-11-01):** كتلة ```` ```pyplot ```` — رسومات بايثون حقيقية (numpy, matplotlib, scipy, sympy, mpmath) مع دوال جاهزة: `ml` (Mittag-Leffler)، `gamma`، `caputo`، `fde_solve`، `axes_through_origin`، `pi_ticks`. أصبحت الطريقة المفضّلة للرسومات في الـ Prompt. ملف مرجعي جديد: `docs/mn/python-figures.mn`.
 - **v1.1 (2026-10-31):** مطابقة كاملة لما بُني فعلاً: إضافة `teacher`, `summary`, `illustration`, `note`, `from=` لـ recall، `(@eq:x)` للإشارة للمعادلات، `between`, `segment`, `vector`, `text`, `nullclines`, `arrows off`, `plane`, `line` في stats، ودوال `ml`, `if`. الحركة أصبحت تلقائية (أُلغيت `animate=` و `reveal=click`). الصور: روابط https فقط حالياً.
 - **v1.0 (2026-10-31):** الإصدار الأول.
