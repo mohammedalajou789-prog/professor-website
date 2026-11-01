@@ -7,6 +7,7 @@ import MathField from '@/components/motion/MathField'
 import EnrollButton from '@/components/student/EnrollButton'
 import { getCourseForViewer, type CourseFile, type Lecture } from '@/lib/courses'
 import { isLang } from '@/lib/i18n'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Course', robots: { index: false } }
 
@@ -14,7 +15,15 @@ export default async function CoursePage({ params }: { params: Promise<{ lang: s
   const { lang: l, slug } = await params
   const lang = isLang(l) ? l : 'en'
   const ar = lang === 'ar'
-  const { course, status, access, student, isAdmin, supabase, user } = await getCourseForViewer(slug)
+  // ONE parallel round-trip: access + lectures (with video counts) + course files + announcements.
+  // RLS returns nothing to a viewer without access, so asking early is safe.
+  const sb = await createClient()
+  const [{ course, status, access, student, isAdmin, user }, L, F, N] = await Promise.all([
+    getCourseForViewer(slug),
+    sb.from('lectures').select('*, lecture_videos(count), courses!inner(slug)').eq('courses.slug', slug).order('number'),
+    sb.from('course_files').select('*, courses!inner(slug)').eq('courses.slug', slug).is('lecture_id', null).order('sort_order').order('created_at'),
+    sb.from('course_announcements').select('*, courses!inner(slug)').eq('courses.slug', slug).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(10),
+  ])
   if (!course) notFound()
   const name = ar ? course.name_ar || course.name_en : course.name_en
   const desc = ar ? course.description_ar || course.description_en : course.description_en
@@ -24,19 +33,10 @@ export default async function CoursePage({ params }: { params: Promise<{ lang: s
   let files: CourseFile[] = []
   let news: any[] = []
   if (access) {
-    let lq = supabase.from('lectures').select('*').eq('course_id', course.id).order('number')
-    if (!isAdmin) lq = lq.eq('is_published', true)
-    const [L, F, N] = await Promise.all([
-      lq,
-      supabase.from('course_files').select('*').eq('course_id', course.id).is('lecture_id', null).order('sort_order').order('created_at'),
-      supabase.from('course_announcements').select('*').eq('course_id', course.id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(10),
-    ])
-    const ids = (L.data || []).map((x: Lecture) => x.id)
-    const V = ids.length ? await supabase.from('lecture_videos').select('lecture_id').in('lecture_id', ids) : { data: [] as { lecture_id: string }[] }
-    const vc = new Map<string, number>()
-    for (const v of V.data || []) vc.set(v.lecture_id, (vc.get(v.lecture_id) || 0) + 1)
-    lectures = (L.data || []).map((x: Lecture) => ({ ...x, videos: vc.get(x.id) || 0 }))
-    files = F.data || []
+    lectures = ((L.data || []) as any[])
+      .filter((x) => isAdmin || x.is_published)
+      .map((x) => ({ ...x, videos: x.lecture_videos?.[0]?.count ?? 0 }))
+    files = (F.data || []) as CourseFile[]
     news = N.data || []
   }
 
@@ -79,7 +79,7 @@ export default async function CoursePage({ params }: { params: Promise<{ lang: s
             </div>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section>
               <h2 className="reveal mb-4 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[.12em] text-muted rtl:tracking-normal"><BookOpen size={15} /> {ar ? 'المحاضرات' : 'Lectures'}</h2>
               {lectures.length === 0 && <p className="rounded-xl border border-dashed border-line p-8 text-center text-muted">{ar ? 'لا توجد محاضرات منشورة بعد.' : 'No lectures published yet.'}</p>}
@@ -96,7 +96,7 @@ export default async function CoursePage({ params }: { params: Promise<{ lang: s
                         <span className="font-display text-[22px] font-semibold leading-none">{lec.number}</span>
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[16px] font-semibold text-ink">{ar ? lec.title_ar || lec.title_en : lec.title_en}</span>
+                        <span className="block line-clamp-2 text-[15.5px] font-semibold leading-snug text-ink sm:truncate sm:text-[16px]">{ar ? lec.title_ar || lec.title_en : lec.title_en}</span>
                         <span className="mt-1.5 flex flex-wrap gap-1.5 text-[11.5px]">
                           {(lec.show_student_sheet || isAdmin) && lec.student_sheet_key && <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-ink-2"><FileText size={11} /> {ar ? 'ورقة الطالب' : 'Student sheet'}</span>}
                           {(lec.show_doctor_sheet || isAdmin) && (lec.doctor_sheet_key || lec.student_sheet_key) && <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2 py-0.5 text-ok"><FileCheck2 size={11} /> {ar ? 'المحلولة' : 'Solved'}</span>}

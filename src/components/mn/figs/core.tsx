@@ -123,6 +123,8 @@ export function mathText(s: string): string {
   return s
     .replace(/\$/g, '')
     .replace(/\\(mathbf|vb|boldsymbol|mathrm|text|vec|bar|hat)\{([^}]*)\}/g, '$2')
+    // same commands without braces: "\mathbf c_1" → "c_1" (was shown as the word "mathbf")
+    .replace(/\\(mathbf|vb|boldsymbol|mathrm|mathit|mathsf|text|vec|bar|hat|tilde|operatorname)\s*([A-Za-z0-9])/g, '$2')
     .replace(/\\[td]?frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2')
     .replace(/\\[td]?frac(\d)(\d)/g, '$1/$2')
     .replace(/\\sqrt\{([^}]*)\}/g, '√$1')

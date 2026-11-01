@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getViewer } from '@/lib/auth'
 import { exists, getBytes, presign, put, r2Configured } from '@/lib/r2'
 import { renderSheetPdf } from '@/lib/pdf/render'
-import { ensureSheetPdf } from '@/lib/pdf/build'
+import { ensureSheetPdf, PdfPending } from '@/lib/pdf/build'
 import { stampPdf } from '@/lib/pdf/stamp'
 import { SAMPLES } from '@/lib/mn/samples'
 
@@ -63,6 +63,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ lectureI
     if (wantsJson) return NextResponse.json({ url: signed }, { headers: { 'cache-control': 'no-store' } })
     return NextResponse.redirect(signed, { headers: { 'cache-control': 'no-store' } })
   } catch (e0: any) {
+    if (e0 instanceof PdfPending) {
+      // being built for another student right now → the button retries automatically
+      if (wantsJson) return NextResponse.json({ pending: true, retryAfter: 4 }, { status: 202, headers: { 'cache-control': 'no-store' } })
+      return new NextResponse('The PDF is being prepared — please try again in a few seconds.', { status: 503, headers: { 'retry-after': '4', 'cache-control': 'no-store' } })
+    }
     console.error('[sheet-pdf]', step, e0)
     // the reason is shown in the toast (no secrets in it) so a failure can be fixed quickly
     return NextResponse.json({ error: 'PDF could not be created', step, detail: String(e0?.message || e0).slice(0, 300) }, { status: 500 })

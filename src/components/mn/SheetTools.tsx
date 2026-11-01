@@ -132,9 +132,16 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
     setBusy(true)
     setErr('')
     try {
-      const r = await fetch(pdfHref, { headers: { accept: 'application/json' } })
-      const j = await r.json().catch(() => ({}))
-      if (!r.ok || !j.url) throw new Error(j.step ? `${j.step}: ${j.detail || j.error}` : j.error || 'failed')
+      // 202 = the PDF is being built for another student at this moment → wait and ask again
+      let j: any = {}
+      for (let i = 0; i < 8; i++) {
+        const r = await fetch(pdfHref, { headers: { accept: 'application/json' } })
+        j = await r.json().catch(() => ({}))
+        if (r.status === 202 && j.pending) { await new Promise((res) => setTimeout(res, (j.retryAfter || 4) * 1000)); continue }
+        if (!r.ok || !j.url) throw new Error(j.step ? `${j.step}: ${j.detail || j.error}` : j.error || 'failed')
+        break
+      }
+      if (!j.url) throw new Error('busy')
       window.location.href = j.url
     } catch (e: any) {
       setErr(`${L.failed}${e?.message ? `\n(${e.message})` : ''}`)

@@ -10,7 +10,7 @@ import SheetTools from '@/components/mn/SheetTools'
 import FileRow from '@/components/student/FileRow'
 import { parseMN } from '@/lib/mn/parse'
 import { attachPy } from '@/lib/mn/pyfigs'
-import { getViewer } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/server'
 import { getCourseForViewer, readSheet, type CourseFile, type Lecture, type Video } from '@/lib/courses'
 import { isLang } from '@/lib/i18n'
 import FocusReading from '@/components/mn/FocusReading'
@@ -23,11 +23,16 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   const [{ lang: l, slug, lecture: num }, sp] = await Promise.all([params, searchParams])
   const lang = isLang(l) ? l : 'en'
   const ar = lang === 'ar'
-  // round-trip 1: viewer · round-trip 2: course + enrolment + lectures (parallel)
-  const viewer = await getViewer()
-  const [{ course, access, isAdmin, student, supabase }, { data: all }] = await Promise.all([
+  // ONE parallel round-trip: role + course + enrolment + lectures + this lecture's videos and files
+  // (RLS decides what the viewer may see; videos/files are matched by course slug + lecture number)
+  const sb = await createClient()
+  const n = Number(num)
+  const byLecture = (q: any) => q.select('*, lectures!inner(number, courses!inner(slug))').eq('lectures.number', n).eq('lectures.courses.slug', slug).order('sort_order')
+  const [{ course, access, isAdmin, student }, { data: all }, { data: videos0 }, { data: files0 }] = await Promise.all([
     getCourseForViewer(slug),
-    viewer.supabase.from('lectures').select('*, courses!inner(slug)').eq('courses.slug', slug).order('number'),
+    sb.from('lectures').select('*, courses!inner(slug)').eq('courses.slug', slug).order('number'),
+    Number.isInteger(n) ? byLecture(sb.from('lecture_videos')) : Promise.resolve({ data: [] }),
+    Number.isInteger(n) ? byLecture(sb.from('course_files')) : Promise.resolve({ data: [] }),
   ])
   if (!course) notFound()
   if (!access) redirect(`/courses/${slug}`)
@@ -38,15 +43,13 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   const lec = lectures[idx]
   const prev = lectures[idx - 1], next = lectures[idx + 1]
 
-  // round-trip 3: videos + files + the sheet source (parallel)
+  const videos = ((videos0 || []) as any[]).filter((v) => v.lecture_id === lec.id)
+  const files = ((files0 || []) as any[]).filter((f) => f.lecture_id === lec.id)
+  // the sheet source (cached forever per version, so this is normally instant)
   const requested0 = sp.v
   const wantDoctor = requested0 === 'doctor'
   const sheetKey = wantDoctor ? lec.doctor_sheet_key || lec.student_sheet_key : lec.student_sheet_key || lec.doctor_sheet_key
-  const [{ data: videos }, { data: files }, src0] = await Promise.all([
-    supabase.from('lecture_videos').select('*').eq('lecture_id', lec.id).order('sort_order'),
-    supabase.from('course_files').select('*').eq('lecture_id', lec.id).order('sort_order'),
-    sheetKey && (!requested0 || requested0 === 'student' || requested0 === 'doctor') ? readSheet(sheetKey).catch(() => null) : Promise.resolve(null),
-  ])
+  const src0 = sheetKey && (!requested0 || requested0 === 'student' || requested0 === 'doctor') ? await readSheet(sheetKey).catch(() => null) : null
 
   const canStudent = !!lec.student_sheet_key && (isAdmin || lec.show_student_sheet)
   const canDoctor = !!(lec.doctor_sheet_key || lec.student_sheet_key) && (isAdmin || lec.show_doctor_sheet)

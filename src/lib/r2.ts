@@ -60,6 +60,14 @@ export async function exists(key: string) {
   return res.ok
 }
 
+/** milliseconds since the object was written, or null if it does not exist */
+export async function ageMs(key: string): Promise<number | null> {
+  const res = await r2().fetch(objectUrl(key), { method: 'HEAD' })
+  if (!res.ok) return null
+  const lm = Date.parse(res.headers.get('last-modified') || '')
+  return Number.isFinite(lm) ? Math.max(0, Date.now() - lm) : 0
+}
+
 export async function put(key: string, body: string | Uint8Array | ArrayBuffer | Blob, contentType: string) {
   // R2 needs a Content-Length header. aws4fetch's own fetch() re-wraps the body as a stream
   // (sent without a length → "411 MissingContentLength"), so: sign with aws4fetch, then send the raw bytes ourselves.

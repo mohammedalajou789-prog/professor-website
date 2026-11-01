@@ -2,7 +2,6 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { getText, r2Configured } from '@/lib/r2'
 import { collectPy, type Doc } from './parse'
-import { SAMPLE_FIGS } from './sample-figs'
 
 export const pyKey = (hash: string) => `courses/figs/${hash}.svg`
 export const PY_HASH_RE = /^[0-9a-z]{16,30}$/
@@ -24,8 +23,11 @@ export async function attachPy(doc: Doc) {
   if (!figs.length) return doc
   const ok = r2Configured()
   await Promise.all(figs.map(async (f) => {
-    // example sheets ship with pre-rendered figures; everything else comes from R2
-    f.svg = SAMPLE_FIGS[f.hash] ?? (ok && PY_HASH_RE.test(f.hash) ? await readFig(f.hash).catch(() => null) : null)
+    // course figures live in R2 (cached forever). The built-in example sheets ship their own
+    // figures (≈1 MB) — that file is loaded ONLY when a figure is not in R2, so lecture pages
+    // and PDFs never pay for it on a cold start.
+    f.svg = ok && PY_HASH_RE.test(f.hash) ? await readFig(f.hash).catch(() => null) : null
+    if (!f.svg) f.svg = (await import('./sample-figs')).SAMPLE_FIGS[f.hash] ?? null
   }))
   return doc
 }

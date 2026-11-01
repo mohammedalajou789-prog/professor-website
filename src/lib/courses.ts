@@ -1,6 +1,7 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { getViewer } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/server'
 import { getText } from '@/lib/r2'
 
 export type Course = {
@@ -17,17 +18,20 @@ export type Lecture = {
 export type CourseFile = { id: string; course_id: string; lecture_id: string | null; title_en: string; title_ar: string | null; kind: 'file' | 'link'; r2_key: string | null; url: string | null; mime: string | null; size_bytes: number | null; created_at: string }
 export type Video = { id: string; lecture_id: string; youtube_id: string; title_en: string | null; title_ar: string | null; sort_order: number }
 
-/** Course + the viewer's access level (course and enrolment fetched in parallel). RLS does the real enforcement. */
+/**
+ * Course + the viewer's access level — ONE parallel round-trip:
+ * the role check, the course and the viewer's own enrolment are asked at the same time
+ * (RLS already limits `enrollments` to the signed-in student's own rows).
+ */
 export async function getCourseForViewer(slug: string) {
-  const v = await getViewer()
-  const [{ data: course }, enr] = await Promise.all([
-    v.supabase.from('courses').select('*').eq('slug', slug).maybeSingle(),
-    v.student
-      ? v.supabase.from('enrollments').select('status, courses!inner(slug)').eq('student_id', v.user!.id).eq('courses.slug', slug).maybeSingle()
-      : Promise.resolve({ data: null }),
+  const sb = await createClient()
+  const [v, { data: course }, { data: enr }] = await Promise.all([
+    getViewer(),
+    sb.from('courses').select('*').eq('slug', slug).maybeSingle(),
+    sb.from('enrollments').select('status, courses!inner(slug)').eq('courses.slug', slug).limit(1).maybeSingle(),
   ])
   if (!course) return { ...v, course: null as Course | null, status: null as string | null, access: false }
-  const status: string | null = (enr as any)?.data?.status || null
+  const status: string | null = v.student ? ((enr as any)?.status as string) || null : null
   const access = v.isAdmin || (status === 'approved' && v.student?.status === 'active')
   return { ...v, course: course as Course, status, access }
 }
