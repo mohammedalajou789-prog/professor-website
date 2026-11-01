@@ -189,7 +189,7 @@
 .mn-out-title { font-family: var(--mn-sans); font-weight: 700; color: var(--mn-blue); margin: 0 0 .45em; }
 .mn-plan { align-self: center; }
 .mn-plan table { border-collapse: collapse; }
-.mn-plan td { padding: 2px 14px 2px 0; vertical-align: top; }
+.mn-plan td { padding: 2px 0; padding-inline-end: 14px; vertical-align: top; }
 .mn-plan-range { color: var(--mn-blue); font-weight: 700; white-space: nowrap; }
 
 /* tables */

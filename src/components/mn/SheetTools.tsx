@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Download, List, Minus, Plus, X, Loader2, Maximize2 } from 'lucide-react'
+import { Download, List, Minus, Plus, X, Loader2, ChevronsLeftRight, Maximize, Minimize } from 'lucide-react'
 
 /**
  * PDF-viewer-like controls for the sheet: zoom the WHOLE sheet (text, maths, figures),
@@ -45,9 +45,11 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [canFs, setCanFs] = useState(false)
+  const [fs, setFs] = useState(false)
   const L = ar
-    ? { contents: 'المحتويات', pdf: 'تحميل الشيت PDF', smaller: 'تصغير', larger: 'تكبير', fit: 'ملء العرض', failed: 'تعذّر تجهيز الملف، حاول بعد قليل.' }
-    : { contents: 'Contents', pdf: 'Download PDF', smaller: 'Zoom out', larger: 'Zoom in', fit: 'Fit width', failed: 'Could not prepare the PDF — please try again in a moment.' }
+    ? { contents: 'المحتويات', pdf: 'تحميل الشيت PDF', smaller: 'تصغير', larger: 'تكبير', fit: 'ملء العرض', full: 'ملء الشاشة', exitFull: 'الخروج من ملء الشاشة', failed: 'تعذّر تجهيز الملف، حاول بعد قليل.' }
+    : { contents: 'Contents', pdf: 'Download PDF', smaller: 'Zoom out', larger: 'Zoom in', fit: 'Fit width', full: 'Full screen', exitFull: 'Exit full screen', failed: 'Could not prepare the PDF — please try again in a moment.' }
 
   // initial zoom: saved choice, otherwise fit-to-width
   useEffect(() => {
@@ -65,6 +67,32 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // full screen (like F11) — hidden where the browser does not allow it (iPhone)
+  useEffect(() => {
+    setCanFs(!!document.fullscreenEnabled)
+    const on = () => setFs(!!document.fullscreenElement)
+    on()
+    document.addEventListener('fullscreenchange', on)
+    return () => document.removeEventListener('fullscreenchange', on)
+  }, [])
+  const toggleFs = () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+    else
+      document.documentElement
+        .requestFullscreen({ navigationUI: 'hide' })
+        .then(() => {
+          // jump straight to the sheet: full screen = only the sheet and its toolbar
+          requestAnimationFrame(() => {
+            const frame = document.querySelector('.mn-zoom-scroll') as HTMLElement | null
+            const bar = document.querySelector('.under-nav.sticky') as HTMLElement | null
+            if (!frame) return
+            const top = frame.getBoundingClientRect().top + window.scrollY - (bar?.offsetHeight || 0) - 12
+            if (window.scrollY < top) window.scrollTo({ top, behavior: 'instant' as ScrollBehavior })
+          })
+        })
+        .catch(() => {})
+  }
 
   const set = useCallback((z: number, asFit = false) => {
     const v = Math.max(MIN, Math.min(MAX, Math.round(z * 100) / 100))
@@ -122,7 +150,12 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
           {Math.round(zoom * 100)}%
         </button>
         <button type="button" className={btn} onClick={() => step(1)} disabled={zoom >= MAX} aria-label={L.larger} title={L.larger}><Plus size={16} /></button>
-        <button type="button" className={`${btn} hidden sm:inline-flex`} onClick={() => set(fitZoom(), true)} aria-label={L.fit} title={L.fit}><Maximize2 size={15} /></button>
+        <button type="button" className={`${btn} hidden sm:inline-flex`} onClick={() => set(fitZoom(), true)} aria-label={L.fit} title={L.fit}><ChevronsLeftRight size={16} /></button>
+        {canFs && (
+          <button type="button" className={`${btn} ${fs ? 'bg-surface-2 text-link' : ''}`} onClick={toggleFs} aria-label={fs ? L.exitFull : L.full} title={`${fs ? L.exitFull : L.full} (F11)`}>
+            {fs ? <Minimize size={15} /> : <Maximize size={15} />}
+          </button>
+        )}
         {toc.length > 0 && (
           <button type="button" className={btn} onClick={() => setOpen(true)} aria-label={L.contents} title={L.contents}><List size={16} /></button>
         )}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { setRoleHint } from '@/lib/role'
 import { useLang } from '@/context/LangContext'
 import { inputCls } from './AuthShell'
 
@@ -39,6 +40,7 @@ export default function LoginForm({ admin = false }: { admin?: boolean }) {
           return
         }
         const { data: isAdmin } = await supabase.rpc('is_admin')
+        setRoleHint(isAdmin ? 'admin' : 'student')
         const next = sp.get('next')
         router.replace(next && next.startsWith('/') ? next : isAdmin ? '/admin/dashboard' : '/dashboard')
         router.refresh()

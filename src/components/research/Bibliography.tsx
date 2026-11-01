@@ -1,34 +1,23 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Copy, Check, Download, ExternalLink, Quote } from 'lucide-react'
+import { Copy, Check, ExternalLink, Quote } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
-import { bibtex, citation, type Pub } from '@/lib/pubstats'
+import { citation, type Pub } from '@/lib/pubstats'
 
 const T = {
-  en: { byYear: 'By year', export: 'Export', bib: 'Download BibTeX (.bib)', copy: 'Cite', copied: 'Copied', papers: 'papers', paper: 'paper', cited: 'cited', type: 'Type', all: 'All' },
-  ar: { byYear: 'حسب السنة', export: 'تصدير', bib: 'تنزيل BibTeX (.bib)', copy: 'اقتباس', copied: 'تم النسخ', papers: 'أبحاث', paper: 'بحث', cited: 'اقتباس', type: 'النوع', all: 'الكل' },
-}
-
-function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }))
-  const a = Object.assign(document.createElement('a'), { href: url, download: name })
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+  en: { byYear: 'By year', copy: 'Cite', copied: 'Copied', papers: 'papers', paper: 'paper', cited: 'cited' },
+  ar: { byYear: 'حسب السنة', copy: 'اقتباس', copied: 'تم النسخ', papers: 'أبحاث', paper: 'بحث', cited: 'اقتباس' },
 }
 
 export default function Bibliography({ pubs }: { pubs: Pub[] }) {
   const { lang } = useLang()
   const t = T[lang]
-  const [type, setType] = useState('all')
   const [active, setActive] = useState<number | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
   const chipsRef = useRef<HTMLDivElement>(null)
 
-  const types = useMemo(() => Array.from(new Set(pubs.map((p) => (p.pub_type || 'article').toLowerCase()))), [pubs])
-  const shown = useMemo(() => (type === 'all' ? pubs : pubs.filter((p) => (p.pub_type || 'article').toLowerCase() === type)), [pubs, type])
+  const shown = pubs
   const byYear = useMemo(() => {
     const m = new Map<number, Pub[]>()
     for (const p of shown) m.set(p.year, [...(m.get(p.year) || []), p])
@@ -109,30 +98,9 @@ export default function Bibliography({ pubs }: { pubs: Pub[] }) {
               </button>
             ))}
           </nav>
-          {types.length > 1 && (
-            <div className="mt-6 border-t border-line pt-5">
-              <p className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[.12em] text-muted rtl:tracking-normal">{t.type}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {['all', ...types].map((x) => (
-                  <button key={x} onClick={() => setType(x)} className={`rounded-full px-2.5 py-1 text-[12px] capitalize transition ${type === x ? 'bg-navy text-white' : 'bg-surface text-ink-2 ring-1 ring-line'}`}>
-                    {x === 'all' ? t.all : x}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="mt-6 border-t border-line pt-5">
-            <p className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[.12em] text-muted rtl:tracking-normal">{t.export}</p>
-            <button onClick={() => download('el-ajou-publications.bib', bibtex(shown))} className="inline-flex items-center gap-2 text-[13.5px] text-ink-2 transition hover:text-ink">
-              <Download size={14} /> {t.bib}
-            </button>
-          </div>
         </aside>
 
         <main className="min-w-0 flex-1 space-y-5 pb-10 sm:space-y-7">
-          <button onClick={() => download('el-ajou-publications.bib', bibtex(shown))} className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2 text-[13px] text-ink-2 lg:hidden">
-            <Download size={14} /> {t.bib}
-          </button>
           {byYear.map(([y, ps]) => (
             <section key={y} id={`y${y}`} data-year={y} className="card reveal scroll-mt-32 px-4 pb-2 pt-5 sm:px-8 sm:pt-7">
               <div className="mb-2 flex items-baseline justify-between gap-4">

@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard, User, FileText, BookOpen, Newspaper, GraduationCap, Briefcase, Award, Globe, Users, Mic, UserCheck,
-  School, Sigma, LogOut, Menu, X, ChevronDown, Eye,
+  School, Sigma, LogOut, Menu, X, ChevronDown, Eye, MonitorSmartphone,
 } from 'lucide-react'
 import { useCleanPath } from '@/lib/usePath'
-import { createClient } from '@/lib/supabase/client'
+import { signOutAll } from '@/lib/role'
 import Logo from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 
@@ -48,7 +48,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const path = useCleanPath()
   const sp = useSearchParams()
   const s = sp.get('s')
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [menu, setMenu] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -70,17 +69,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   if (path === '/admin/login') return <>{children}</>
 
-  const signOut = async () => {
-    await createClient().auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
+  const signOut = () => signOutAll('/login')
   const contentOn = CONTENT.some((c) => isOn(path, s, c.href))
   const link = (on: boolean) => `relative flex items-center gap-1.5 px-3 py-5 text-[13.5px] transition-colors ${on ? 'font-semibold text-[#E3C566]' : 'text-[#C4CFDE] hover:text-white'}`
 
   return (
     <div dir="ltr" lang="en" className="admin min-h-screen bg-bg">
-      <header className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${scrolled ? 'border-b border-[#C9A227]/20 bg-deep shadow-[0_8px_30px_rgba(0,0,0,.35)]' : 'border-b border-white/[.06] bg-deep'}`}>
+      <header className={`site-nav fixed inset-x-0 top-0 z-[100] h-16 ${scrolled ? 'border-b border-[#C9A227]/20 bg-deep shadow-[0_8px_30px_rgba(0,0,0,.35)]' : 'border-b border-white/[.06] bg-deep'}`}>
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between gap-3 px-4 sm:px-7 lg:px-12 2xl:px-[72px]">
           <Link href="/admin/dashboard" className="group flex min-w-0 items-center gap-3">
             <Logo className="h-10 w-10 shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg] group-hover:scale-105" />
@@ -132,6 +127,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
+            <Link href="/dashboard" prefetch={false} title="See the site exactly as a student sees it" className="hidden items-center gap-1.5 rounded-md border border-white/25 px-3 py-2 text-[13px] text-white transition hover:border-[#C9A227] hover:text-[#E3C566] xl:inline-flex">
+              <MonitorSmartphone size={15} /> Student view
+            </Link>
             <Link href="/" className="hidden items-center gap-1.5 rounded-md bg-[#C9A227] px-3.5 py-2 text-[13px] font-semibold text-[#0A1A30] transition hover:bg-[#E0BC4A] sm:inline-flex">
               <Eye size={15} /> View site
             </Link>
@@ -169,6 +167,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </nav>
         <div className="space-y-2.5 border-t border-white/[.07] p-4">
           <Link href="/" className="flex items-center justify-center gap-2 rounded-lg bg-[#C9A227] py-3 text-[14.5px] font-semibold text-[#0A1A30]"><Eye size={17} /> View site · عرض الموقع</Link>
+          <Link href="/dashboard" prefetch={false} className="flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 py-3 text-[14px] text-white"><MonitorSmartphone size={16} /> Student view · واجهة الطالب</Link>
           <button onClick={signOut} className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 py-3 text-[14px] text-white"><LogOut size={16} /> Sign out</button>
         </div>
       </aside>

@@ -299,7 +299,7 @@ function TimePlan({ rows, ctx, inBox }: { rows: { range: string; text: string }[
         <tbody>
           {rows.map((r, k) => (
             <tr key={k}>
-              <td className="mn-plan-range">{r.range}</td>
+              <td className="mn-plan-range"><bdi dir="ltr">{r.range}</bdi></td>
               <td {...H(inline(r.text, ctx.doc.labels))} />
             </tr>
           ))}

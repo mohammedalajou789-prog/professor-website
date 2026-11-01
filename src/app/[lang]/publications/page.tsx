@@ -8,8 +8,8 @@ import { isLang } from '@/lib/i18n'
 export const metadata: Metadata = { title: 'Publications' }
 
 const T = {
-  en: { eyebrow: 'Academic publications', title: 'Publications', lede: 'The complete bibliography — peer-reviewed journal articles ordered by year, with one-click citations and BibTeX export.', pubs: 'Publications', cites: 'Citations', h: 'h-index', i10: 'i10-index' },
-  ar: { eyebrow: 'المنشورات الأكاديمية', title: 'المنشورات', lede: 'القائمة الكاملة للأبحاث المحكّمة مرتّبة حسب السنة، مع نسخ الاقتباس بنقرة وتصدير BibTeX.', pubs: 'منشور', cites: 'اقتباس', h: 'معامل h', i10: 'معامل i10' },
+  en: { eyebrow: 'Academic publications', title: 'Publications', lede: 'The complete bibliography — peer-reviewed journal articles ordered by year, with one-click citations.', pubs: 'Publications', cites: 'Citations', h: 'h-index', i10: 'i10-index' },
+  ar: { eyebrow: 'المنشورات الأكاديمية', title: 'المنشورات', lede: 'القائمة الكاملة للأبحاث المحكّمة مرتّبة حسب السنة، مع نسخ الاقتباس بنقرة.', pubs: 'منشور', cites: 'اقتباس', h: 'معامل h', i10: 'معامل i10' },
 }
 
 export default async function PublicationsPage({ params }: { params: Promise<{ lang: string }> }) {

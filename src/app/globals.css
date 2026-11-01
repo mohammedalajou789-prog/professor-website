@@ -123,7 +123,8 @@ input, select, textarea { color: inherit; }
 .reveal-scale { transform: scale(.96); }
 
 @keyframes page-in { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
-.page-enter { animation: page-in .45s var(--ease-out) both; }
+/* backwards, not both: a finished animation must leave NO transform behind, otherwise every position:fixed child (admin bar, drawers, progress bar) scrolls away with the page */
+.page-enter { animation: page-in .45s var(--ease-out) backwards; }
 
 @keyframes draw { to { stroke-dashoffset: 0; } }
 /* drawings wait until their .reveal ancestor enters the viewport */
@@ -235,3 +236,11 @@ html[dir='rtl'] .hero-backdrop { background: radial-gradient(120% 130% at 22% 10
     linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
   background-size: auto, auto, 32px 32px, 32px 32px;
 }
+
+/* reading focus (sheet pages): the top bar slides away while scrolling down, comes back on scroll up.
+   Bars carry .site-nav; sticky toolbars under them carry .under-nav and move up into the freed space. */
+.site-nav { transition: transform .32s var(--ease-out), background-color .3s, box-shadow .3s, border-color .3s; }
+html[data-nav-hidden] .site-nav { transform: translateY(-100%); box-shadow: none; }
+.under-nav { top: 4rem; transition: top .32s var(--ease-out); }
+html[data-nav-hidden] .under-nav { top: 0; }
+:fullscreen, ::backdrop { background-color: var(--c-bg); }

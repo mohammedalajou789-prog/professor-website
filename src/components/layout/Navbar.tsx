@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useCleanPath } from '@/lib/usePath'
-import { Menu, X, GraduationCap, Globe } from 'lucide-react'
+import { Menu, X, GraduationCap, Globe, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
+import { hasSession, readRoleHint, signOutAll, type Role } from '@/lib/role'
 import { useLang } from '@/context/LangContext'
 import type { Brand } from './types'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -37,7 +38,7 @@ export default function Navbar({ brand }: { brand: Brand }) {
   const pathname = useCleanPath()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [role, setRole] = useState<Role | null>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -46,9 +47,17 @@ export default function Navbar({ brand }: { brand: Brand }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // cheap auth hint: Supabase stores the session in an "sb-…-auth-token" cookie
+  // who is signed in: session cookie + role hint (set at sign-in); asks the server once if the hint is missing
   useEffect(() => {
-    setLoggedIn(/(^|;\s*)sb-[^=]+-auth-token/.test(document.cookie))
+    if (!hasSession()) return setRole(null)
+    const hint = readRoleHint()
+    if (hint) return setRole(hint)
+    let live = true
+    fetch('/api/me', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => live && setRole(j.role === 'admin' || j.role === 'student' ? j.role : null))
+      .catch(() => {})
+    return () => { live = false }
   }, [pathname])
 
   useEffect(() => setOpen(false), [pathname])
@@ -64,14 +73,19 @@ export default function Navbar({ brand }: { brand: Brand }) {
   const links = LINKS[lang]
   const name = isRTL ? brand.name_ar : brand.name_en
   const title = isRTL ? brand.title_ar : brand.title_en
-  const account = loggedIn
-    ? { href: '/dashboard', label: isRTL ? 'لوحتي' : 'My Courses' }
-    : { href: '/login', label: isRTL ? 'تسجيل الدخول' : 'Sign in' }
+  const account =
+    role === 'admin'
+      ? { href: '/admin/dashboard', label: isRTL ? 'لوحة التحكم' : 'Admin panel', Icon: LayoutDashboard }
+      : role === 'student'
+        ? { href: '/dashboard', label: isRTL ? 'مساقاتي' : 'My Courses', Icon: GraduationCap }
+        : { href: '/login', label: isRTL ? 'تسجيل الدخول' : 'Sign in', Icon: LogIn }
+  const AccIcon = account.Icon
+  const signOutLabel = isRTL ? 'تسجيل الخروج' : 'Sign out'
 
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-[100] h-16 transition-[background,box-shadow,border-color] duration-300 ${
+        className={`site-nav fixed inset-x-0 top-0 z-[100] h-16 ${
           scrolled ? 'bg-deep shadow-[0_8px_30px_rgba(0,0,0,.35)] border-b border-[#C9A227]/20' : 'bg-deep border-b border-white/[.06]'
         }`}
       >
@@ -107,17 +121,31 @@ export default function Navbar({ brand }: { brand: Brand }) {
             <Link
               href={account.href}
               prefetch={false}
-              className="hidden items-center gap-1.5 rounded-md bg-[#C9A227] px-3.5 py-2 text-[13px] font-semibold text-[#0A1A30] transition hover:bg-[#E0BC4A] sm:inline-flex"
+              title={account.label}
+              className="inline-flex h-[38px] items-center gap-1.5 rounded-md bg-[#C9A227] px-2.5 text-[13px] font-semibold text-[#0A1A30] transition hover:bg-[#E0BC4A] sm:px-3.5"
             >
-              <GraduationCap size={15} />
-              {account.label}
+              <AccIcon size={16} />
+              <span className={role ? 'hidden sm:inline' : 'text-[12.5px] sm:text-[13px]'}>{account.label}</span>
             </Link>
-            <ThemeToggle className="h-[38px] w-[38px] rounded-md border border-white/25 text-white transition hover:border-[#C9A227] hover:text-[#E3C566]" />
+            {role && (
+              <button
+                onClick={() => signOutAll('/')}
+                title={signOutLabel}
+                aria-label={signOutLabel}
+                className="hidden h-[38px] min-w-[38px] items-center justify-center gap-1.5 rounded-md border border-white/25 px-2 text-[13px] text-white transition hover:border-[#F08A7E] hover:text-[#F08A7E] sm:inline-flex xl:px-3"
+              >
+                <LogOut size={16} className="rtl:rotate-180" />
+                <span className="hidden xl:inline">{signOutLabel}</span>
+              </button>
+            )}
+            <span className="hidden sm:block">
+              <ThemeToggle className="h-[38px] w-[38px] rounded-md border border-white/25 text-white transition hover:border-[#C9A227] hover:text-[#E3C566]" />
+            </span>
             <button
               onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-              className="rounded-md border border-white/25 px-3 py-2 text-[13px] text-white transition hover:border-[#C9A227] hover:text-[#E3C566]"
+              className="h-[38px] rounded-md border border-white/25 px-2.5 text-[13px] text-white transition hover:border-[#C9A227] hover:text-[#E3C566] sm:px-3"
             >
-              {lang === 'en' ? 'عربي' : 'English'}
+              {lang === 'en' ? 'عربي' : 'EN'}
             </button>
             <button onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-md p-2 text-white lg:hidden">
               <Menu size={24} />
@@ -165,8 +193,18 @@ export default function Navbar({ brand }: { brand: Brand }) {
         </nav>
         <div className="space-y-2.5 border-t border-white/[.07] p-4">
           <Link href={account.href} prefetch={false} className="flex items-center justify-center gap-2 rounded-lg bg-[#C9A227] py-3 text-[14.5px] font-semibold text-[#0A1A30]">
-            <GraduationCap size={17} /> {account.label}
+            <AccIcon size={17} /> {account.label}
           </Link>
+          {role === 'admin' && (
+            <Link href="/dashboard" prefetch={false} className="flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 py-3 text-[14px] text-white">
+              <GraduationCap size={16} /> {isRTL ? 'واجهة الطالب' : 'Student view'}
+            </Link>
+          )}
+          {role && (
+            <button onClick={() => signOutAll('/')} className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 py-3 text-[14px] text-white">
+              <LogOut size={16} className="rtl:rotate-180" /> {signOutLabel}
+            </button>
+          )}
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#C9A227]/35 bg-[#C9A227]/10 py-3 text-[14px] text-white"

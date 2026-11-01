@@ -37,7 +37,7 @@ export default function SheetChrome({ children }: { toc?: { id: string; html: st
 
   return (
     <div className="relative">
-      <div className="mn-noprint fixed inset-x-0 top-16 z-40 h-[3px] bg-transparent">
+      <div className="mn-noprint under-nav fixed inset-x-0 z-40 h-[3px] bg-transparent">
         <div ref={bar} className="h-full origin-left bg-gradient-to-r from-[#0B6FA4] via-[#1E9BD0] to-[#C9A227] will-change-transform rtl:origin-right" style={{ transform: 'scaleX(0)' }} />
       </div>
       <div ref={frame} className="mn-zoom-scroll">
