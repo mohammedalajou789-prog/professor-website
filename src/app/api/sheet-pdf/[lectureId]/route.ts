@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createHash } from 'node:crypto'
 import { getViewer } from '@/lib/auth'
 import { exists, getBytes, presign, put, r2Configured } from '@/lib/r2'
 import { renderSheetPdf } from '@/lib/pdf/render'
+import { ensureSheetPdf } from '@/lib/pdf/build'
 import { stampPdf } from '@/lib/pdf/stamp'
 import { SAMPLES } from '@/lib/mn/samples'
 
 export const maxDuration = 60
 export const runtime = 'nodejs'
 
-/** bump when the print layout changes → every cached PDF is rebuilt */
-const PDF_VERSION = 'p2'
 
 /**
  * Sheet → PDF (vector text, real fonts, same design as on screen, A4).
@@ -46,18 +44,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ lectureI
   if (!r2Configured()) return NextResponse.json({ error: 'Storage is not configured' }, { status: 500 })
 
   const fileName = `${(course?.code || course?.name_en || 'course').replace(/[^\w\- ]+/g, '').trim()} - Lecture ${lec.number}.pdf`
-  const base = `courses/pdf/${createHash('sha256').update(`${PDF_VERSION}|${key}|${mode}|${lang}`).digest('hex').slice(0, 32)}.pdf`
-  let step = 'storage check'
+  let step = 'render'
   try {
-    if (!(await exists(base))) {
-      step = 'render'
-      const pdf = await renderSheetPdf({
-        origin: url.origin, key, mode, lang,
-        footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou`,
-      })
-      step = 'save'
-      await put(base, pdf, 'application/pdf')
-    }
+    // normally already built when the doctor saved the sheet → no wait
+    const base = await ensureSheetPdf({ origin: url.origin, sheetKey: key, footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` })
     let out = base
     if (!isAdmin && student) {
       step = 'watermark'

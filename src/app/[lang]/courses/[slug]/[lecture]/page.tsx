@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { after } from 'next/server'
+import { headers } from 'next/headers'
+import { ensureSheetPdf } from '@/lib/pdf/build'
 import { FileText, FileCheck2, PlayCircle, Paperclip, ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import Sheet, { sheetToc } from '@/components/mn/Sheet'
 import SheetTools from '@/components/mn/SheetTools'
@@ -76,6 +79,13 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   }
   // only the blank (student) sheet can be downloaded — never the solved one
   const pdfHref = sheet && active === 'student' ? `/api/sheet-pdf/${lec.id}?lang=${lang}` : undefined
+  // the doctor opening a lecture makes sure its PDF is ready (older sheets saved before PDFs existed)
+  const pdfSheetKey = lec.student_sheet_key || lec.doctor_sheet_key
+  if (isAdmin && pdfSheetKey) {
+    const h = await headers()
+    const origin = `${h.get('x-forwarded-proto') || 'http'}://${h.get('host')}`
+    after(() => ensureSheetPdf({ origin, sheetKey: pdfSheetKey, footer: `${course.name_en} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` }).catch(() => {}))
+  }
 
   const title = ar ? lec.title_ar || lec.title_en : lec.title_en
 

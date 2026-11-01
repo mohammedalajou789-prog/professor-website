@@ -1,4 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
+import { ensureSheetPdf } from '@/lib/pdf/build'
+
+export const maxDuration = 60
 import { getViewer } from '@/lib/auth'
 import { put, getText, r2Configured } from '@/lib/r2'
 
@@ -10,7 +13,7 @@ export async function PUT(req: Request) {
   const { lectureId, which, text, draft } = await req.json()
   if (!lectureId || !['student', 'doctor'].includes(which) || typeof text !== 'string') return NextResponse.json({ error: 'bad request' }, { status: 400 })
   if (text.length > 2_000_000) return NextResponse.json({ error: 'Sheet too large' }, { status: 400 })
-  const { data: lec } = await supabase.from('lectures').select('id, course_id').eq('id', lectureId).maybeSingle()
+  const { data: lec } = await supabase.from('lectures').select('id, course_id, number, student_sheet_key, courses(name_en)').eq('id', lectureId).maybeSingle()
   if (!lec) return NextResponse.json({ error: 'lecture not found' }, { status: 404 })
   if (draft) {
     // preview only: overwrite a draft object, do not touch the lecture
@@ -23,6 +26,13 @@ export async function PUT(req: Request) {
   const col = which === 'student' ? 'student_sheet_key' : 'doctor_sheet_key'
   const { error } = await supabase.from('lectures').update({ [col]: key }).eq('id', lec.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  // prepare the students' PDF in the background (the save itself returns immediately)
+  const pdfSource = which === 'student' ? key : lec.student_sheet_key ? null : key
+  if (pdfSource) {
+    const origin = new URL(req.url).origin
+    const footer = `${(lec as any).courses?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou`
+    after(() => ensureSheetPdf({ origin, sheetKey: pdfSource, footer }).catch((e) => console.error('[sheet-pdf prebuild]', e)))
+  }
   return NextResponse.json({ ok: true, key })
 }
 
