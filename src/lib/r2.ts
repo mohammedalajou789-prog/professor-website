@@ -1,5 +1,6 @@
 import 'server-only'
 import { AwsClient } from 'aws4fetch'
+import { request as httpsRequest } from 'node:https'
 
 /**
  * Cloudflare R2 (S3-compatible) — one PRIVATE bucket.
@@ -60,10 +61,31 @@ export async function exists(key: string) {
 }
 
 export async function put(key: string, body: string | Uint8Array | ArrayBuffer | Blob, contentType: string) {
-  // aws4fetch signs the payload hash: it accepts strings and byte arrays only (a Blob throws)
-  const data = body instanceof Blob ? new Uint8Array(await body.arrayBuffer()) : body
-  const res = await r2().fetch(objectUrl(key), { method: 'PUT', body: data as BodyInit, headers: { 'content-type': contentType } })
-  if (!res.ok) throw new Error(`R2 PUT ${key}: ${res.status} ${await res.text()}`)
+  // R2 needs a Content-Length header. aws4fetch's own fetch() re-wraps the body as a stream
+  // (sent without a length → "411 MissingContentLength"), so: sign with aws4fetch, then send the raw bytes ourselves.
+  const bytes =
+    typeof body === 'string' ? new TextEncoder().encode(body)
+    : body instanceof Blob ? new Uint8Array(await body.arrayBuffer())
+    : body instanceof ArrayBuffer ? new Uint8Array(body)
+    : body
+  const signed = await r2().sign(objectUrl(key), { method: 'PUT', body: bytes as BodyInit, headers: { 'content-type': contentType, 'content-length': String(bytes.byteLength) } })
+  const headers: Record<string, string> = {}
+  signed.headers.forEach((v, k) => { headers[k] = v })
+  headers['content-length'] = String(bytes.byteLength)
+  // plain node:https → the length is always sent, whatever the Node/undici version (Node 26 streams fetch bodies)
+  const { status, text } = await new Promise<{ status: number; text: string }>((resolve, reject) => {
+    const u = new URL(signed.url)
+    const req = httpsRequest({ method: 'PUT', hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, headers }, (res) => {
+      let t = ''
+      res.setEncoding('utf8')
+      res.on('data', (c) => { t += c })
+      res.on('end', () => resolve({ status: res.statusCode || 0, text: t }))
+    })
+    req.on('error', reject)
+    req.setTimeout(60_000, () => req.destroy(new Error('R2 PUT timeout')))
+    req.end(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength))
+  })
+  if (status < 200 || status >= 300) throw new Error(`R2 PUT ${key}: ${status} ${text.slice(0, 300)}`)
 }
 
 export async function remove(key: string) {
