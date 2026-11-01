@@ -114,6 +114,7 @@
 - **رسومات متحركة:** مستوى طور تتحرك فيه المسارات، ومنزلق تفاعلي.
 - **أخرى:** جداول، أعمدة، صور (برابط)، فيديو يوتيوب، Desmos.
 - **شيتات بالعربية:** ضع `lang: ar` في رأس الملف، فتظهر العناوين بالعربية والرياضيات من اليسار لليمين.
+- **شيت بلغتين (عربي + إنجليزي) في ملف واحد:** اطلب من Claude: «اكتب الشيت بالعربية والإنجليزية». يكتب `lang: both`، والطالب يرى الشيت بلغة الموقع؛ إذا بدّل لغة الموقع (أو ضغط زر **ع / EN** فوق الشيت) تتبدّل لغة الشيت، وملف PDF ينزل بلغته. الرياضيات والرسومات مكتوبة مرة واحدة. في المعاينة (Preview) زر **EN / ع** لرؤية النسختين.
 
 **رسومات بايثون:**
 - تُرسم مرة واحدة على جهازك عند الضغط على **Save** أو **Preview**.
@@ -242,6 +243,7 @@ You don't need to learn the format. A Claude project is prepared for you:
 - **Animated figures:** phase portraits with moving trajectories, interactive sliders.
 - **Other:** tables, columns, images (link), YouTube, Desmos.
 - **Arabic sheets:** put `lang: ar` in the file header. Headings appear in Arabic and the mathematics stays left-to-right.
+- **Bilingual sheet (Arabic + English) in one file:** ask Claude: "write the sheet in Arabic and English". It writes `lang: both`; each student sees the sheet in the site's language, switching the site language (or the **ع / EN** button above the sheet) switches the sheet, and the PDF downloads in that language. Mathematics and figures are written once. In Preview, the **EN / ع** switch shows both versions.
 
 **Python figures:**
 - They are drawn once, on your computer, when you press **Save** or **Preview**.

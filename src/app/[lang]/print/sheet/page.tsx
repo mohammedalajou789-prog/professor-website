@@ -13,7 +13,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   let title = 'Lecture sheet'
   if (v) {
     const src = v.key.startsWith('sample:') ? SAMPLES[v.key.slice(7)]?.src : await readSheet(v.key).catch(() => null)
-    const m = src ? parseMN(src).meta : null
+    const m = src ? parseMN(src, { lang: v.lang }).meta : null
     if (m?.title) title = `${m.lecture ? `Lecture ${m.lecture} — ` : ''}${m.title}`
   }
   return { title: { absolute: title }, robots: { index: false } }
@@ -28,7 +28,7 @@ export default async function PrintSheet({ searchParams }: { searchParams: Promi
   if (v.key.startsWith('sample:')) src = SAMPLES[v.key.slice(7)]?.src ?? null
   else src = await readSheet(v.key).catch(() => null)
   if (!src) notFound()
-  const doc = await attachPy(parseMN(src))
+  const doc = await attachPy(parseMN(src, { lang: v.lang }))
   return (
     <div className="mn-printing">
       <Sheet doc={doc} mode={v.mode} courseName={v.course} bare />

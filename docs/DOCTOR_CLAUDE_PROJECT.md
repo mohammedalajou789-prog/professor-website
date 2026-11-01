@@ -19,16 +19,17 @@
 2. **Name:** `شيتات المحاضرات — Lecture Sheets`
 3. **Description:** `يحوّل أي مادة محاضرة إلى ملف .mn جاهز للرفع على ahmadelajou.com`
 4. **Instructions:** افتح `docs/doctor-project/INSTRUCTIONS.md`، انسخ محتواه **كله**، والصقه في خانة Project instructions.
-5. **Project knowledge:** ارفع الملفات الثمانية الباقية من نفس المجلد:
+5. **Project knowledge:** ارفع الملفات التسعة الباقية من نفس المجلد:
 
 | الملف | ما هو |
 |---|---|
-| `MN_SYNTAX_SPEC.md` | قواعد الصيغة كاملة (v1.3) — **أهم ملف** |
+| `MN_SYNTAX_SPEC.md` | قواعد الصيغة كاملة (v1.4) — **أهم ملف** |
 | `EXAMPLE-complete-sheet.txt` | محاضرة واحدة فيها **كل** العناصر و19 رسمة — النموذج الرئيسي |
 | `EXAMPLE-lecture-01.txt` | شيت مطابق لشيت الدكتور الأصلي (أسلوبه ورموزه) |
 | `EXAMPLE-python-figures.txt` | رسومات بايثون صحيحة |
 | `EXAMPLE-builtin-figures.txt` | كل رسومات الموقع المتحركة والتفاعلية |
 | `EXAMPLE-arabic-sheet.txt` | شيت بالعربية |
+| `EXAMPLE-bilingual-sheet.txt` | شيت واحد بلغتين (عربي + إنجليزي) يتبع لغة الموقع |
 | `EXAMPLE-lecture-04.txt` | قيم ذاتية ومستوى طور |
 | `DOCTOR_GUIDE.md` | دليل الموقع، ليجيب عن أسئلة الدكتور |
 
@@ -50,4 +51,4 @@
 بعدها في الموقع: لوحة التحكم ← المساق ← المحاضرة ← **Upload .mn** (أو لصق النص في المحرر) ← **Preview** ← **Save**.
 
 ## 4. متى أحدّث المشروع؟
-عند أي تحديث لصيغة MN أو الأمثلة: يعيد Claude توليد `docs/doctor-project/`، فتستبدل الملفات في مشروع الدكتور بالنسخ الجديدة. وإن تغيّر `INSTRUCTIONS.md` تلصقه من جديد. آخر تحديث للحزمة: **2026-11-01 (MN v1.3)**.
+عند أي تحديث لصيغة MN أو الأمثلة: يعيد Claude توليد `docs/doctor-project/`، فتستبدل الملفات في مشروع الدكتور بالنسخ الجديدة. وإن تغيّر `INSTRUCTIONS.md` تلصقه من جديد. آخر تحديث للحزمة: **2026-11-01 (MN v1.4 — شيت بلغتين)**. ما يجب تحديثه في مشروع الدكتور: استبدال `MN_SYNTAX_SPEC.md` و `DOCTOR_GUIDE.md`، رفع `EXAMPLE-bilingual-sheet.txt`، ولصق `INSTRUCTIONS.md` من جديد.

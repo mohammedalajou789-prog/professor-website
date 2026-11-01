@@ -31,7 +31,7 @@ async function launch() {
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
 export async function renderSheetPdf(opts: { origin: string; key: string; mode: 'student' | 'doctor'; lang: 'en' | 'ar'; footer: string }) {
-  const token = signPrint({ key: opts.key, mode: opts.mode })
+  const token = signPrint({ key: opts.key, mode: opts.mode, lang: opts.lang })
   const url = `${opts.origin}/print/sheet?t=${encodeURIComponent(token)}`
   const browser = await launch()
   try {

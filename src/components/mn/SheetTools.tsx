@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { Download, List, Minus, Plus, X, Loader2, ChevronsLeftRight, Maximize, Minimize } from 'lucide-react'
+import { useLang } from '@/context/LangContext'
 
 /**
  * PDF-viewer-like controls for the sheet: zoom the WHOLE sheet (text, maths, figures),
@@ -39,7 +40,8 @@ function applyZoom(z: number) {
   }
 }
 
-export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; html: string }[]; pdfHref?: string; ar?: boolean }) {
+export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id: string; html: string }[]; pdfHref?: string; ar?: boolean; /** bilingual sheet: quick EN / ع switch (= the site language switch) */ langSwitch?: boolean }) {
+  const { setLang } = useLang()
   const [zoom, setZoom] = useState(1)
   const [fit, setFit] = useState(true)
   const [open, setOpen] = useState(false)
@@ -154,6 +156,17 @@ export default function SheetTools({ toc, pdfHref, ar }: { toc: { id: string; ht
         {canFs && (
           <button type="button" className={`${btn} ${fs ? 'bg-surface-2 text-link' : ''}`} onClick={toggleFs} aria-label={fs ? L.exitFull : L.full} title={`${fs ? L.exitFull : L.full} (F11)`}>
             {fs ? <Minimize size={15} /> : <Maximize size={15} />}
+          </button>
+        )}
+        {langSwitch && (
+          <button
+            type="button"
+            onClick={() => setLang(ar ? 'en' : 'ar')}
+            className={`inline-flex h-8 min-w-8 items-center justify-center rounded-md px-1.5 font-semibold text-link transition hover:bg-surface-2 ${ar ? 'text-[12.5px]' : 'font-arabic text-[15px]'}`}
+            aria-label={ar ? 'Show the sheet in English' : 'اعرض الشيت بالعربية'}
+            title={ar ? 'English' : 'العربية'}
+          >
+            {ar ? 'EN' : 'ع'}
           </button>
         )}
         {toc.length > 0 && (

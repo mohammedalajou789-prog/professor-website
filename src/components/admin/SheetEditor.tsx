@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Upload, Pencil, Eye, Save, Trash2, Copy, CheckCircle2, AlertTriangle, X, FileCode2 } from 'lucide-react'
-import { parseMN } from '@/lib/mn/parse'
+import { parseMNAll } from '@/lib/mn/parse'
 import { prepareFigures } from '@/lib/py/prepare'
 import { Btn } from './ui'
 
-export const AI_PROMPT = `You are converting lecture material into MN Syntax v1.3 (spec attached). Use every MN element that fits the content (see complete-sheet.mn in the Sheet guide).
+export const AI_PROMPT = `You are converting lecture material into MN Syntax v1.4 (spec attached). Use every MN element that fits the content (see complete-sheet.mn in the Sheet guide).
 Rules:
-1. Start with the YAML header (course, chapter, chapter_title, lecture, title, duration, lang).
+1. Start with the YAML header (course, chapter, chapter_title, lecture, title, duration, lang: en | ar | both).
+   BILINGUAL (when asked for English and Arabic): write lang: both, add title_ar / chapter_title_ar / course_ar to the header,
+   write every text once in each language — {{English || عربي}} for short text (headings, box titles, list items, MCQ lines, captions, table cells)
+   and ::: en … ::: / ::: ar … ::: around longer paragraphs. Write the mathematics, figures and Python code only ONCE (outside the language parts),
+   and keep the same boxes in both languages so the numbering matches.
 2. Begin with ::: outcomes and ::: timeplan blocks.
 3. Use ## for sections and ### for sub-sections.
 4. Put every definition/theorem/example/remark/recall/caution in its ::: block. Do NOT number them — numbering is automatic. Give important items a {#label} and refer to them with @label.
@@ -41,7 +45,8 @@ export default function SheetEditor({ lectureId, which, sheetKey, onSaved, onRem
   const check = useMemo(() => {
     if (!text) return null
     try {
-      const d = parseMN(text)
+      const all = parseMNAll(text)
+      const d = all.docs[0]
       const counts = { blocks: 0, figures: 0, python: 0, mcq: 0 }
       const walk = (ns: any[]) => ns.forEach((n) => {
         if (n.t === 'block') { counts.blocks++; walk(n.children) }
@@ -53,9 +58,9 @@ export default function SheetEditor({ lectureId, which, sheetKey, onSaved, onRem
         if (n.t === 'columns') n.cols.forEach(walk)
       })
       walk(d.nodes)
-      return { errors: d.errors, title: d.meta.title, lecture: d.meta.lecture, ...counts }
+      return { errors: all.errors, title: d.meta.title, lecture: d.meta.lecture, bilingual: all.bilingual, ...counts }
     } catch (e: any) {
-      return { errors: [e.message], title: '', lecture: '', blocks: 0, figures: 0, python: 0, mcq: 0 }
+      return { errors: [e.message], title: '', lecture: '', bilingual: false, blocks: 0, figures: 0, python: 0, mcq: 0 }
     }
   }, [text])
 
@@ -100,7 +105,7 @@ export default function SheetEditor({ lectureId, which, sheetKey, onSaved, onRem
               e.target.value = ''
               if (!f) return
               const src = await f.text()
-              const d = parseMN(src)
+              const d = parseMNAll(src)
               if (d.errors.length && !confirm(`The file has ${d.errors.length} issue(s):\n\n${d.errors.slice(0, 6).join('\n')}\n\nUpload anyway?`)) return
               setBusy('save')
               try {
@@ -138,7 +143,7 @@ export default function SheetEditor({ lectureId, which, sheetKey, onSaved, onRem
             {check && (check.errors.length ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-bad-soft px-2.5 py-1 text-bad"><AlertTriangle size={13} /> {check.errors.length} issue(s)</span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2.5 py-1 text-ok"><CheckCircle2 size={13} /> valid · {check.blocks} boxes · {check.figures + check.python} figures{check.python ? ` (${check.python} Python)` : ''} · {check.mcq} MCQs</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2.5 py-1 text-ok"><CheckCircle2 size={13} /> valid{check.bilingual ? ' · English + Arabic' : ''} · {check.blocks} boxes · {check.figures + check.python} figures{check.python ? ` (${check.python} Python)` : ''} · {check.mcq} MCQs</span>
             ))}
             <button onClick={() => navigator.clipboard.writeText(AI_PROMPT).then(() => setMsg('AI prompt copied — paste it with the MN spec into your AI tool.'))} className="inline-flex items-center gap-1 text-link hover:underline"><Copy size={12} /> Copy AI prompt</button>
             <button onClick={() => setOpen(false)} className="ms-auto inline-flex items-center gap-1 text-muted"><X size={13} /> Close</button>

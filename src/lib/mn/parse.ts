@@ -37,7 +37,119 @@ export type Node =
 
 export type MCQ = { q: string; options: { text: string; correct: boolean }[]; explain?: string }
 
-export type Doc = { meta: Meta; nodes: Node[]; labels: Record<string, { text: string; id: string }>; errors: string[] }
+export type Doc = {
+  meta: Meta
+  nodes: Node[]
+  labels: Record<string, { text: string; id: string }>
+  errors: string[]
+  /** the file holds an English AND an Arabic version (shown in the site's language) */
+  bilingual?: boolean
+}
+
+export type SheetLang = 'en' | 'ar'
+
+/* ───────────────────────── bilingual sheets ─────────────────────────
+ * One .mn file, two languages. Mathematics, figures and Python code are written once.
+ *   header      lang: both            + title_ar: … / chapter_title_ar: … (the _ar value is used in Arabic)
+ *   block       ::: en … :::   and   ::: ar … :::   (any content, any length, nested boxes allowed)
+ *   inline      {{English || عربي}}   (headings, box titles, list items, MCQ options, captions, table cells…)
+ * The site shows the version that matches the visitor's language; switching the language switches the sheet.
+ */
+const BOTH_RE = /^(both|bi|bilingual|en\s*\+\s*ar|ar\s*\+\s*en|en\s*[/,]\s*ar|ar\s*[/,]\s*en)$/i
+const LANG_SECTION_RE = /^:::\s*(en|ar|english|arabic|عربي|إنجليزي|انجليزي)\s*$/i
+const AR_LETTER = /[؀-ۿ]/
+const hasArabicText = (s: string) => AR_LETTER.test(s.replace(/\$[^$]*\$/g, ''))
+const sectionLang = (w: string): SheetLang => (/^(ar|arabic|عربي)$/i.test(w) ? 'ar' : 'en')
+
+/**
+ * Replace every {{English || عربي}} group of one line by the requested language.
+ * `$…$` math is skipped while scanning, so LaTeX braces such as `2^{n}}` never close a group.
+ * If the Arabic text was written first, the two sides are swapped automatically.
+ */
+export function pickInline(line: string, lang: SheetLang): string {
+  if (!line.includes('{{') || !line.includes('||')) return line
+  let out = ''
+  let i = 0
+  let math = false
+  while (i < line.length) {
+    const c = line[i]
+    if (c === '\\') { out += line.slice(i, i + 2); i += 2; continue }
+    if (c === '$') { math = !math; out += c; i++; continue }
+    if (!math && c === '{' && line[i + 1] === '{') {
+      // try to read a group: {{ a || b }}
+      let j = i + 2, m = false, bar = -1, end = -1
+      while (j < line.length) {
+        const d = line[j]
+        if (d === '\\') { j += 2; continue }
+        if (d === '$') m = !m
+        else if (!m && bar < 0 && d === '|' && line[j + 1] === '|') { bar = j; j += 2; continue }
+        else if (!m && bar >= 0 && d === '}' && line[j + 1] === '}') { end = j; break }
+        j++
+      }
+      if (bar >= 0 && end >= 0) {
+        let en = line.slice(i + 2, bar).trim()
+        let ar = line.slice(bar + 2, end).trim()
+        if (hasArabicText(en) && !hasArabicText(ar)) [en, ar] = [ar, en]
+        out += lang === 'ar' ? ar : en
+        i = end + 2
+        continue
+      }
+    }
+    out += c
+    i++
+  }
+  return out
+}
+
+/** does this (body) text use any bilingual marker? */
+function hasBiMarkers(lines: string[]) {
+  let fence = false
+  for (const l of lines) {
+    const t = l.trim()
+    if (fence) { if (t.startsWith('```')) fence = false; continue } // Python / figure code is never touched
+    if (t.startsWith('```')) fence = true
+    else if (LANG_SECTION_RE.test(t)) return true
+    if (pickInline(l, 'en') !== l) return true
+  }
+  return false
+}
+
+/** keep only the lines of one language (drops ::: en / ::: ar wrappers of the other language) */
+function pickLines(lines: string[], lang: SheetLang, errors: string[]) {
+  const out: string[] = []
+  const stack: (SheetLang | null)[] = [] // null = an ordinary ::: box
+  let fence = false
+  for (const raw of lines) {
+    const t = raw.trim()
+    const visible = stack.every((s) => s === null || s === lang)
+    if (fence) {
+      if (t.startsWith('```')) fence = false
+      if (visible) out.push(raw)
+      continue
+    }
+    if (t.startsWith('```')) {
+      fence = true
+      if (visible) out.push(pickInline(raw, lang))
+      continue
+    }
+    const lm = t.match(LANG_SECTION_RE)
+    if (lm) { stack.push(sectionLang(lm[1])); continue }
+    if (t.startsWith(':::')) {
+      if (t === ':::') {
+        const s = stack.pop()
+        if (s === undefined || s === null) { if (visible) out.push(raw) }
+        continue
+      }
+      stack.push(null)
+      if (visible) out.push(pickInline(raw, lang))
+      continue
+    }
+    if (visible) out.push(pickInline(raw, lang))
+  }
+  const open = stack.filter((s) => s !== null)
+  if (open.length) errors.push(`Language section "::: ${open[open.length - 1]}" is not closed with ":::"`)
+  return out
+}
 
 /** Bump when the Python figure style (src/lib/py/prelude.ts) changes → all Python figures regenerate. */
 export const PY_STYLE_VERSION = 'py1'
@@ -122,9 +234,13 @@ function slug(s: string) {
   return s.toLowerCase().replace(/\$[^$]*\$/g, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 60) || 'section'
 }
 
-export function parseMN(src: string): Doc {
+/**
+ * @param opts.lang  the site language. Only used by bilingual files (`lang: both`, `::: ar`, `{{… || …}}`):
+ *                   they are parsed in that language. A one-language file always shows as written.
+ */
+export function parseMN(src: string, opts: { lang?: SheetLang } = {}): Doc {
   const errors: string[] = []
-  const text = src.replace(/\r\n?/g, '\n').replace(/\t/g, '  ')
+  let text = src.replace(/\r\n?/g, '\n').replace(/\t/g, '  ')
   let lines = text.split('\n')
   const meta: Meta = {}
 
@@ -139,7 +255,24 @@ export function parseMN(src: string): Doc {
       lines = lines.slice(end + 1)
     }
   }
-  if (meta.lang !== 'ar') meta.lang = 'en'
+  const declared = (meta.lang || '').trim()
+  const bilingual = BOTH_RE.test(declared) || hasBiMarkers(lines)
+  if (bilingual) {
+    const lang: SheetLang = opts.lang ?? (declared === 'ar' ? 'ar' : 'en')
+    // header: `title_ar:` wins in Arabic, `title_en:` in English; values may also use {{… || …}}
+    const keys = new Set(Object.keys(meta).map((k) => k.replace(/_(ar|en)$/, '')))
+    const hadAuthorAr = meta.author_ar !== undefined
+    for (const k of keys) {
+      if (k === 'lang') continue
+      const v = meta[`${k}_${lang}`] ?? meta[k] ?? meta[`${k}_${lang === 'ar' ? 'en' : 'ar'}`]
+      if (v !== undefined) meta[k] = pickInline(v, lang)
+    }
+    // an English author name inside an Arabic sheet → the Arabic default name is used instead
+    if (lang === 'ar' && !hadAuthorAr && meta.author && !hasArabicText(meta.author)) delete meta.author
+    meta.lang = lang
+    lines = pickLines(lines, lang, errors)
+    text = lines.join('\n')
+  } else if (meta.lang !== 'ar') meta.lang = 'en'
 
   const L = meta.lecture || meta.chapter || '1'
   const counters: Record<string, number> = {}
@@ -390,5 +523,41 @@ export function parseMN(src: string): Doc {
   const refRe = /(?<![\w\\])@([a-z]+:[\w.-]*\w)/g
   for (const m of text.matchAll(refRe)) if (!labels[m[1]]) errors.push(`Reference @${m[1]} has no matching {#${m[1]}}`)
 
-  return { meta, nodes, labels, errors }
+  return { meta, nodes, labels, errors, bilingual }
+}
+
+/**
+ * Check a file in every language it contains (editor + upload).
+ * One-language file → one doc. Bilingual file → [English, Arabic] + a check that both versions
+ * have the same numbered boxes (otherwise "Example 6.3" would not be the same example in both languages).
+ */
+export function parseMNAll(src: string): { docs: Doc[]; errors: string[]; bilingual: boolean } {
+  const first = parseMN(src, { lang: 'en' })
+  if (!first.bilingual) return { docs: [first], errors: first.errors, bilingual: false }
+  const ar = parseMN(src, { lang: 'ar' })
+  const errors: string[] = []
+  const both = new Set(first.errors.filter((e) => ar.errors.includes(e)))
+  errors.push(...both)
+  errors.push(...first.errors.filter((e) => !both.has(e)).map((e) => `English version: ${e}`))
+  errors.push(...ar.errors.filter((e) => !both.has(e)).map((e) => `Arabic version: ${e}`))
+  const count = (d: Doc) => {
+    const c: Record<string, number> = {}
+    const add = (k: string) => (c[k] = (c[k] || 0) + 1)
+    const walk = (ns: Node[]) => ns.forEach((n) => {
+      if (n.t === 'h2') add('sections (##)')
+      if (n.t === 'block') { if (n.num) add(`${n.kind}s`); walk(n.children) }
+      if (n.t === 'math' && n.num) add('numbered equations')
+      if (n.t === 'mcq') c['MCQ questions'] = (c['MCQ questions'] || 0) + n.questions.length
+      if (n.t === 'list') n.items.forEach(walk)
+      if (n.t === 'steps') n.steps.forEach(walk)
+      if (n.t === 'columns') n.cols.forEach(walk)
+    })
+    walk(d.nodes)
+    return c
+  }
+  const ce = count(first), ca = count(ar)
+  for (const k of new Set([...Object.keys(ce), ...Object.keys(ca)])) {
+    if ((ce[k] || 0) !== (ca[k] || 0)) errors.push(`English and Arabic versions differ: ${ce[k] || 0} vs ${ca[k] || 0} ${k} — numbering will not match between the languages`)
+  }
+  return { docs: [first, ar], errors, bilingual: true }
 }

@@ -1,4 +1,4 @@
-# MN Syntax — v1.3
+# MN Syntax — v1.4
 ### لغة كتابة شيتات الرياضيات لموقع Prof. Ahmad El-Ajou
 
 > **MN = Math Notes.** ملف نصي واحد (`.mn`) يكتبه الدكتور أو يولّده الذكاء الاصطناعي، ثم يُرفع من لوحة التحكم فيتحوّل إلى شيت بنفس تصميم شيتات الدكتور (ألوان الصناديق نفسها مأخوذة من ملف Chapter 1 الأصلي) مع رسومات تفاعلية وحركة.
@@ -23,7 +23,7 @@ chapter_title: Matrix Methods for Linear Systems
 lecture: 1
 title: Linear Systems in Normal Form & Matrix Review I
 duration: 75
-lang: en            # en | ar   (ar = اتجاه من اليمين لليسار؛ الرياضيات تبقى LTR)
+lang: en            # en | ar | both   (ar = من اليمين لليسار؛ both = ملف واحد بلغتين — انظر "شيت بلغتين"؛ الرياضيات تبقى LTR)
 author: Prof. Ahmad El-Ajou
 ---
 
@@ -57,6 +57,50 @@ author: Prof. Ahmad El-Ajou
 
 **القوائم:** `- ` نقطة · `1. ` أرقام · `(1) ` أو `(a) ` أقواس · `i. ` أرقام رومانية · `► ` أسهم.
 السطر التابع لعنصر القائمة يُزاح بمسافتين على الأقل (يمكن أن يحتوي معادلة `$$` أو قائمة داخلية).
+
+
+### شيت واحد بلغتين — عربي + إنجليزي ⭐ (v1.4)
+ملف واحد فيه النسختان. **الطالب يرى لغة الموقع**: إذا بدّل لغة الموقع (أو ضغط زر **ع / EN** في شريط أدوات الشيت) تتبدّل لغة الشيت فوراً.
+الرياضيات والرسومات وكود بايثون تُكتب **مرة واحدة** وتظهر في النسختين.
+
+| الكتابة | الاستخدام |
+|---|---|
+| `lang: both` في الرأس | يجعل الملف ثنائي اللغة (يكفي أيضاً وجود `::: ar` أو `{{… \|\| …}}` في الملف) |
+| `title_ar: …` `chapter_title_ar: …` `course_ar: …` `author_ar: …` | قيمة الرأس بالعربية (القيمة العادية للإنجليزية). أي حقل يقبل `_ar` |
+| `{{English text \|\| النص العربي}}` | نص قصير بلغتين **داخل السطر**: العناوين `##`، عناوين الصناديق `"…"`، عناصر القوائم، أسطر MCQ والخيارات والشرح، `caption=`، خلايا الجداول، الخطة الزمنية |
+| `::: en` … `:::` و `::: ar` … `:::` | فقرات طويلة لكل لغة (أي محتوى، أي طول، ويمكن أن تحتوي صناديق) |
+
+```
+---
+title: The Gamma Function
+title_ar: دالة غاما
+lang: both
+---
+
+## {{The Gamma function || دالة غاما}}
+
+::: definition "{{Gamma function || دالة غاما}}" {#def:gamma}
+::: en
+For every $z>0$ the [[Gamma function]] is defined by
+:::
+::: ar
+لكل $z>0$ نعرّف [[دالة غاما]] بالتكامل
+:::
+$$\Gamma(z)=\int_0^\infty t^{z-1}e^{-t}\,dt.$$ {#eq:gamma}
+:::
+
+- {{Compute $\Gamma(5)$. || احسب $\Gamma(5)$.}}
+```
+
+**قواعد:**
+- الإنجليزي أولاً ثم العربي داخل `{{ … || … }}` (وإن عُكس الترتيب يُصحَّح تلقائياً).
+- `$…$` داخل `{{ }}` مسموح (الأقواس داخل LaTeX لا تُغلق المجموعة).
+- اجعل **نفس الصناديق** في اللغتين (نفس عدد التعريفات والأمثلة…) حتى يكون "Example 1.2" هو "مثال 1.2" نفسه. المحرر ينبّه إن اختلفت النسختان.
+- النص الذي لا يحتاج ترجمة (معادلة وحدها، رسمة، جدول أرقام) يُكتب مرة واحدة خارج `{{ }}` و `::: en/ar`.
+- كود بايثون لا يُترجم؛ الشرح العربي/الإنجليزي في `caption="{{… || …}}"`.
+- ملف PDF يُبنى بلغة الطالب (نسخة لكل لغة).
+- الملفات القديمة ذات اللغة الواحدة (`lang: en` أو `lang: ar`) تبقى كما هي ولا تتأثر بلغة الموقع.
+- مثال كامل: `docs/mn/bilingual-sample.mn` (في Sheet guide: **Bilingual sheet · شيت بلغتين**).
 
 ---
 
@@ -382,9 +426,13 @@ flow: Find |A − λI| -> Solve for λ -> {distinct?} -yes-> Use Theorem 4.1
 ## 8. Prompt جاهز للذكاء الاصطناعي
 (موجود أيضاً بزر **Copy AI prompt** في محرر الشيت — أرفق هذا الملف معه)
 ```
-You are converting lecture material into MN Syntax v1.2 (spec attached).
+You are converting lecture material into MN Syntax v1.4 (spec attached).
 Rules:
-1. Start with the YAML header (course, chapter, chapter_title, lecture, title, duration, lang).
+1. Start with the YAML header (course, chapter, chapter_title, lecture, title, duration, lang: en | ar | both).
+   BILINGUAL (when asked for English and Arabic): write lang: both, add title_ar / chapter_title_ar / course_ar to the header,
+   write every text once in each language — {{English || عربي}} for short text (headings, box titles, list items, MCQ lines, captions, table cells)
+   and ::: en … ::: / ::: ar … ::: around longer paragraphs. Write the mathematics, figures and Python code only ONCE (outside the language parts),
+   and keep the same boxes in both languages so the numbering matches.
 2. Begin with ::: outcomes and ::: timeplan blocks.
 3. Use ## for sections and ### for sub-sections.
 4. Put every definition/theorem/example/remark/recall/caution in its ::: block. Do NOT number them — numbering is automatic. Give important items a {#label} and refer to them with @label.
@@ -406,6 +454,7 @@ Rules:
 ---
 
 ## 9. Changelog
+- **v1.4 (2026-11-01):** **شيت بلغتين** في ملف واحد: `lang: both`، حقول الرأس `_ar`، `{{English || عربي}}` داخل السطر، و `::: en` / `::: ar` للفقرات. الشيت يتبع لغة الموقع، وزر **ع / EN** في أدوات الشيت، وملف PDF بلغة الطالب. المحرر يفحص النسختين ويقارن عدد الصناديق. مثال: `docs/mn/bilingual-sample.mn`.
 - **v1.3 (2026-11-01):** شيت مرجعي كامل `complete-sheet.mn` (كل العناصر) وأصبح أول مثال في Sheet guide. الإشارة `@label` تقبل نقطة بعدها. توضيح `tree` و `graph` و `diagram` و `proof hide` و `homework`. وضع التركيز وملء الشاشة. تعليمات مشروع Claude للدكتور: `docs/doctor-project/INSTRUCTIONS.md`.
 - **v1.2 (2026-11-01):** كتلة ```` ```pyplot ```` — رسومات بايثون حقيقية (numpy, matplotlib, scipy, sympy, mpmath) مع دوال جاهزة: `ml` (Mittag-Leffler)، `gamma`، `caputo`، `fde_solve`، `axes_through_origin`، `pi_ticks`. أصبحت الطريقة المفضّلة للرسومات في الـ Prompt. ملف مرجعي جديد: `docs/mn/python-figures.mn`.
 - **v1.1 (2026-10-31):** مطابقة كاملة لما بُني فعلاً: إضافة `teacher`, `summary`, `illustration`, `note`, `from=` لـ recall، `(@eq:x)` للإشارة للمعادلات، `between`, `segment`, `vector`, `text`, `nullclines`, `arrows off`, `plane`, `line` في stats، ودوال `ml`, `if`. الحركة أصبحت تلقائية (أُلغيت `animate=` و `reveal=click`). الصور: روابط https فقط حالياً.

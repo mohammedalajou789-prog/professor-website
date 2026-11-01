@@ -47,7 +47,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ lectureI
   let step = 'render'
   try {
     // normally already built when the doctor saved the sheet → no wait
-    const base = await ensureSheetPdf({ origin: url.origin, sheetKey: key, footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` })
+    const base = await ensureSheetPdf({ origin: url.origin, sheetKey: key, lang, footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` })
     let out = base
     if (!isAdmin && student) {
       step = 'watermark'

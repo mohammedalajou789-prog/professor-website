@@ -13,6 +13,7 @@ const files = [
   ['docs/mn/python-figures.mn', 'EXAMPLE-python-figures.txt'],
   ['docs/mn/showcase.mn', 'EXAMPLE-builtin-figures.txt'],
   ['docs/mn/arabic-sample.mn', 'EXAMPLE-arabic-sheet.txt'],
+  ['docs/mn/bilingual-sample.mn', 'EXAMPLE-bilingual-sheet.txt'],
   ['docs/mn/lecture-04.mn', 'EXAMPLE-lecture-04.txt'],
 ]
 for (const [from, to] of files) copyFileSync(from, `${out}/${to}`)

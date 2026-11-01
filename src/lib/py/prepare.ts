@@ -1,6 +1,6 @@
 'use client'
 
-import { parseMN, collectPy } from '@/lib/mn/parse'
+import { parseMNAll, collectPy } from '@/lib/mn/parse'
 import { runPy, scopeSvg } from './client'
 
 /**
@@ -8,7 +8,8 @@ import { runPy, scopeSvg } from './client'
  * (runs Python in this browser) and upload the SVGs. Throws with a readable list of Python errors.
  */
 export async function prepareFigures(src: string, onProgress: (msg: string) => void) {
-  const figs = collectPy(parseMN(src))
+  // bilingual sheets: figures of both languages (the same code is generated only once)
+  const figs = parseMNAll(src).docs.flatMap(collectPy)
   if (!figs.length) return { total: 0, generated: 0 }
   const order = new Map<string, number>()
   figs.forEach((f, i) => { if (!order.has(f.hash)) order.set(f.hash, i + 1) })

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { headers } from 'next/headers'
-import { ensureSheetPdf } from '@/lib/pdf/build'
+import { ensureSheetPdfs } from '@/lib/pdf/build'
 import { FileText, FileCheck2, PlayCircle, Paperclip, ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import Sheet, { sheetToc } from '@/components/mn/Sheet'
 import SheetTools from '@/components/mn/SheetTools'
@@ -61,12 +61,14 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
 
   let sheet: React.ReactNode = null
   let toc: { id: string; html: string }[] = []
+  let bilingual = false
   if (active === 'student' || active === 'doctor') {
     const key = active === 'doctor' ? lec.doctor_sheet_key || lec.student_sheet_key : lec.student_sheet_key || lec.doctor_sheet_key
     const src = key === sheetKey ? src0 : key ? await readSheet(key).catch(() => null) : null
     if (src) {
-      const doc = await attachPy(parseMN(src))
+      const doc = await attachPy(parseMN(src, { lang }))
       toc = sheetToc(doc)
+      bilingual = !!doc.bilingual
       sheet = (
         <Sheet
           doc={doc}
@@ -85,7 +87,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   if (isAdmin && pdfSheetKey) {
     const h = await headers()
     const origin = `${h.get('x-forwarded-proto') || 'http'}://${h.get('host')}`
-    after(() => ensureSheetPdf({ origin, sheetKey: pdfSheetKey, footer: `${course.name_en} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` }).catch(() => {}))
+    after(() => ensureSheetPdfs({ origin, sheetKey: pdfSheetKey, footer: `${course.name_en} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` }).catch(() => {}))
   }
 
   const title = ar ? lec.title_ar || lec.title_en : lec.title_en
@@ -104,7 +106,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
             <span className="text-link">{ar ? 'محاضرة' : 'Lecture'} {lec.number}</span> · {title}
           </p>
           <div className="ms-auto flex shrink-0 items-center gap-2">
-            {sheet && <SheetTools toc={toc} pdfHref={pdfHref} ar={ar} />}
+            {sheet && <SheetTools toc={toc} pdfHref={pdfHref} ar={ar} langSwitch={bilingual} />}
             {isAdmin && (
               <Link href={`/admin/courses/${course.id}?lecture=${lec.id}`} className="hidden shrink-0 rounded-md bg-navy px-2.5 py-1.5 text-[12px] text-white sm:inline-block">
                 Edit

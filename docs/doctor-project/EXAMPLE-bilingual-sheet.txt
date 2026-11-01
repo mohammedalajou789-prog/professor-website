@@ -1,0 +1,115 @@
+---
+course: Fractional Differential Equations
+course_ar: المعادلات التفاضلية الكسرية
+chapter: 2
+chapter_title: Introduction to Fractional Calculus
+chapter_title_ar: مدخل إلى حساب التفاضل الكسري
+lecture: 1
+title: The Gamma Function and the Caputo Derivative
+title_ar: دالة غاما ومشتقة كابوتو
+duration: 75
+lang: both          # one file, two languages — the sheet follows the site language
+author: Prof. Ahmad El-Ajou
+author_ar: أ.د. أحمد العجو
+---
+
+::: outcomes
+- {{Define the Gamma function and use its basic property. || تعريف دالة غاما واستخدام خاصيتها الأساسية.}}
+- {{Compute the Caputo derivative of power functions. || حساب مشتقة كابوتو لدوال القوى.}}
+- {{Interpret the fractional derivative graphically. || تفسير المشتقة الكسرية بيانياً.}}
+:::
+
+::: timeplan
+0-20  | {{The Gamma function; @def:gamma || دالة غاما؛ @def:gamma}}
+20-50 | {{The Caputo derivative; @thm:power || مشتقة كابوتو؛ @thm:power}}
+50-70 | {{Examples and figures || أمثلة ورسومات}}
+70-75 | {{Self-assessment questions || أسئلة التقييم الذاتي}}
+:::
+
+## {{The Gamma function || دالة غاما}}
+
+::: definition "{{Gamma function || دالة غاما}}" {#def:gamma}
+::: en
+For every $z>0$ the [[Gamma function]] is defined by the integral
+:::
+::: ar
+لكل $z>0$ نعرّف [[دالة غاما]] بالتكامل
+:::
+$$\Gamma(z)=\int_0^\infty t^{z-1}e^{-t}\,dt.$$ {#eq:gamma}
+:::
+
+::: remarks
+(1) $\Gamma(z+1)=z\,\Gamma(z)$ {{for every || لكل}} $z>0$.
+(2) $\Gamma(n+1)=n!$ {{for every integer $n\ge 0$, so the Gamma function generalises the factorial. || لكل عدد صحيح $n\ge 0$، لذلك تعمّم دالة غاما المضروب.}}
+(3) $\Gamma\!\left(\tfrac12\right)=\sqrt{\pi}$.
+:::
+
+```pyplot caption="{{The Gamma function on $(0,5]$; note that $\Gamma(n+1)=n!$. || منحنى دالة غاما $\Gamma(x)$ على الفترة $(0,5]$، ونلاحظ أن $\Gamma(n+1)=n!$.}}"
+x = np.linspace(0.05, 5, 500)
+plt.plot(x, gamma(x), color=blue, label=r"$\Gamma(x)$")
+n = np.arange(1, 5)
+plt.plot(n + 1, [math.factorial(k) for k in n], "o", color=red, label=r"$(n+1,\ n!)$")
+plt.ylim(0, 26); plt.xlabel("$x$"); plt.legend()
+```
+
+## {{The Caputo derivative || مشتقة كابوتو}}
+
+::: definition "{{Caputo derivative || مشتقة كابوتو}}" {#def:caputo}
+{{Let $0<\alpha<1$. The [[Caputo fractional derivative]] of order $\alpha$ of $f$ is || لتكن $0<\alpha<1$. تُعرَّف [[مشتقة كابوتو الكسرية]] من الرتبة $\alpha$ للدالة $f$ بالصيغة}}
+$$\D{\alpha}f(t)=\frac{1}{\Gamma(1-\alpha)}\int_0^t\frac{f'(\tau)}{(t-\tau)^{\alpha}}\,d\tau.$$ {#eq:caputo}
+:::
+
+::: theorem "{{Derivative of power functions || مشتقة دوال القوى}}" {#thm:power}
+{{If $\beta>0$ and $0<\alpha<1$, then || إذا كان $\beta>0$ و $0<\alpha<1$ فإن}}
+$$\D{\alpha}\,t^{\beta}=\frac{\Gamma(\beta+1)}{\Gamma(\beta+1-\alpha)}\,t^{\beta-\alpha},\qquad \D{\alpha}\,c=0.$$
+:::
+
+::: example {#ex:half}
+{{Compute $\D{1/2}\,t$ and then $\D{1/2}\,t^2$. || احسب $\D{1/2}\,t$ ثم $\D{1/2}\,t^2$.}}
+:::
+
+::: solution steps space=8
+{{By @thm:power with $\beta=1$: || من @thm:power مع $\beta=1$:}}
+$$\D{1/2}\,t=\frac{\Gamma(2)}{\Gamma(3/2)}\,t^{1/2}=\frac{2}{\sqrt\pi}\sqrt t.$$
+>>>
+{{With $\beta=2$: || ومع $\beta=2$:}}
+$$\D{1/2}\,t^2=\frac{\Gamma(3)}{\Gamma(5/2)}\,t^{3/2}=\boxed{\frac{8}{3\sqrt\pi}\,t^{3/2}}.$$
+:::
+
+::: caution
+::: en
+The fractional derivative is **not** local: its value at $t$ depends on all values of the function on $[0,t]$.
+:::
+::: ar
+المشتقة الكسرية **ليست** محلية: قيمتها عند $t$ تعتمد على كل قيم الدالة على $[0,t]$.
+:::
+:::
+
+```plot x=[0,2] y=[0,2.2] caption="{{Move the slider: $\D{\alpha}\,t$ goes from $t$ to $1$. || حرّك المنزلق: ينتقل $\D{\alpha}\,t$ من $t$ إلى $1$.}}"
+slider a = 0.5 in [0, 0.99] step 0.01
+f(x) = x^(1-a)/gamma(2-a) color=blue
+g(x) = x color=gray dash
+h(x) = 1 color=red dash
+```
+
+| $\alpha$ | $\D{\alpha}\,t$ | {{Value at $t=1$ || القيمة عند $t=1$}} |
+|:---:|:---:|:---:|
+| $0$ | $t$ | $1$ |
+| $\tfrac12$ | $\tfrac{2}{\sqrt\pi}\sqrt t$ | $1.128$ |
+| $1$ | $1$ | $1$ |
+
+::: mcq
+Q: {{The value of $\Gamma(5)$ is || قيمة $\Gamma(5)$ هي}}
+- $5$
+- $24$ *
+- $120$
+- $4$
+> {{$\Gamma(n+1)=n!$, so $\Gamma(5)=4!=24$. || $\Gamma(n+1)=n!$ إذن $\Gamma(5)=4!=24$.}}
+
+Q: {{The Caputo derivative of a constant $c$ is || مشتقة كابوتو لثابت $c$ تساوي}}
+- $c$
+- $\dfrac{c\,t^{-\alpha}}{\Gamma(1-\alpha)}$
+- $0$ *
+- {{undefined || غير معرّفة}}
+> {{Because $f'(\tau)=0$ in (@eq:caputo). || لأن $f'(\tau)=0$ في الصيغة (@eq:caputo).}}
+:::

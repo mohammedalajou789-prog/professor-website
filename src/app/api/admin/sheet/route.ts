@@ -1,5 +1,5 @@
 import { NextResponse, after } from 'next/server'
-import { ensureSheetPdf } from '@/lib/pdf/build'
+import { ensureSheetPdfs } from '@/lib/pdf/build'
 
 export const maxDuration = 60
 import { getViewer } from '@/lib/auth'
@@ -31,7 +31,7 @@ export async function PUT(req: Request) {
   if (pdfSource) {
     const origin = new URL(req.url).origin
     const footer = `${(lec as any).courses?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou`
-    after(() => ensureSheetPdf({ origin, sheetKey: pdfSource, footer }).catch((e) => console.error('[sheet-pdf prebuild]', e)))
+    after(() => ensureSheetPdfs({ origin, sheetKey: pdfSource, footer }).catch((e) => console.error('[sheet-pdf prebuild]', e)))
   }
   return NextResponse.json({ ok: true, key })
 }

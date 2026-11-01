@@ -11,16 +11,19 @@ import { attachPy } from '@/lib/mn/pyfigs'
 export const dynamic = 'force-dynamic'
 
 /** Admin reference: sample sheets in both versions, plus draft previews from the sheet editor. */
-export default async function MnGuide({ searchParams }: { searchParams: Promise<{ s?: string; mode?: string; key?: string }> }) {
+export default async function MnGuide({ params, searchParams }: { params: Promise<{ lang: string }>; searchParams: Promise<{ s?: string; mode?: string; key?: string; l?: string }> }) {
   const demo = process.env.MN_DEMO_PUBLIC === '1'
   if (!demo) await requireAdmin()
-  const sp = await searchParams
+  const [sp, { lang: siteLang }] = await Promise.all([searchParams, params])
   const draft = sp.key && sp.key.startsWith('courses/') ? await getText(sp.key).catch(() => null) : null
   const sample = sp.s && SAMPLES[sp.s] ? sp.s : 'complete'
   const src = draft ?? SAMPLES[sample].src
   const mode = sp.mode === 'student' ? 'student' : 'doctor'
-  const doc = await attachPy(parseMN(src))
-  const base = draft ? `/admin/mn-guide?key=${encodeURIComponent(sp.key!)}` : `/admin/mn-guide?s=${sample}`
+  // bilingual sheets follow the site language; the EN / ع switch below previews the other one
+  const viewLang = sp.l === 'ar' || sp.l === 'en' ? sp.l : siteLang === 'ar' ? 'ar' : 'en'
+  const doc = await attachPy(parseMN(src, { lang: viewLang }))
+  const base0 = draft ? `/admin/mn-guide?key=${encodeURIComponent(sp.key!)}` : `/admin/mn-guide?s=${sample}`
+  const base = doc.bilingual && sp.l ? `${base0}&l=${viewLang}` : base0
   const toc = sheetToc(doc)
   const pad = 'px-3 sm:px-5 lg:px-7'
   const seg = (href: string, on: boolean, label: string, ar: string) => (
@@ -77,11 +80,17 @@ export default async function MnGuide({ searchParams }: { searchParams: Promise<
       </header>
 
       <div className={`under-nav sticky z-30 mt-5 border-y border-line bg-surface ${pad} lg:-mx-5 lg:px-12`}>
-        <div className="mx-auto flex max-w-[1680px] items-center gap-2 py-2">
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-2">
           <div className="flex shrink-0 rounded-lg bg-surface-2 p-0.5 ring-1 ring-line">
             {seg(`${base}&mode=doctor`, mode === 'doctor', 'Doctor', 'المحلولة')}
             {seg(`${base}&mode=student`, mode === 'student', 'Student', 'الطالب')}
           </div>
+          {doc.bilingual && (
+            <div className="flex shrink-0 rounded-lg bg-surface-2 p-0.5 ring-1 ring-line" title="Bilingual sheet — students see the language of the site · شيت بلغتين">
+              {seg(`${base0}&mode=${mode}&l=en`, viewLang === 'en', 'EN', 'English')}
+              {seg(`${base0}&mode=${mode}&l=ar`, viewLang === 'ar', 'ع', 'عربي')}
+            </div>
+          )}
           <p className="hidden min-w-0 truncate text-[13px] text-muted md:block">{draft ? 'Draft preview' : SAMPLES[sample].label}</p>
           <div className="ms-auto flex shrink-0 items-center gap-2">
             <SheetTools toc={toc} />

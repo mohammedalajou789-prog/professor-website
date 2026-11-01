@@ -1,0 +1,250 @@
+---
+course: ahmadelajou.com
+chapter_title: User guide for Prof. Ahmad El-Ajou
+title: The Website as a Mathematical Structure — How to Use It
+duration: 20
+lang: en
+author: the website team
+---
+
+::: outcomes
+- Sign in through the single entrance and reach the admin panel.
+- Edit every part of the public website.
+- Create courses and lectures, and decide which student sees what.
+- Turn any lecture material into a sheet with Claude and publish it.
+- Know exactly what a student can see, print and download.
+:::
+
+::: timeplan
+0-3   | Notation; @def:site
+3-6   | Signing in; @thm:door
+6-9   | Website content; @alg:content
+9-14  | Courses, students, access; @thm:access
+14-18 | Lectures and sheets; @alg:sheet
+18-20 | Students' view; troubleshooting
+:::
+
+## Notation
+
+::: definition "The website" {#def:site}
+The website is the triple $\mathcal W=(\mathcal P,\ \mathcal S,\ \mathcal A)$ where
+(1) $\mathcal P$ = the [[public pages]]: Home, About, Research, Publications, Courses, Contact — open to everyone;
+(2) $\mathcal S$ = the [[student area]]: lectures, sheets, videos and files — open only to approved students;
+(3) $\mathcal A$ = the [[admin panel]] — open only to you.
+:::
+
+Throughout, $S$ is the set of registered students, $C$ the set of courses, and $L(c)$ the set of lectures of a course $c\in C$.
+
+::: columns
+```graph layout=circle
+Visitor -> Public : browse
+Student -> Public : browse
+Student -> Lectures : if approved
+Doctor -> Admin : manage
+Admin -> Lectures : publish
+Admin -> Public : edit
+```
++++
+::: remark
+Every page exists in **Arabic and English** (button عربي / EN at the top) and in a **day and night mode** (moon button). The choice is remembered on each device.
+:::
+:::
+
+## Signing In
+
+::: theorem "One door" {#thm:door}
+There is exactly one sign-in page, **ahmadelajou.com/login**, for students and for you. After signing in, the website applies the map
+$$\rho:\ \text{account}\longmapsto\begin{cases}\text{/admin/dashboard}, & \text{if the account is the admin},\\ \text{/dashboard}, & \text{if the account is a student.}\end{cases}$$
+:::
+
+::: howto "Signing in"
+1. Open **ahmadelajou.com** and press the gold **Sign in** button at the top.
+2. Enter your e-mail and password, then press **Sign in**.
+3. You arrive at the admin panel. The gold **Admin panel** button at the top of every page brings you back to it.
+4. To leave, press the **Sign out** button (⟶) at the top right.
+:::
+
+::: caution
+Never share the admin password. Anyone with it can change the whole website.
+:::
+
+## The Admin Panel
+
+The top bar of the admin panel has the same look as the website:
+
+| Item | What it opens |
+|:---|:---|
+| **Overview** | numbers, waiting student requests, quick actions |
+| **Courses & students** | courses, lectures, requests, students |
+| **Website content ▾** | Profile, Publications, Research areas, News, Education, Positions, Awards, Memberships, Committees, Conferences, Supervision |
+| **Sheet guide** | ready example sheets in both versions |
+| **Student view** | the student area exactly as a student sees it |
+| **View site** | the public website as a visitor sees it |
+
+On a phone, the button ☰ opens the same menu.
+
+## Website Content
+
+::: definition "A content item" {#def:item}
+A [[content item]] is one row of a section (one publication, one award, one position, …). Each section is a finite list $\{x_1,\dots,x_n\}$ of items.
+:::
+
+::: howto "Changing the public website" {#alg:content}
+1. **Website content ▾** → choose the section.
+2. **Add** to create an item, ✏️ to edit one, 🗑 to delete one.
+3. Fill the fields (Arabic and English when both exist) and press **Save**.
+:::
+
+::: proposition "Immediate update"
+A saved change appears on the public website **immediately**; in the worst case within one hour.
+:::
+
+::: remarks
+(1) **Publications:** the switch **Featured** shows the paper on the home page. Citation counts are updated by hand from Google Scholar.
+(2) **Profile:** name, title, biography in both languages, academic links, and the CV (PDF).
+(3) **Supervision:** the student's name has an Arabic and an English field; each appears in its own language.
+:::
+
+## Courses, Students and Access
+
+::: definition "Course" {#def:course}
+A course $c\in C$ has a name (Arabic and English), a code (e.g. MATH 371), and two switches:
+- **Published:** $c$ appears on the Courses page;
+- **Accept new access requests:** students may ask to join $c$.
+:::
+
+Create one from **Courses & students → New course**. Inside a course there are five tabs: **Lectures**, **Course files**, **Announcements**, **Students**, **Settings**.
+
+::: definition "Enrollment" {#def:enroll}
+A student registers alone (name, university ID, university e-mail ending in `@std.bau.edu.jo`, phone), opens a course and presses **Request access**. This creates a pair $(s,c)$ in the [[enrollment relation]] $E\subseteq S\times C$ with a status
+$$\sigma(s,c)\in\{\text{pending},\ \text{approved},\ \text{rejected}\}.$$
+:::
+
+```diagram
+flow: Request access -> pending -> {Doctor decides} -yes-> approved
+```
+
+| Button (in **Courses & students → Requests**) | Effect on $\sigma(s,c)$ |
+|:---|:---|
+| **Approve** | pending $\to$ approved |
+| **Reject** | pending $\to$ rejected |
+| **Revoke** | approved $\to$ rejected (later, if needed) |
+| **Block account** | the student loses **every** course at once |
+
+::: theorem "Access" {#thm:access}
+A student $s$ can open lecture $\ell\in L(c)$ !!if and only if!! all four conditions hold:
+$$\sigma(s,c)=\text{approved},\qquad s\ \text{is not blocked},\qquad \ell\ \text{is published},\qquad \text{its sheet is shown}.$$ {#eq:access}
+:::
+
+::: corollary "Courses are independent"
+Approving $s$ in $c_1$ gives **no** access to $c_2\neq c_1$: every course is decided separately.
+:::
+
+::: keybox
+A student sees nothing of a course until **you** approve him in **that** course.
+:::
+
+## Lectures and Sheets
+
+Inside a course: **Lectures → Add lecture**. Each lecture $\ell$ has the following parts:
+
+| Part | Meaning |
+|:---|:---|
+| **Published to students** | $\ell$ appears to approved students |
+| **Show student sheet** | the sheet appears with the solutions hidden |
+| **Release solved (doctor) sheet** | the solved sheet appears — keep it off until you decide |
+| **Student sheet** | the lecture file (`.mn`) |
+| **Videos** | YouTube links (upload the video as **Unlisted**) |
+| **Files** | PDFs or links; every PDF is stamped with the student's ID when downloaded |
+
+::: definition "One file, two sheets" {#def:twosheets}
+From one lecture file $F$ the website builds two sheets
+$$\Phi(F)=\big(D(F),\ T(F)\big),$$
+the [[doctor sheet]] $D(F)$ (everything visible) and the [[student sheet]] $T(F)=D(F)$ with every solution, answer and hidden proof replaced by blank writing lines, and the multiple-choice questions made interactive.
+:::
+
+::: remark
+A separate solved file is possible (**Advanced**), but needed only when the two versions really differ.
+:::
+
+### Writing a sheet with Claude
+
+::: howto "From lecture material to a published sheet" {#alg:sheet}
+1. Open the Claude project **«Lecture Sheets»**.
+2. Send anything: a PDF, a Word file, slides, photos of your notes, a text, or only a topic. For example: *"Lecture 5 of MATH 371 from this file, in Arabic"*.
+3. Claude returns a complete file `lecture-05.mn`. Save it.
+4. Website: the course → the lecture → **Student sheet → Upload .mn**.
+5. Press **Preview** to check, then **Save**, then switch on **Show student sheet**.
+:::
+
+::: note "Figures in Python"
+Claude draws the figures in Python. They are drawn **once, on your computer**, when you press **Save** or **Preview**. The first time the browser downloads Python (20–40 seconds); afterwards it is fast, and students receive the finished pictures instantly.
+:::
+
+::: proposition "Errors are local"
+If the file has a mistake, a red box names it and its line. Copy the message to Claude in the same conversation: it returns the corrected complete file. Nothing reaches the students before **Save**.
+:::
+
+::: remark
+You can also ask Claude for changes: *"add a figure for several values of $\alpha$"*, *"add three examples"*, *"make it Arabic"*, *"split it into two lectures"*. The **Sheet guide** shows a complete example that uses every element.
+:::
+
+## What a Student Sees
+
+::: theorem "Solutions never leak" {#thm:leak}
+(a) The solved sheet $D(F)$ can **never** be downloaded.
+(b) The button **Download PDF** exists only on the student sheet and produces $T(F)$: a real A4 PDF (selectable text, same design) without solutions.
+(c) Every sheet on screen and every downloaded PDF carries the student's **university ID** as a watermark.
+:::
+
+::: remarks
+(1) The sheet behaves like a PDF viewer: zoom $-\ /\ +$, fit width ↔, **full screen** ⛶ (like F11), and contents ☰.
+(2) While the student scrolls down, the top bar of the website disappears, so the whole screen is the sheet.
+(3) The browser's Back button leaves the lecture and returns to the course page.
+(4) Multiple-choice answers are checked instantly on the screen; they are **not** stored and no results are sent.
+:::
+
+::: illustration "Seeing it yourself"
+Press **Student view** in the admin bar: you see the student area with every course open to you. **Back to admin** returns you to the panel.
+:::
+
+## Troubleshooting
+
+| Symptom | Check |
+|:---|:---|
+| A student cannot see a lecture | the four conditions of (@eq:access) |
+| A change does not appear | refresh the page (at most one hour) |
+| A student forgot his password | ask the technical administrator to reset it |
+| A red error box in the editor | copy it to Claude in the same conversation |
+| A video does not play | the video must be **Unlisted**, not Private, on YouTube |
+
+::: summary
+► One door: **ahmadelajou.com/login** (@thm:door).
+► Public content: **Website content → Add / ✏️ / 🗑 → Save**.
+► Access is decided per course: **Approve** in **Requests** (@thm:access).
+► One `.mn` file gives two sheets (@def:twosheets); Claude writes it, you **Upload → Preview → Save**.
+► Students can download only the blank sheet, stamped with their ID (@thm:leak).
+:::
+
+::: mcq
+Q: A student is approved in MATH 371. Can he open the lectures of MATH 372?
+- Yes, approval is global
+- Only the published ones
+- No, every course is approved separately *
+- Only after he signs in again
+> By the corollary of @thm:access, approval in one course gives no access to another.
+
+Q: Which sheet can a student download as a PDF?
+- The solved sheet
+- The student sheet, without solutions *
+- Both
+- Neither
+> @thm:leak (b).
+
+Q: You saved a new sheet but students do not see it. What is most likely missing?
+- The video
+- **Show student sheet** or **Published to students** *
+- The course code
+- A Python figure
+> Check the four conditions of (@eq:access).
+:::
