@@ -246,3 +246,35 @@ html[data-nav-hidden] .under-nav { top: 0; }
 :fullscreen, ::backdrop { background-color: var(--c-bg); }
 /* full screen: the top bar is hidden, so its spacer goes too (no empty band above the sheet) */
 html[data-fs] .nav-spacer { display: none; }
+
+/* ───────────── course page: lectures on a timeline rail ───────────── */
+.lec-rail::before {
+  content: ''; position: absolute; inset-inline-start: 21px; top: 22px; bottom: 22px; width: 2px; border-radius: 2px;
+  background: linear-gradient(180deg, var(--acc, #1F5FAD) 0%, #12A4D9 50%, color-mix(in srgb, var(--c-line-2) 80%, transparent) 100%);
+  opacity: .55;
+}
+@media (min-width: 640px) { .lec-rail::before { inset-inline-start: 28px; } }
+.lec-disc {
+  z-index: 2;
+  background: radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--acc, #1F5FAD) 70%, #fff 0%) 0%, var(--acc, #1F5FAD) 55%, #0A1B31 130%);
+  box-shadow: 0 0 0 4px var(--c-bg), 0 8px 20px color-mix(in srgb, var(--acc, #1F5FAD) 35%, transparent);
+  transition: transform .5s var(--ease-out);
+}
+.lec-rail > li:hover .lec-disc { transform: scale(1.08) rotate(-6deg); }
+.lec-card { transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out), border-color .3s; }
+.lec-card:hover { transform: translateY(-2px); box-shadow: var(--c-shadow-lg); border-color: color-mix(in srgb, var(--acc, #1F5FAD) 45%, var(--c-line)); }
+
+/* ───────────── admin: lively surfaces ───────────── */
+.admin-tile { position: relative; overflow: hidden; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 16px; box-shadow: var(--c-shadow); transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out), border-color .3s; }
+.admin-tile:hover { transform: translateY(-3px); box-shadow: var(--c-shadow-lg); border-color: color-mix(in srgb, var(--tile, #C9A227) 50%, var(--c-line)); }
+.admin-tile .glyph { position: absolute; inset-inline-end: -6px; bottom: -26px; font-family: var(--font-display), serif; font-style: italic; font-size: 110px; line-height: 1; color: var(--tile, #C9A227); opacity: .08; transition: transform .7s var(--ease-out); pointer-events: none; }
+.admin-tile:hover .glyph { transform: translateY(-6px) rotate(-8deg); }
+.admin-chip { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; color: #fff; background: linear-gradient(135deg, var(--tile, #C9A227), color-mix(in srgb, var(--tile, #C9A227) 55%, #0A1B31)); box-shadow: 0 8px 18px color-mix(in srgb, var(--tile, #C9A227) 30%, transparent); }
+.drag-ghost { opacity: .45; }
+.drag-over { box-shadow: 0 0 0 2px #C9A227 inset; }
+
+/* research areas: only two rows until "View all" (1 / 2 / 3 / 4 columns) */
+.area-2rows > :nth-child(n+3) { display: none; }
+@media (min-width: 520px) { .area-2rows > :nth-child(n+3) { display: block; } .area-2rows > :nth-child(n+5) { display: none; } }
+@media (min-width: 1024px) { .area-2rows > :nth-child(n+5) { display: block; } .area-2rows > :nth-child(n+7) { display: none; } }
+@media (min-width: 1536px) { .area-2rows > :nth-child(n+7) { display: block; } .area-2rows > :nth-child(n+9) { display: none; } }

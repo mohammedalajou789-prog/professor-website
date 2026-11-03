@@ -7,14 +7,19 @@ export const maxDuration = 60
 
 /**
  * Course file download.
- *  - access is checked by Supabase RLS (only admins or approved students see the row)
+ *  - the list of files is public, downloading needs a site account (student or the doctor)
+ *  - Supabase RLS still decides which rows exist for the viewer (published courses only)
  *  - PDFs for students are stamped with the student's university ID (cached per student in R2)
  *  - the browser is redirected to a 5-minute signed R2 URL
  */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { supabase, user, isAdmin, student } = await getViewer()
-  if (!user) return NextResponse.redirect(new URL('/login', req.url))
+  if (!user) {
+    const back = new URL(req.url).searchParams.get('back') || '/courses'
+    return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(back)}`, req.url))
+  }
+  if (!isAdmin && (!student || student.status !== 'active')) return NextResponse.json({ error: 'This account cannot download files' }, { status: 403 })
 
   const { data: file } = await supabase.from('course_files').select('*').eq('id', id).maybeSingle()
   if (!file) return NextResponse.json({ error: 'Not found or no access' }, { status: 404 })

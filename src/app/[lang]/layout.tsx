@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { LangProvider } from '@/context/LangContext'
 import MotionRoot from '@/components/motion/MotionRoot'
+import OfflineSW from '@/components/offline/OfflineSW'
 import { getProfile } from '@/lib/data'
 import { LANGS, isLang, type Lang } from '@/lib/i18n'
 
@@ -60,6 +61,7 @@ export default async function RootLayout({ children, params }: { children: React
           <main id="main">{children}</main>
           <Footer brand={brand} />
           <MotionRoot />
+          <OfflineSW />
         </LangProvider>
       </body>
     </html>

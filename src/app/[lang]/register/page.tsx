@@ -16,8 +16,8 @@ export default async function RegisterPage({ params }: { params: Promise<{ lang:
       aside={
         <div className="max-w-md space-y-4">
           {(ar
-            ? ['أنشئ حسابك ببريدك الجامعي ‎@std.bau.edu.jo', 'اطلب الانضمام إلى مساقك من لوحتك', 'يوافق الدكتور على طلبك شخصياً، فتُفتح المحاضرات']
-            : ['Create your account with your @std.bau.edu.jo email', 'Request to join your course from your dashboard', 'The doctor approves your request personally — lectures unlock']
+            ? ['أنشئ حسابك ببريدك الجامعي ‎@std.bau.edu.jo', 'تدخل مباشرة — كل المساقات مفتوحة لك', 'حمّل أوراق الطالب وملفات المساق PDF']
+            : ['Create your account with your @std.bau.edu.jo email', 'You are in straight away — every course is open', 'Download student sheets and course files as PDF']
           ).map((s, i) => (
             <div key={i} className="flex items-start gap-3" style={{ animation: `page-in .6s var(--ease-out) ${300 + i * 160}ms both` }}>
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#C9A227]/50 font-display text-[15px] italic text-[#E3C566]">{i + 1}</span>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { after } from 'next/server'
 import { headers } from 'next/headers'
 import { ensureSheetPdfs } from '@/lib/pdf/build'
@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCourseForViewer, readSheet, type CourseFile, type Lecture, type Video } from '@/lib/courses'
 import { isLang } from '@/lib/i18n'
 import FocusReading from '@/components/mn/FocusReading'
+import SaveOffline from '@/components/offline/SaveOffline'
 
 export const metadata: Metadata = { title: 'Lecture', robots: { index: false } }
 
@@ -28,14 +29,13 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
   const sb = await createClient()
   const n = Number(num)
   const byLecture = (q: any) => q.select('*, lectures!inner(number, courses!inner(slug))').eq('lectures.number', n).eq('lectures.courses.slug', slug).order('sort_order')
-  const [{ course, access, isAdmin, student }, { data: all }, { data: videos0 }, { data: files0 }] = await Promise.all([
+  const [{ course, isAdmin, student, user, canDownload }, { data: all }, { data: videos0 }, { data: files0 }] = await Promise.all([
     getCourseForViewer(slug),
     sb.from('lectures').select('*, courses!inner(slug)').eq('courses.slug', slug).order('number'),
     Number.isInteger(n) ? byLecture(sb.from('lecture_videos')) : Promise.resolve({ data: [] }),
     Number.isInteger(n) ? byLecture(sb.from('course_files')) : Promise.resolve({ data: [] }),
   ])
   if (!course) notFound()
-  if (!access) redirect(`/courses/${slug}`)
 
   const lectures = ((all || []) as Lecture[]).filter((x) => isAdmin || x.is_published)
   const idx = lectures.findIndex((x) => String(x.number) === num)
@@ -83,14 +83,17 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
       )
     }
   }
-  // only the blank (student) sheet can be downloaded — never the solved one
-  const pdfHref = sheet && active === 'student' ? `/api/sheet-pdf/${lec.id}?lang=${lang}` : undefined
+  // PDF: students download the blank (student) sheet only; the doctor can also download the solved one.
+  // Visitors without an account see a "sign in to download" button instead.
+  const here = `/courses/${course.slug}/${lec.number}${active === 'student' || active === 'doctor' ? `?v=${active}` : ''}`
+  const pdfHref = !sheet || !canDownload ? undefined : active === 'student' ? `/api/sheet-pdf/${lec.id}?lang=${lang}` : active === 'doctor' && isAdmin ? `/api/sheet-pdf/${lec.id}?lang=${lang}&v=doctor` : undefined
+  const pdfLogin = sheet && !user && active === 'student' ? `/login?next=${encodeURIComponent(here)}` : undefined
   // the doctor opening a lecture makes sure its PDF is ready (older sheets saved before PDFs existed)
   const pdfSheetKey = lec.student_sheet_key || lec.doctor_sheet_key
   if (isAdmin && pdfSheetKey) {
     const h = await headers()
     const origin = `${h.get('x-forwarded-proto') || 'http'}://${h.get('host')}`
-    after(() => ensureSheetPdfs({ origin, sheetKey: pdfSheetKey, footer: `${course.name_en} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` }).catch(() => {}))
+    after(() => ensureSheetPdfs({ origin, sheetKey: pdfSheetKey, doctorKey: lec.doctor_sheet_key || lec.student_sheet_key, footer: `${course.name_en} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` }).catch(() => {}))
   }
 
   const title = ar ? lec.title_ar || lec.title_en : lec.title_en
@@ -109,7 +112,7 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
             <span className="text-link">{ar ? 'محاضرة' : 'Lecture'} {lec.number}</span> · {title}
           </p>
           <div className="ms-auto flex shrink-0 items-center gap-2">
-            {sheet && <SheetTools toc={toc} pdfHref={pdfHref} ar={ar} langSwitch={bilingual} />}
+            {sheet && <SheetTools toc={toc} pdfHref={pdfHref} pdfLogin={pdfLogin} solvedPdf={active === 'doctor'} ar={ar} langSwitch={bilingual} />}
             {isAdmin && (
               <Link href={`/admin/courses/${course.id}?lecture=${lec.id}`} className="hidden shrink-0 rounded-md bg-navy px-2.5 py-1.5 text-[12px] text-white sm:inline-block">
                 Edit
@@ -173,9 +176,22 @@ export default async function LecturePage({ params, searchParams }: { params: Pr
 
         {active === 'files' && (
           <div className="mx-auto max-w-[760px] rounded-2xl border border-line bg-surface p-4 sm:p-6">
-            <ul className="space-y-1">{(files as CourseFile[]).map((f) => <FileRow key={f.id} f={f} ar={ar} />)}</ul>
+            <ul className="space-y-1">{(files as CourseFile[]).map((f) => <FileRow key={f.id} f={f} ar={ar} canDownload={canDownload} back={here} />)}</ul>
           </div>
         )}
+
+        {/* this lecture on the device, for halls without internet */}
+        <div className="mx-auto mt-8 flex max-w-[860px] flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 sm:px-5">
+          <p className="min-w-0 flex-1 text-[13px] text-ink-2">{ar ? 'بلا إنترنت في القاعة؟ احفظ هذه المحاضرة على جهازك.' : 'No internet in the hall? Keep this lecture on your device.'}</p>
+          <SaveOffline
+            id={`lecture:${course.slug}:${lec.number}`}
+            title={`${ar ? course.name_ar || course.name_en : course.name_en} · ${ar ? 'محاضرة' : 'Lecture'} ${lec.number}`}
+            urls={[`/courses/${course.slug}/${lec.number}`, ...(canStudent ? [`/courses/${course.slug}/${lec.number}?v=student`] : []), ...(canDoctor ? [`/courses/${course.slug}/${lec.number}?v=doctor`] : []), ...(files.length ? [`/courses/${course.slug}/${lec.number}?v=files`] : [])]}
+            links={[{ url: `/courses/${course.slug}/${lec.number}`, title: title || `Lecture ${lec.number}`, n: lec.number }]}
+            ar={ar}
+            tone="light"
+          />
+        </div>
 
         {/* prev / next */}
         <div className="mx-auto mt-8 flex max-w-[860px] items-stretch justify-between gap-3 px-4 sm:px-0">

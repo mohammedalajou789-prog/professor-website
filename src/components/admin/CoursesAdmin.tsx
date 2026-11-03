@@ -3,22 +3,22 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Plus, BookOpen, Users, Eye, EyeOff, Ban, RotateCcw, Search, ExternalLink, Sigma } from 'lucide-react'
+import { Plus, BookOpen, Users, Eye, EyeOff, Ban, RotateCcw, Search, RefreshCw, School, ArrowUpRight, Mail, Phone, IdCard } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { revalidateSite } from '@/lib/admin-client'
-import Enrollments, { type Row } from './Enrollments'
-import { Btn, Card, Field, inp } from './ui'
+import { AdminHero, Btn, Card, Field, HeroTabs, inp } from './ui'
 
 const slugify = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50)
+const GLYPHS = ['∫', 'Σ', '∂', 'λ', '∇', 'Γ', 'ℒ', 'Δ']
 
-export default function CoursesAdmin({ courses, rows, students, r2 }: { courses: any[]; rows: Row[]; students: any[]; r2: boolean }) {
+export default function CoursesAdmin({ courses, students, r2 }: { courses: any[]; students: any[]; r2: boolean }) {
   const router = useRouter()
-  const [tab, setTab] = useState<'requests' | 'courses' | 'students'>(rows.some((r) => r.status === 'pending') ? 'requests' : 'courses')
+  const [tab, setTab] = useState<'courses' | 'students'>('courses')
   const [creating, setCreating] = useState(false)
   const [nc, setNc] = useState({ name_en: '', name_ar: '', code: '' })
   const [busy, setBusy] = useState(false)
   const [q, setQ] = useState('')
-  const pending = rows.filter((r) => r.status === 'pending').length
+  const [refreshed, setRefreshed] = useState(false)
 
   const create = async () => {
     if (!nc.name_en.trim()) return
@@ -35,135 +35,122 @@ export default function CoursesAdmin({ courses, rows, students, r2 }: { courses:
     router.refresh()
   }
 
+  const ql = q.toLowerCase()
+  const shown = students.filter((s) => !ql || [s.full_name, s.university_id, s.email, s.phone].some((x: string) => x?.toLowerCase().includes(ql)))
+
   return (
-    <div className="p-3 sm:p-5 lg:p-7">
-      <header className="admin-hero overflow-hidden rounded-2xl text-white">
-        <div className="relative flex flex-wrap items-center gap-3 px-4 py-5 sm:px-6">
-          <Sigma className="text-[#C9A227]" />
-          <h1 className="text-[18px] font-semibold">Courses & Students</h1>
-          <p className="w-full text-[13px] text-[#AEBBCC] sm:ms-3 sm:w-auto">Approve students, build lectures, upload sheets · <span className="font-arabic">قبول الطلاب وبناء المحاضرات</span></p>
+    <div className="space-y-5 p-3 sm:p-5 lg:p-7">
+      <AdminHero
+        icon={School}
+        glyph="Σ"
+        title="Courses & Students"
+        ar="المساقات والطلاب"
+        sub={<>Every published course is open to everyone — no approvals. Students need an account only to download files. · <span className="font-arabic">كل مساق منشور مفتوح للجميع دون موافقة.</span></>}
+        actions={<Btn kind="gold" onClick={() => { setTab('courses'); setCreating(true) }}><Plus size={15} /> New course</Btn>}
+      >
+        <HeroTabs
+          tabs={[['courses', `Courses (${courses.length})`, BookOpen], ['students', `Students (${students.length})`, Users]]}
+          value={tab}
+          onChange={setTab}
+        />
+      </AdminHero>
+
+      {!r2 && (
+        <p className="rounded-xl border border-gold/40 bg-gold-soft p-4 text-[13.5px] text-gold-ink">
+          Cloudflare R2 is not configured yet — uploads (sheets, PDFs) will fail until the R2 variables are added (see CHANGES.md).
+        </p>
+      )}
+
+      {tab === 'courses' && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {courses.map((c, i) => {
+            const accent = c.accent || '#1F5FAD'
+            return (
+              <Link key={c.id} href={`/admin/courses/${c.id}`} className="reveal group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--c-shadow)] transition duration-500 hover:-translate-y-1 hover:shadow-[var(--c-shadow-lg)]" style={{ ['--d' as any]: `${(i % 3) * 80}ms` }}>
+                <div className="relative h-28 overflow-hidden" style={{ background: `radial-gradient(90% 130% at 100% 0%, ${accent}aa 0%, transparent 60%), linear-gradient(125deg, ${accent} -20%, #0A1B31 75%)` }}>
+                  <span aria-hidden className="absolute -bottom-7 end-3 font-display text-[110px] italic leading-none text-white/15 transition-transform duration-700 group-hover:-translate-y-2 group-hover:rotate-[-8deg]">{GLYPHS[i % GLYPHS.length]}</span>
+                  <div className="absolute inset-x-4 top-3 flex items-center gap-2">
+                    {c.code && <span dir="ltr" className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] font-semibold text-white backdrop-blur">{c.code}</span>}
+                    <span className={`ms-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${c.is_published ? 'bg-[#0E7C6B] text-white' : 'bg-[#C9A227] text-[#0A1A30]'}`}>
+                      {c.is_published ? <Eye size={12} /> : <EyeOff size={12} />} {c.is_published ? 'Published' : 'Hidden'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <p className="text-[17px] font-semibold leading-snug text-ink">{c.name_en}</p>
+                  {c.name_ar && <p dir="rtl" className="mt-0.5 font-arabic text-[13.5px] text-muted">{c.name_ar}</p>}
+                  <div className="mt-auto flex items-center gap-4 pt-4 text-[12.5px] text-ink-2">
+                    <span className="inline-flex items-center gap-1.5"><BookOpen size={14} className="text-link" /> {c.lectures?.[0]?.count ?? 0} lectures</span>
+                    <span className="ms-auto flex h-9 w-9 items-center justify-center rounded-full border border-line transition group-hover:border-[#C9A227] group-hover:bg-[#C9A227] group-hover:text-[#0A1A30]"><ArrowUpRight size={16} /></span>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+          <div className="rounded-2xl border-2 border-dashed border-line-2 bg-surface/70 p-5">
+            {!creating ? (
+              <button onClick={() => setCreating(true)} className="group flex h-full min-h-[180px] w-full flex-col items-center justify-center gap-2 text-ink-2">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold-soft text-gold-ink transition group-hover:scale-110"><Plus size={26} /></span>
+                New course <span className="font-arabic text-[12.5px] text-muted">مساق جديد</span>
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <Field label="Course name (English) *"><input className={inp} value={nc.name_en} onChange={(e) => setNc({ ...nc, name_en: e.target.value })} autoFocus /></Field>
+                <Field label="اسم المساق (عربي)"><input dir="rtl" className={inp} value={nc.name_ar} onChange={(e) => setNc({ ...nc, name_ar: e.target.value })} /></Field>
+                <Field label="Code (e.g. MATH 371)"><input className={inp} value={nc.code} onChange={(e) => setNc({ ...nc, code: e.target.value })} /></Field>
+                <div className="flex gap-2"><Btn kind="gold" busy={busy} onClick={create}>Create</Btn><Btn kind="ghost" onClick={() => setCreating(false)}>Cancel</Btn></div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="no-scrollbar relative flex gap-1 overflow-x-auto px-3 sm:px-5">
-          {([
-            ['requests', `Requests${pending ? ` (${pending})` : ''}`],
-            ['courses', `Courses (${courses.length})`],
-            ['students', `Students (${students.length})`],
-          ] as const).map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} className={`relative shrink-0 px-4 py-3 text-[14px] ${tab === id ? 'font-semibold text-[#E3C566]' : 'text-[#AEBBCC]'}`}>
-              {label}
-              {tab === id && <span className="absolute inset-x-3 bottom-0 h-[3px] rounded-t bg-[#C9A227]" />}
-              {id === 'requests' && pending > 0 && tab !== id && <span className="absolute end-1.5 top-2 h-2 w-2 animate-pulse rounded-full bg-[#E74C3C]" />}
-            </button>
-          ))}
-        </div>
-      </header>
+      )}
 
-      <main className="space-y-5 pt-5">
-        {!r2 && (
-          <p className="rounded-xl border border-gold/40 bg-gold-soft p-4 text-[13.5px] text-gold-ink">
-            Cloudflare R2 is not configured yet — uploads (sheets, PDFs) will fail until the R2 variables are added (see CHANGES.md).
-          </p>
-        )}
-
-        {tab === 'requests' && (
-          <Card title={<span className="flex items-center gap-2"><Users size={17} /> Access requests</span>}>
-            <Enrollments rows={rows} showCourse />
-          </Card>
-        )}
-
-        {tab === 'courses' && (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {courses.map((c) => (
-                <Link key={c.id} href={`/admin/courses/${c.id}`} className="group overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(18,35,60,.1)]">
-                  <div className="h-2" style={{ background: c.accent || '#1F5FAD' }} />
-                  <div className="p-5">
-                    <div className="flex items-center gap-2">
-                      {c.code && <span className="rounded bg-surface-2 px-2 py-0.5 text-[12px] font-semibold text-ink-2">{c.code}</span>}
-                      <span className={`ms-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] ${c.is_published ? 'bg-ok-soft text-ok' : 'bg-gold-soft text-gold-ink'}`}>
-                        {c.is_published ? <Eye size={11} /> : <EyeOff size={11} />} {c.is_published ? 'Published' : 'Hidden'}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-[16.5px] font-semibold text-ink">{c.name_en}</p>
-                    <p className="mt-2 flex gap-4 text-[12.5px] text-muted">
-                      <span className="inline-flex items-center gap-1"><BookOpen size={13} /> {c.lectures?.[0]?.count ?? 0} lectures</span>
-                      <span className="inline-flex items-center gap-1"><Users size={13} /> {rows.filter((r) => r.course_id === c.id && r.status === 'approved').length} students</span>
+      {tab === 'students' && (
+        <Card
+          title={<span className="flex items-center gap-2">Registered students <span className="text-[12.5px] font-normal text-muted">they can download files · <span className="font-arabic">يستطيعون تحميل الملفات</span></span></span>}
+          actions={
+            <span className="relative">
+              <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, ID, email, phone" className="h-9 w-60 rounded-lg border border-line bg-surface ps-8 text-[13px] text-ink outline-none focus:border-[#C9A227]" />
+            </span>
+          }
+        >
+          {shown.length === 0 ? (
+            <p className="py-8 text-center text-[13.5px] text-muted">No students yet.</p>
+          ) : (
+            <ul className="grid gap-3 md:grid-cols-2">
+              {shown.map((s) => (
+                <li key={s.id} className={`flex items-start gap-3 rounded-xl border p-3.5 transition ${s.status === 'blocked' ? 'border-bad/30 bg-bad-soft/40' : 'border-line bg-surface-2/60 hover:border-[#C9A227]/50'}`}>
+                  <span className="admin-chip h-11 w-11 shrink-0 font-display text-[17px] font-semibold" style={{ ['--tile' as any]: s.status === 'blocked' ? '#A33025' : '#0B6FA4' }}>
+                    {(s.full_name || '?').trim().charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-ink">
+                      {s.full_name} {s.status === 'blocked' && <span className="ms-1 rounded bg-bad-soft px-1.5 text-[11px] text-bad">blocked</span>}
+                    </p>
+                    <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[12.5px] text-muted">
+                      <span className="inline-flex items-center gap-1 font-mono"><IdCard size={12} /> {s.university_id}</span>
+                      <a href={`mailto:${s.email}`} className="inline-flex min-w-0 items-center gap-1 truncate hover:text-ink"><Mail size={12} /> {s.email}</a>
+                      <a href={`tel:${s.phone}`} className="inline-flex items-center gap-1 hover:text-ink"><Phone size={12} /> {s.phone}</a>
                     </p>
                   </div>
-                </Link>
+                  {s.status === 'blocked' ? (
+                    <Btn small kind="ghost" onClick={() => setStudent(s.id, 'active')}><RotateCcw size={12} /> Unblock</Btn>
+                  ) : (
+                    <Btn small kind="danger" onClick={() => confirm(`Block ${s.full_name}? They can no longer download files.`) && setStudent(s.id, 'blocked')}><Ban size={12} /> Block</Btn>
+                  )}
+                </li>
               ))}
-              <div className="rounded-2xl border-2 border-dashed border-line-2 bg-surface/60 p-5">
-                {!creating ? (
-                  <button onClick={() => setCreating(true)} className="flex h-full min-h-[120px] w-full flex-col items-center justify-center gap-2 text-ink-2">
-                    <Plus size={26} className="text-[#C9A227]" /> New course
-                  </button>
-                ) : (
-                  <div className="space-y-3">
-                    <Field label="Course name (English) *"><input className={inp} value={nc.name_en} onChange={(e) => setNc({ ...nc, name_en: e.target.value })} /></Field>
-                    <Field label="اسم المساق (عربي)"><input dir="rtl" className={inp} value={nc.name_ar} onChange={(e) => setNc({ ...nc, name_ar: e.target.value })} /></Field>
-                    <Field label="Code (e.g. MATH 371)"><input className={inp} value={nc.code} onChange={(e) => setNc({ ...nc, code: e.target.value })} /></Field>
-                    <div className="flex gap-2"><Btn kind="gold" busy={busy} onClick={create}>Create</Btn><Btn kind="ghost" onClick={() => setCreating(false)}>Cancel</Btn></div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+            </ul>
+          )}
+        </Card>
+      )}
 
-        {tab === 'students' && (
-          <Card
-            title={<span>All students <span className="ms-1 text-[12.5px] font-normal text-muted">course access is decided per course (Requests tab) · الموافقة لكل مساق على حدة</span></span>}
-            actions={
-              <span className="relative">
-                <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-56 rounded-lg border border-line bg-surface ps-8 text-[13px] text-ink outline-none focus:border-[#C9A227]" />
-              </span>
-            }
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-[13.5px]">
-                <thead>
-                  <tr className="border-b border-line text-start text-[12px] text-muted">
-                    <th className="py-2 text-start">Name</th><th className="text-start">University ID</th><th className="text-start">Email</th><th className="text-start">Phone</th><th className="text-start">Courses</th><th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {students
-                    .filter((s) => !q || [s.full_name, s.university_id, s.email, s.phone].some((x: string) => x?.toLowerCase().includes(q.toLowerCase())))
-                    .map((s) => (
-                      <tr key={s.id} className="border-b border-line">
-                        <td className="py-2.5 font-medium text-ink">{s.full_name} {s.status === 'blocked' && <span className="ms-1 rounded bg-bad-soft px-1.5 text-[11px] text-bad">blocked</span>}</td>
-                        <td className="font-mono text-[12.5px]">{s.university_id}</td>
-                        <td><a className="hover:underline" href={`mailto:${s.email}`}>{s.email}</a></td>
-                        <td><a className="hover:underline" href={`tel:${s.phone}`}>{s.phone}</a></td>
-                        <td className="py-2">
-                          <span className="flex flex-wrap gap-1">
-                            {rows.filter((r) => r.student_id === s.id).map((r) => (
-                              <span key={r.course_id} title={r.status} className={`rounded-full px-2 py-0.5 text-[11.5px] font-medium ${r.status === 'approved' ? 'bg-ok-soft text-ok' : r.status === 'pending' ? 'bg-gold-soft text-gold-ink' : 'bg-bad-soft text-bad'}`}>
-                                {r.courses?.code || r.courses?.name_en} · {r.status === 'approved' ? '✓' : r.status === 'pending' ? '…' : '✕'}
-                              </span>
-                            ))}
-                            {!rows.some((r) => r.student_id === s.id) && <span className="text-[12px] text-muted">—</span>}
-                          </span>
-                        </td>
-                        <td className="text-end">
-                          {s.status === 'blocked' ? (
-                            <Btn small kind="ghost" onClick={() => setStudent(s.id, 'active')}><RotateCcw size={12} /> Unblock</Btn>
-                          ) : (
-                            <Btn small kind="danger" onClick={() => confirm(`Block ${s.full_name}? They lose access to all courses.`) && setStudent(s.id, 'blocked')}><Ban size={12} /> Block account</Btn>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        )}
-        <p className="pt-2 text-center text-[12px] text-muted">
-          <button onClick={() => { revalidateSite(); alert('Public pages refreshed.') }} className="inline-flex items-center gap-1 hover:text-ink"><ExternalLink size={12} /> Refresh public pages now</button>
-        </p>
-      </main>
+      <p className="pt-1 text-center text-[12px] text-muted">
+        <button onClick={() => { revalidateSite(); setRefreshed(true); setTimeout(() => setRefreshed(false), 2500) }} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 hover:text-ink">
+          <RefreshCw size={12} /> {refreshed ? 'Public pages refreshed ✓' : 'Refresh public pages now'}
+        </button>
+      </p>
     </div>
   )
 }

@@ -153,9 +153,9 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.05, backgroundImage: 'repeating-linear-gradient(to right,rgba(255,255,255,0.6) 0 1px,transparent 1px 72px),repeating-linear-gradient(to bottom,rgba(255,255,255,0.6) 0 1px,transparent 1px 72px)' }} />
           <MathField variant="spiral" className="absolute inset-0 h-full w-full opacity-70" />
           <section className="wrap" style={{ position: 'relative', paddingTop: 34 }}>
-            <div dir={isRTL ? 'rtl' : 'ltr'} style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap', minHeight: 'clamp(460px,64vh,620px)' }}>
+            <div dir={isRTL ? 'rtl' : 'ltr'} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,620px) minmax(0,420px)', justifyContent: 'center', columnGap: 'clamp(28px,4.5vw,72px)', alignItems: 'center', minHeight: 'clamp(460px,64vh,620px)' }}>
               {/* TEXT */}
-              <div style={{ flex: '1 1 400px', minWidth: 0, maxWidth: 600, paddingBlock: '0 8px' }}>
+              <div style={{ minWidth: 0, paddingBlock: '0 8px' }}>
                 <p className="hin" style={{ ['--d' as any]: '60ms', margin: '0 0 20px', fontSize: 12.5, fontWeight: 600, color: '#C9A227', letterSpacing: isRTL ? 0 : '0.12em', textTransform: isRTL ? 'none' : 'uppercase' }}>{t.welcome}</p>
                 <h1 className={`hin ${isRTL ? 'ac-arabic' : 'ac-display'}`} style={{ ['--d' as any]: '140ms', margin: '0 0 24px', fontSize: 'clamp(30px,4.2vw,54px)', lineHeight: 1.14, fontWeight: 600, color: '#FFF', letterSpacing: isRTL ? 0 : '-0.012em' }}>{fullName}</h1>
                 <div className="hin-bar" style={{ width: 64, height: 3, background: '#C9A227', marginBottom: 26 }} />
@@ -174,7 +174,7 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
                 </div>
               </div>
               {/* PORTRAIT */}
-              <div className="hin" style={{ ['--d' as any]: '200ms', flex: '1 1 390px', minWidth: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, transform: 'translateY(18px)' }}>
+              <div className="hin" style={{ ['--d' as any]: '200ms', minWidth: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, transform: 'translateY(18px)' }}>
                 <div aria-hidden dir="ltr" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', color: '#D9B45B', fontFamily: "var(--font-display)", fontStyle: 'italic' }}>
                   <span className="eq-float" style={{ position: 'absolute', top: '8%', left: '0%', fontSize: 21, opacity: 0.22 }}>∂u/∂t + αD<sup>α</sup>u = f(t)</span>
                   <span className="eq-float" style={{ position: 'absolute', top: '40%', right: '-2%', fontSize: 18, opacity: 0.2, animationDelay: '-2s' }}>∫<sub>0</sub><sup>∞</sup> e<sup>−st</sup>f(t)dt</span>
@@ -294,7 +294,7 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
           <div className="wrap">
             <div className="card reveal p-5 sm:p-8">
               <SectionHead eyebrow={t.researchAreas} title={t.frontiers} href="/research" more={isRTL ? 'كل الأبحاث' : 'All research'} isRTL={isRTL} />
-              <AreaGrid areas={researchAreas.map((a) => [a.name_en || a.name_ar || '', a.name_ar || a.name_en || ''] as [string, string])} lang={isRTL ? 'ar' : 'en'} />
+              <AreaGrid twoRows areas={researchAreas.map((a) => [a.name_en || a.name_ar || '', a.name_ar || a.name_en || ''] as [string, string])} lang={isRTL ? 'ar' : 'en'} />
             </div>
           </div>
         </section>
@@ -337,7 +337,7 @@ export default function HomeView({ profile, publications, allPubCount, totalCita
             <div style={{ position: 'relative', maxWidth: 620 }}>
               <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 600, color: '#E3C566', letterSpacing: isRTL ? 0 : '0.12em', textTransform: isRTL ? 'none' : 'uppercase' }}>{isRTL ? 'للطلاب' : 'For students'}</p>
               <h2 className={isRTL ? 'ac-arabic' : 'ac-display'} style={{ margin: 0, fontSize: 'clamp(24px,3.4vw,34px)', fontWeight: 600, lineHeight: 1.2 }}>{isRTL ? 'المساقات: أوراق تفاعلية، حلول وفيديوهات' : 'Courses: interactive sheets, solutions and videos'}</h2>
-              <p style={{ margin: '10px 0 0', color: '#C4CFDE', fontSize: 15, lineHeight: 1.7 }}>{isRTL ? 'سجّل ببريدك الجامعي واطلب الانضمام إلى مساقك.' : 'Register with your university email and request access to your course.'}</p>
+              <p style={{ margin: '10px 0 0', color: '#C4CFDE', fontSize: 15, lineHeight: 1.7 }}>{isRTL ? 'كل المحاضرات مفتوحة للجميع — وسجّل ببريدك الجامعي لتحميل الملفات.' : 'Every lecture is open to everyone — register with your university email to download the files.'}</p>
             </div>
             <div style={{ position: 'relative', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <Link href="/courses" style={{ background: '#C9A227', color: '#0A1A30', fontWeight: 600, padding: '13px 22px', borderRadius: 6, fontSize: 14.5 }}>{isRTL ? 'تصفّح المساقات' : 'Browse courses'}</Link>

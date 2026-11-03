@@ -10,14 +10,14 @@ export const metadata: Metadata = { title: 'Courses' }
 
 const T = {
   en: {
-    eyebrow: 'Teaching', title: 'Courses', lede: 'Lecture sheets, solved versions, videos and course files for registered students.',
-    how: 'How access works', steps: ['Create a student account with your university email', 'Open your course and press “Request access”', 'The doctor approves — every lecture unlocks'],
+    eyebrow: 'Teaching', title: 'Courses', lede: 'Lecture sheets, solved versions, videos and course files — open to every student.',
+    how: 'How it works', steps: ['Open any course below — no account needed to read the lectures', 'Create a free account with your university email to download PDFs and files', 'In a hall without internet? Press “Save for offline” on the course page first'],
     reg: 'Create account', login: 'Student login', empty: 'Courses will appear here soon.',
     feats: [['Student & solved sheets', 'Interactive, animated, on any phone'], ['Lecture videos', 'Watch inside each lecture'], ['Course files', 'PDFs stamped with your ID']],
   },
   ar: {
-    eyebrow: 'التدريس', title: 'المساقات', lede: 'أوراق المحاضرات، النسخ المحلولة، الفيديوهات وملفات المساق للطلاب المسجّلين.',
-    how: 'كيف تحصل على الوصول', steps: ['أنشئ حساب طالب ببريدك الجامعي', 'افتح مساقك واضغط «طلب الانضمام»', 'يوافق الدكتور — فتُفتح كل المحاضرات'],
+    eyebrow: 'التدريس', title: 'المساقات', lede: 'أوراق المحاضرات، النسخ المحلولة، الفيديوهات وملفات المساق — متاحة لكل الطلاب.',
+    how: 'كيف يعمل', steps: ['افتح أي مساق من الأسفل — قراءة المحاضرات لا تحتاج حساباً', 'أنشئ حساباً مجانياً ببريدك الجامعي لتحميل ملفات PDF والملفات', 'في قاعة بلا إنترنت؟ اضغط «حفظ للعرض بلا إنترنت» في صفحة المساق مسبقاً'],
     reg: 'إنشاء حساب', login: 'دخول الطلاب', empty: 'ستظهر المساقات هنا قريباً.',
     feats: [['ورقة الطالب والورقة المحلولة', 'تفاعلية ومتحركة وتعمل على الهاتف'], ['فيديوهات المحاضرات', 'تُشاهد داخل كل محاضرة'], ['ملفات المساق', 'ملفات PDF تحمل رقمك الجامعي']],
   },

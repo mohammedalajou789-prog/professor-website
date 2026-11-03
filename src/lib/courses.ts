@@ -19,25 +19,29 @@ export type CourseFile = { id: string; course_id: string; lecture_id: string | n
 export type Video = { id: string; lecture_id: string; youtube_id: string; title_en: string | null; title_ar: string | null; sort_order: number }
 
 /**
- * Course + the viewer's access level — ONE parallel round-trip:
- * the role check, the course and the viewer's own enrolment are asked at the same time
- * (RLS already limits `enrollments` to the signed-in student's own rows).
+ * Course + who is looking — ONE parallel round-trip (role check + course).
+ * Courses are open to everyone (no approval): `access` is true for every published course
+ * (RLS hides unpublished ones from everybody except the doctor).
+ * `canDownload` = a signed-in, non-blocked account (files and PDFs need an account).
  */
 export async function getCourseForViewer(slug: string) {
   const sb = await createClient()
-  const [v, { data: course }, { data: enr }] = await Promise.all([
-    getViewer(),
-    sb.from('courses').select('*').eq('slug', slug).maybeSingle(),
-    sb.from('enrollments').select('status, courses!inner(slug)').eq('courses.slug', slug).limit(1).maybeSingle(),
-  ])
-  if (!course) return { ...v, course: null as Course | null, status: null as string | null, access: false }
-  const status: string | null = v.student ? ((enr as any)?.status as string) || null : null
-  const access = v.isAdmin || (status === 'approved' && v.student?.status === 'active')
-  return { ...v, course: course as Course, status, access }
+  const [v, { data: course }] = await Promise.all([getViewer(), sb.from('courses').select('*').eq('slug', slug).maybeSingle()])
+  const canDownload = v.isAdmin || (!!v.student && v.student.status === 'active')
+  if (!course) return { ...v, course: null as Course | null, access: false, canDownload }
+  return { ...v, course: course as Course, access: true, canDownload }
 }
 
 /** Sheet sources are immutable per key (every save writes a new key) → cache forever. */
-export const readSheet = unstable_cache(async (key: string) => getText(key), ['mn-sheet'], { revalidate: false })
+export const readSheet = unstable_cache(
+  async (key: string) => {
+    // local UI testing only: built-in sample sheets (never stored in the database on the real site)
+    if (key.startsWith('sample:') && (process.env.MOCK_DATA === '1' || process.env.MN_DEMO_PUBLIC === '1')) return (await import('@/lib/mn/samples')).SAMPLES[key.slice(7)]?.src ?? null
+    return getText(key)
+  },
+  ['mn-sheet'],
+  { revalidate: false }
+)
 
 export function ytId(input: string) {
   const s = input.trim()

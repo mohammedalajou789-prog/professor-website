@@ -17,21 +17,10 @@ export default async function Dashboard({ params }: { params: Promise<{ lang: st
   // the doctor can open the student area too: he sees every course as a student would (with full access)
   const adminView = isAdmin && !student
 
-  const [{ data: courses }, { data: enr }] = await Promise.all([
-    supabase.from('courses').select('*').order('sort_order'),
-    student ? supabase.from('enrollments').select('course_id,status').eq('student_id', student.id) : Promise.resolve({ data: [] as any[] }),
-  ])
-  const st = new Map<string, string>((enr || []).map((e: any) => [e.course_id, e.status]))
-  const mine = adminView ? courses || [] : (courses || []).filter((c: any) => st.get(c.id) === 'approved')
-  const pending = adminView ? [] : (courses || []).filter((c: any) => st.get(c.id) === 'pending')
-  const other = adminView ? [] : (courses || []).filter((c: any) => !st.has(c.id) && c.enrollment_open)
+  // every published course is open to every student (no approval any more)
+  const { data: courses } = await supabase.from('courses').select('*').order('sort_order')
+  const mine = (courses || []).filter((c: any) => adminView || c.is_published)
   const first = adminView ? (ar ? 'دكتور' : 'Doctor') : (student?.full_name || user?.email || '').split(' ')[0]
-
-  const Badge = ({ s }: { s: string }) => (
-    <span className={`rounded-full px-2.5 py-1 text-[11.5px] font-semibold backdrop-blur ${s === 'approved' ? 'bg-[#0E7C6B]/80 text-white' : 'bg-[#C9A227]/90 text-[#0A1A30]'}`}>
-      {s === 'approved' ? (ar ? 'مُفعّل' : 'Active') : ar ? 'بانتظار الموافقة' : 'Pending'}
-    </span>
-  )
 
   return (
     <>
@@ -69,28 +58,19 @@ export default async function Dashboard({ params }: { params: Promise<{ lang: st
         )}
 
         <section>
-          <h2 className="reveal mb-5 font-display text-[28px] font-semibold text-ink rtl:font-arabic">{adminView ? (ar ? 'كل المساقات' : 'All courses') : ar ? 'مساقاتي' : 'My courses'}</h2>
-          {mine.length + pending.length === 0 ? (
+          <h2 className="reveal mb-1.5 font-display text-[28px] font-semibold text-ink rtl:font-arabic">{adminView ? (ar ? 'كل المساقات' : 'All courses') : ar ? 'مساقاتي' : 'My courses'}</h2>
+          <p className="reveal mb-5 flex items-center gap-1.5 text-[13.5px] text-muted"><ShieldCheck size={14} /> {ar ? 'كل المساقات مفتوحة لك: افتح المحاضرات وحمّل الأوراق والملفات.' : 'Every course is open to you: open the lectures and download sheets and files.'}</p>
+          {mine.length === 0 ? (
             <div className="reveal rounded-2xl border border-dashed border-line-2 bg-surface p-8 text-center">
               <p className="font-display text-[40px] italic text-[#C9A227]">∅</p>
-              <p className="mt-1 text-[15px] text-ink-2">{ar ? 'لم تنضم إلى أي مساق بعد. اختر مساقك من الأسفل واطلب الانضمام.' : 'You have not joined a course yet. Pick yours below and request access.'}</p>
+              <p className="mt-1 text-[15px] text-ink-2">{ar ? 'ستظهر المساقات هنا قريباً.' : 'Courses will appear here soon.'}</p>
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {[...mine, ...pending].map((c: any, i: number) => <CourseCard key={c.id} c={c} lang={lang} i={i} badge={adminView ? undefined : <Badge s={st.get(c.id)!} />} />)}
+              {mine.map((c: any, i: number) => <CourseCard key={c.id} c={c} lang={lang} i={i} />)}
             </div>
           )}
         </section>
-
-        {other.length > 0 && (
-          <section>
-            <h2 className="reveal mb-1.5 font-display text-[24px] font-semibold text-ink rtl:font-arabic">{ar ? 'مساقات متاحة' : 'Available courses'}</h2>
-            <p className="reveal mb-5 flex items-center gap-1.5 text-[13.5px] text-muted"><ShieldCheck size={14} /> {ar ? 'افتح المساق واضغط «طلب الانضمام» — يوافق الدكتور شخصياً.' : 'Open a course and press “Request access” — the doctor approves personally.'}</p>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {other.map((c: any, i: number) => <CourseCard key={c.id} c={c} lang={lang} i={i} />)}
-            </div>
-          </section>
-        )}
       </div>
     </>
   )

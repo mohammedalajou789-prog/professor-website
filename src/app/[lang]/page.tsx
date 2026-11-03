@@ -1,8 +1,10 @@
 import HomeView from './HomeView'
 import { getInterests, getNews, getProfile, getPublications } from '@/lib/data'
+import { isPublished } from '@/lib/pubstats'
 
 export default async function HomePage() {
-  const [profile, pubs, news, interests] = await Promise.all([getProfile(), getPublications(), getNews(), getInterests()])
+  const [profile, all, news, interests] = await Promise.all([getProfile(), getPublications(), getNews(), getInterests()])
+  const pubs = (all as any[]).filter(isPublished)
   const featured = pubs.filter((p: any) => p.is_featured)
   const shown = (featured.length >= 4 ? featured : [...featured, ...pubs.filter((p: any) => !p.is_featured)]).slice(0, 4)
   const totalCitations = pubs.reduce((s: number, p: any) => s + (p.citation_count ?? 0), 0)

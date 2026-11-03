@@ -43,7 +43,8 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 
 export function Card({ title, children, actions }: { title?: React.ReactNode; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line bg-surface p-4 shadow-[0_1px_2px_rgba(18,35,60,.04)] sm:p-6">
+    <section className="relative overflow-hidden rounded-2xl border border-line bg-surface p-4 shadow-[var(--c-shadow)] sm:p-6">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#C9A227] via-[#C9A227]/40 to-[#12A4D9]" />
       {(title || actions) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {title && <h2 className="text-[16px] font-semibold text-ink">{title}</h2>}
@@ -52,5 +53,55 @@ export function Card({ title, children, actions }: { title?: React.ReactNode; ch
       )}
       {children}
     </section>
+  )
+}
+
+/**
+ * Lively page header for every admin page: dark math board, a big glyph, the title in English + Arabic,
+ * an optional count and the page's main buttons. Optional tabs row underneath.
+ */
+export function AdminHero({ icon: Icon, title, ar, sub, glyph = '∫', count, actions, children, tone = '#C9A227' }: {
+  icon?: React.ComponentType<{ size?: number; className?: string }>
+  title: string
+  ar?: string
+  sub?: React.ReactNode
+  glyph?: string
+  count?: number | string
+  actions?: React.ReactNode
+  children?: React.ReactNode
+  tone?: string
+}) {
+  return (
+    <header className="admin-hero page-enter relative overflow-hidden rounded-2xl text-white" style={{ ['--tile' as any]: tone }}>
+      <span aria-hidden className="pointer-events-none absolute -bottom-10 end-4 select-none font-display text-[150px] italic leading-none text-white/[.07] sm:text-[190px]">{glyph}</span>
+      <div className="relative flex flex-wrap items-center gap-3.5 px-4 py-5 sm:px-6 sm:py-6">
+        {Icon && <span className="admin-chip h-12 w-12 shrink-0"><Icon size={22} /></span>}
+        <div className="min-w-0 flex-[1_1_240px]">
+          <h1 className="flex flex-wrap items-baseline gap-x-2.5 font-display text-[clamp(20px,2.6vw,27px)] font-semibold leading-tight">
+            {title}
+            {count !== undefined && <span className="rounded-full bg-white/10 px-2.5 py-0.5 font-display text-[14px] italic text-[#E3C566]">{count}</span>}
+            {ar && <span className="font-arabic text-[15px] font-normal text-[#AEBBCC]">· {ar}</span>}
+          </h1>
+          {sub && <p className="mt-1 text-[13px] leading-relaxed text-[#AEBBCC]">{sub}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      </div>
+      {children}
+    </header>
+  )
+}
+
+/** Tabs row used inside AdminHero. */
+export function HeroTabs<T extends string>({ tabs, value, onChange }: { tabs: [T, string, React.ComponentType<{ size?: number }>?, number?][]; value: T; onChange: (v: T) => void }) {
+  return (
+    <nav className="no-scrollbar relative flex gap-1 overflow-x-auto border-t border-white/[.07] px-2 sm:px-4">
+      {tabs.map(([id, label, Icon, badge]) => (
+        <button key={id} type="button" onClick={() => onChange(id)} className={`relative flex shrink-0 items-center gap-1.5 px-3.5 py-3 text-[13.5px] transition ${value === id ? 'font-semibold text-[#E3C566]' : 'text-[#AEBBCC] hover:text-white'}`}>
+          {Icon && <Icon size={15} />} {label}
+          {!!badge && <span className="rounded-full bg-[#C9A227] px-1.5 text-[11px] font-bold text-[#0A1A30]">{badge}</span>}
+          <span className={`absolute inset-x-2 bottom-0 h-[3px] rounded-t bg-gradient-to-r from-[#C9A227] to-[#12A4D9] transition-transform duration-300 ${value === id ? 'scale-x-100' : 'scale-x-0'}`} />
+        </button>
+      ))}
+    </nav>
   )
 }

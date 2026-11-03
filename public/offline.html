@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A1B31">
+<title>Offline · Prof. Ahmad El-Ajou</title>
+<link rel="icon" href="/favicon.svg">
+<style>
+  :root { --bg:#EDF1F6; --card:#fff; --ink:#14233A; --ink2:#46566D; --muted:#7B899D; --line:#DCE3EC; --gold:#C9A227; --sky:#0B6FA4; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0A111D; --card:#111B2A; --ink:#E4EAF2; --ink2:#B3BFCF; --muted:#8392A8; --line:#22324A; --sky:#63BCE8; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: var(--ink);
+         background-image: radial-gradient(rgba(20,40,70,.1) 1px, transparent 1.2px); background-size: 22px 22px; }
+  header { background: radial-gradient(120% 130% at 78% 10%, #153A61 0%, #0E2846 40%, #0A1B31 74%, #061020 100%); color:#fff; padding: 36px 16px 30px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+  .logo { display:flex; align-items:center; gap:12px; }
+  .logo img { width:40px; height:40px; }
+  .eyebrow { color: var(--gold); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; margin: 22px 0 6px; }
+  h1 { margin: 0; font-size: clamp(26px, 6vw, 38px); font-weight: 600; }
+  header p { color:#AEBBCC; margin: 10px 0 0; line-height: 1.7; font-size: 15px; }
+  .ar { font-family: 'Noto Naskh Arabic', 'Segoe UI', Tahoma, sans-serif; direction: rtl; }
+  main { padding: 26px 0 60px; }
+  .card { background: var(--card); border:1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 6px 18px rgba(16,32,56,.06); }
+  .card h2 { margin:0 0 4px; font-size: 18px; }
+  .card .meta { color: var(--muted); font-size: 12.5px; margin-bottom: 10px; }
+  .card a { display:flex; align-items:center; gap:10px; padding: 10px 12px; border-radius: 10px; color: var(--ink); text-decoration:none; border:1px solid var(--line); margin-top: 8px; font-size: 14.5px; }
+  .card a:hover { border-color: var(--gold); }
+  .card a span.n { flex-shrink:0; width: 30px; height: 30px; border-radius: 9px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg,#0B6FA4,#12A4D9); color:#fff; font-size: 14px; font-style: italic; }
+  .empty { text-align:center; color: var(--ink2); padding: 30px 18px; }
+  .empty b { display:block; font-size: 42px; color: var(--gold); font-style: italic; }
+  button { margin-top: 18px; background: var(--gold); color:#0A1A30; border:0; border-radius: 8px; padding: 12px 20px; font-size: 15px; font-weight: 600; cursor:pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo"><img src="/logo.svg" alt=""><span>Prof. Ahmad El-Ajou</span></div>
+    <p class="eyebrow">Offline · بلا إنترنت</p>
+    <h1>No internet connection</h1>
+    <p>This page was not saved for offline use. Lectures you saved are below.</p>
+    <p class="ar">لا يوجد اتصال بالإنترنت. هذه الصفحة لم تُحفظ للعرض بلا إنترنت — المحاضرات التي حفظتها موجودة في الأسفل.</p>
+  </div>
+</header>
+<main class="wrap" id="list"></main>
+<script>
+(async function () {
+  var list = document.getElementById('list')
+  var idx = {}
+  try {
+    var c = await caches.open('elajou-offline-pages')
+    var r = await c.match('/__offline/index.json')
+    if (r) idx = await r.json()
+  } catch (e) {}
+  var items = Object.keys(idx).map(function (k) { return idx[k] }).sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0) })
+  if (!items.length) {
+    list.innerHTML = '<div class="card empty"><b>∅</b>Nothing saved yet. Open a course while online and press “Save for offline”.<p class="ar">لم تحفظ شيئاً بعد. افتح المساق وأنت متصل واضغط «حفظ للعرض بلا إنترنت».</p></div>'
+  } else {
+    items.forEach(function (it) {
+      var d = document.createElement('div')
+      d.className = 'card'
+      var h = document.createElement('h2'); h.textContent = it.title || 'Course'; d.appendChild(h)
+      var m = document.createElement('div'); m.className = 'meta'
+      m.textContent = it.savedAt ? 'Saved ' + new Date(it.savedAt).toLocaleString() : ''
+      d.appendChild(m)
+      ;(it.links || []).forEach(function (l) {
+        var a = document.createElement('a'); a.href = l.url
+        var n = document.createElement('span'); n.className = 'n'; n.textContent = l.n || '∫'
+        var t = document.createElement('span'); t.textContent = l.title || l.url
+        a.appendChild(n); a.appendChild(t); d.appendChild(a)
+      })
+      list.appendChild(d)
+    })
+  }
+  var b = document.createElement('button'); b.textContent = 'Try again · إعادة المحاولة'
+  b.onclick = function () { location.reload() }
+  list.appendChild(b)
+})()
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard, User, FileText, BookOpen, Newspaper, GraduationCap, Briefcase, Award, Globe, Users, Mic, UserCheck,
-  School, Sigma, LogOut, Menu, X, ChevronDown, Eye, MonitorSmartphone,
+  School, Sigma, LogOut, Menu, X, ChevronDown, Eye, MonitorSmartphone, BookOpenCheck,
 } from 'lucide-react'
 import { useCleanPath } from '@/lib/usePath'
 import { signOutAll } from '@/lib/role'
@@ -172,7 +172,56 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
 
-      <div className="mx-auto min-w-0 max-w-[1680px] lg:px-5">{children}</div>
+      <div className="mx-auto min-h-[calc(100vh-4rem-220px)] min-w-0 max-w-[1680px] lg:px-5">{children}</div>
+      <AdminFooter signOut={signOut} />
     </div>
+  )
+}
+
+/** Admin footer: brand, the most used destinations and a short help line. */
+function AdminFooter({ signOut }: { signOut: () => void }) {
+  const year = new Date().getFullYear()
+  const links: Item[] = [
+    MAIN[0], MAIN[1], CONTENT[1], CONTENT[3], MAIN[2],
+    { href: '/dashboard', label: 'Student view', ar: 'واجهة الطالب', icon: MonitorSmartphone },
+  ]
+  return (
+    <footer className="relative mt-10 overflow-hidden border-t border-[#C9A227]/20 bg-[#081527] text-[#9AABC2]">
+      <span aria-hidden className="pointer-events-none absolute -bottom-12 end-6 select-none font-display text-[160px] italic leading-none text-white/[.035]">∫</span>
+      <div className="relative mx-auto grid max-w-[1680px] gap-7 px-4 py-8 sm:px-7 md:grid-cols-[1.2fr_2fr_1fr] lg:px-12 2xl:px-[72px]">
+        <div>
+          <Link href="/admin/dashboard" className="group flex items-center gap-3">
+            <Logo className="h-10 w-10 shrink-0 transition-transform duration-500 group-hover:rotate-[-4deg]" />
+            <span className="leading-tight">
+              <span className="block font-display text-[16px] font-semibold text-white">Admin panel</span>
+              <span className="block font-arabic text-[12.5px] text-[#C9A227]">لوحة تحكم أ.د. أحمد العجو</span>
+            </span>
+          </Link>
+          <p className="mt-3 max-w-xs text-[12.5px] leading-relaxed">Every change you save appears on ahmadelajou.com within seconds. · <span className="font-arabic">كل ما تحفظه يظهر في الموقع خلال ثوانٍ.</span></p>
+        </div>
+        <nav aria-label="Admin shortcuts" className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+          {links.map((it) => {
+            const Icon = it.icon
+            return (
+              <Link key={it.href} href={it.href} prefetch={it.href === '/dashboard' ? false : undefined} className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition hover:bg-white/[.04] hover:text-white">
+                <Icon size={14} className="shrink-0 text-[#C9A227]/80" />
+                <span className="truncate">{it.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+        <div className="flex flex-col items-start gap-2.5 md:items-end">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-md bg-[#C9A227] px-3.5 py-2 text-[13px] font-semibold text-[#0A1A30] transition hover:bg-[#E0BC4A]"><Eye size={15} /> View site</Link>
+          <Link href="/admin/mn-guide" className="inline-flex items-center gap-1.5 text-[12.5px] hover:text-white"><BookOpenCheck size={14} className="text-[#C9A227]" /> How to write a sheet</Link>
+          <button onClick={signOut} className="inline-flex items-center gap-1.5 text-[12.5px] hover:text-[#F08A7E]"><LogOut size={14} /> Sign out</button>
+        </div>
+      </div>
+      <div className="relative border-t border-white/[.06]">
+        <p className="mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-2 px-4 py-3 text-[11.5px] text-[#6F819B] sm:px-7 lg:px-12 2xl:px-[72px]">
+          <span>© {year} Prof. Ahmad El-Ajou · Al-Balqa Applied University</span>
+          <span className="font-display italic text-[#C9A227]/70">Dᵅ u = f(t, u)</span>
+        </p>
+      </div>
+    </footer>
   )
 }

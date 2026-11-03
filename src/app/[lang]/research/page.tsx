@@ -4,7 +4,7 @@ import AreaGrid from '@/components/research/AreaGrid'
 import OutputChart from '@/components/research/OutputChart'
 import ResearchLibrary from '@/components/research/ResearchLibrary'
 import { getInterests, getProfile, getPublications } from '@/lib/data'
-import { pubStats, type Pub } from '@/lib/pubstats'
+import { isPublished, pubStats, type Pub } from '@/lib/pubstats'
 import { isLang } from '@/lib/i18n'
 
 export const metadata: Metadata = { title: 'Research' }
@@ -53,7 +53,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ lang:
   const { lang: l } = await params
   const lang = isLang(l) ? l : 'en'
   const t = T[lang]
-  const [pubs, interests, profile] = await Promise.all([getPublications(), getInterests(), getProfile()])
+  const [all, interests, profile] = await Promise.all([getPublications(), getInterests(), getProfile()])
+  const pubs = (all as Pub[]).filter(isPublished)
   const s = pubStats(pubs as Pub[], profile)
   const areas = interests.length ? interests.map((a: any) => [a.name_en, a.name_ar || a.name_en]) : FALLBACK
 
@@ -75,10 +76,10 @@ export default async function ResearchPage({ params }: { params: Promise<{ lang:
       />
 
       {/* Areas */}
-      <section className="mx-auto max-w-[1680px] px-4 sm:px-7 lg:px-12 2xl:px-[72px] py-10 sm:py-16">
+      <section id="areas" className="mx-auto max-w-[1680px] scroll-mt-20 px-4 sm:px-7 lg:px-12 2xl:px-[72px] py-10 sm:py-16">
         <div className="card p-5 sm:p-8">
           <SectionHead eyebrow={t.areasEyebrow} title={t.areasTitle} />
-          <AreaGrid areas={areas as [string, string][]} lang={lang} />
+          <AreaGrid twoRows areas={areas as [string, string][]} lang={lang} />
         </div>
       </section>
 

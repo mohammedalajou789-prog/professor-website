@@ -14,7 +14,7 @@
 | الجزء | لمن؟ | ماذا فيه؟ |
 |---|---|---|
 | **الصفحات العامة** | الجميع | الرئيسية، السيرة، الأبحاث، المنشورات، التواصل، وقائمة المساقات |
-| **منطقة الطلاب** | الطلاب المقبولون فقط | المحاضرات: شيت الطالب، الشيت المحلول، الفيديوهات، الملفات |
+| **منطقة المساقات** | الجميع (التحميل يحتاج حساباً) | المحاضرات: شيت الطالب، الشيت المحلول، الفيديوهات، الملفات |
 | **لوحة التحكم** | أنت فقط | تعديل كل محتوى الموقع، وإدارة المساقات والطلاب |
 
 يعمل الموقع بالعربية والإنجليزية (زر **عربي / English** أعلى الصفحة)، وفيه **وضع ليلي** (زر القمر 🌙).
@@ -22,7 +22,7 @@
 ## 2. الدخول إلى لوحة التحكم
 1. افتح **ahmadelajou.com/login**. هي نفس صفحة دخول الطلاب، والموقع يعرف أنك المسؤول فيأخذك إلى لوحة التحكم.
 2. في الأعلى شريط بنفس شكل الموقع، فيه:
-   - **Overview:** نظرة عامة وطلبات الطلاب المنتظرة.
+   - **Overview:** الأرقام وآخر الأخبار وإجراءات سريعة.
    - **Courses & students:** المساقات والطلاب.
    - **Website content:** قائمة فيها الملف الشخصي، المنشورات، مجالات البحث، الأخبار، التعليم، المناصب، الجوائز، العضويات، اللجان، المؤتمرات، الإشراف.
    - **Sheet guide:** أمثلة جاهزة للشيتات.
@@ -42,33 +42,30 @@
 ## 4. المساقات
 من **Courses & students**:
 1. **New course:** اكتب اسم المساق بالعربي والإنجليزي ورمزه، مثل MATH 371.
-2. داخل المساق خمسة تبويبات:
+2. داخل المساق أربعة تبويبات:
    - **Lectures:** المحاضرات (التفاصيل في القسم 6).
    - **Course files:** ملفات المساق كاملاً.
-   - **Announcements:** إعلانات تظهر للطلاب في صفحة المساق.
-   - **Students:** طلبات الانضمام لهذا المساق.
-   - **Settings:** الاسم، الوصف، الفصل، اللون، ومفتاحا:
-     - **Published:** يظهر المساق في صفحة المساقات.
-     - **Accept new access requests:** يسمح للطلاب بطلب الانضمام.
+   - **Announcements:** إعلانات تظهر في صفحة المساق.
+   - **Settings:** الاسم، الوصف، الفصل، اللون، ومفتاح **Published**: يظهر المساق في صفحة المساقات، **مفتوحاً للجميع**.
 
 ## 5. الطلاب
 - يسجّل الطالب بنفسه: الاسم، الرقم الجامعي، البريد الجامعي، الهاتف.
 - **لا يُقبل إلا بريد ينتهي بـ `@std.bau.edu.jo`.**
-- يفتح الطالب المساق ويضغط **طلب الانضمام**. لا يرى أي محاضرة حتى **توافق أنت**.
-- **الموافقة لكل مساق على حدة:** قبول طالب في مساق لا يعني قبوله في مساق آخر.
-- الطلبات تظهر في **Courses & students → Requests**، مجمّعة حسب المساق:
-  - **Approve:** قبول الطالب في هذا المساق.
-  - **Reject:** رفض الطلب.
-  - **Revoke:** سحب القبول لاحقاً.
-- تبويب **Students** يُظهر كل طالب ومساقاته وحالة كل منها: ✓ مقبول، … ينتظر، ✕ مرفوض.
-- **Block account:** يوقف حساب الطالب في كل المساقات دفعة واحدة.
+- **لا توجد موافقة:** كل مساق منشور مفتوح للجميع، حتى دون حساب. أي شخص يفتح المحاضرات ويقرأ الشيتات ويشاهد الفيديوهات.
+- **الحساب مطلوب للتحميل فقط:** تحميل شيت الطالب PDF وملفات المساق يحتاج تسجيل الدخول.
+- تبويب **Students** في **Courses & students** يُظهر كل الطلاب المسجّلين.
+- **Block:** يمنع الطالب من تحميل الملفات.
 
 ## 6. المحاضرات
-داخل المساق → **Lectures** → **Add lecture**. لكل محاضرة:
+داخل المساق → **Lectures** → **Add lecture**.
+
+**ترتيب المحاضرات:** اسحب المحاضرة من المقبض ⋮⋮ في القائمة وأفلتها في مكانها الجديد (يعمل بالماوس وباللمس على الهاتف)، أو استخدم السهمين ↑ ↓. يُحفظ الترتيب فوراً، وتُرقَّم المحاضرات 1، 2، 3… حسب الترتيب الجديد.
+
+لكل محاضرة:
 
 | العنصر | الشرح |
 |---|---|
-| **Published to students** | تظهر المحاضرة للطلاب المقبولين |
+| **Published** | تظهر المحاضرة للجميع |
 | **Show student sheet** | يظهر شيت الطالب (الحلول مخفية) |
 | **Release solved (doctor) sheet** | يظهر الشيت المحلول للطلاب. اتركه مطفأً حتى تقرر نشر الحلول |
 | **Student sheet** | ملف المحاضرة بصيغة `.mn`. انظر القسم 7 |
@@ -122,8 +119,26 @@
 - أول مرة فقط ينزّل المتصفح بايثون، فتنتظر 20–40 ثانية.
 - الطالب يرى الصورة جاهزة فوراً.
 
+## 7ب. ملف PDF للشيت المحلول (لك وحدك)
+في تبويب **الورقة المحلولة** داخل المحاضرة يظهر لك زر أخضر **Download solved PDF**. هذا الزر يظهر للدكتور فقط؛ الطلاب يحمّلون شيت الطالب فقط.
+
+## 7ج. العرض بلا إنترنت (قاعة المحاضرات)
+- افتح صفحة المساق وأنت متصل بالإنترنت، واضغط **حفظ للعرض بلا إنترنت / Save for offline**.
+- يحفظ الجهاز كل المحاضرات: صفحة المساق، شيت الطالب، والشيت المحلول. يظهر بعدها "محفوظ على هذا الجهاز".
+- في القاعة بلا إنترنت: افتح الموقع على نفس الجهاز ونفس المتصفح، فتفتح المحاضرات المحفوظة كما هي.
+- يوجد زر مماثل أسفل كل محاضرة لحفظ محاضرة واحدة فقط.
+- بعد تعديل شيت: اضغط زر التحديث ⟳ بجانب "محفوظ" لتحديث النسخة المحفوظة.
+- الفيديوهات تحتاج إنترنت دائماً.
+- بديل آخر: حمّل الشيت PDF مسبقاً، فيفتح بلا إنترنت من أي برنامج PDF.
+
+## 7د. الأبحاث الجارية (Ongoing)
+- **Website content → Publications → Add ongoing**.
+- اختر الحالة: **Accepted** (مقبول للنشر)، **Under review** (قيد التحكيم)، أو **In preparation** (قيد الإعداد).
+- تظهر في صفحة المنشورات تحت **أبحاث جارية**، ولا تدخل في عدد الأبحاث ولا الاقتباسات.
+- عند نشر البحث: افتحه واختر **Published** وأضف المجلة والمجلد وDOI.
+
 ## 8. ماذا يرى الطالب؟
-- لوحته: مساقاته وحالة كل طلب (بانتظار الموافقة / مقبول).
+- كل المساقات مفتوحة له، حتى دون حساب.
 - صفحة المحاضرة فيها أربعة تبويبات: شيت الطالب، الشيت المحلول (إن أصدرته)، الفيديوهات، الملفات.
 - **عرض الشيت مثل ملف PDF:** أزرار التكبير والتصغير في أعلى الصفحة تكبّر الشيت كله، النص والمعادلات والرسومات معاً. وفيه زر "ملء العرض" ↔، وزر **ملء الشاشة** ⛶ (مثل F11)، وزر للمحتويات.
 - **التركيز على القراءة:** عند النزول في الشيت يختفي شريط الموقع العلوي، ويعود عند الصعود.
@@ -137,8 +152,8 @@
 ## 9. أسئلة شائعة
 - **عدّلت شيئاً ولم يظهر؟** حدّث الصفحة. التعديلات تظهر فوراً، وإن تأخرت فالحد الأقصى ساعة.
 - **طالب يقول إنه لا يرى المحاضرة؟** تأكد من ثلاثة أشياء:
-  1. قبلت طلبه.
-  2. شغّلت **Published to students** للمحاضرة.
+  1. المساق منشور (**Published** في Settings).
+  2. شغّلت **Published** للمحاضرة.
   3. شغّلت **Show student sheet**.
 - **طالب نسي كلمة المرور؟** يُعاد تعيينها من Supabase. اطلب ذلك ممن يدير الموقع تقنياً.
 - **كيف أضيف فيديو؟** ارفعه على يوتيوب **غير مدرج**، ثم الصق الرابط في المحاضرة.
@@ -146,7 +161,7 @@
 
 ## 10. الأمان
 - لا تشارك كلمة مرور لوحة التحكم مع أحد.
-- كل ملفات المساقات محفوظة في تخزين خاص، ولا يصل إليها إلا طالب مقبول في المساق.
+- ملفات المساقات محفوظة في تخزين خاص، ولا يحمّلها إلا من لديه حساب على الموقع.
 
 ---
 
@@ -156,7 +171,7 @@
 | Part | Who | What |
 |---|---|---|
 | **Public pages** | everyone | Home, About, Research, Publications, Contact, course list |
-| **Student area** | approved students only | lectures: student sheet, solved sheet, videos, files |
+| **Student area** | everyone (downloads need an account) | lectures: student sheet, solved sheet, videos, files |
 | **Admin** | you only | all website content, courses and students |
 
 Arabic/English switch at the top, and a **dark mode** (🌙).
@@ -164,7 +179,7 @@ Arabic/English switch at the top, and a **dark mode** (🌙).
 ## 2. Signing in
 1. Open **ahmadelajou.com/login**. Students and you use the same page; the site recognises the admin and opens the admin area.
 2. The top bar looks like the public site:
-   - **Overview:** numbers and waiting student requests.
+   - **Overview:** numbers, latest news and quick actions.
    - **Courses & students**
    - **Website content:** Profile, Publications, Research areas, News, Education, Positions, Awards, Memberships, Committees, Conferences, Supervision.
    - **Sheet guide:** example sheets.
@@ -181,28 +196,28 @@ On a phone, ☰ opens the menu.
 - **Supervision:** student names in English and Arabic. Each language shows its own.
 
 ## 4. Courses
-In **Courses & students** → **New course** (name EN/AR, code). Inside a course there are five tabs:
+In **Courses & students** → **New course** (name EN/AR, code). Inside a course there are four tabs:
 - **Lectures**
 - **Course files**
 - **Announcements**
-- **Students:** requests for this course.
-- **Settings:**
-  - **Published:** the course is listed on /courses.
-  - **Accept new access requests:** students can ask to join.
+- **Settings:** **Published** lists the course on /courses, **open to everyone**.
 
 ## 5. Students
 - Students register with name, university ID, university email (**only `@std.bau.edu.jo`**) and phone.
-- They press **Request access** on a course. They see nothing until **you approve**.
-- **Approval is per course:** approving a student in one course does not open any other course.
-- Requests appear in **Courses & students → Requests**, grouped by course: **Approve**, **Reject**, or later **Revoke**.
-- The **Students** tab shows each student with a status per course (✓ / … / ✕). **Block account** closes all courses for that student.
+- **No approval any more:** every published course is open to everyone, even without an account.
+- **An account is needed only to download** (student-sheet PDF, course files).
+- **Courses & students → Students** lists everyone registered. **Block** stops a student from downloading.
 
 ## 6. Lectures
-**Lectures → Add lecture**. For each lecture:
+**Lectures → Add lecture**.
+
+**Order of lectures:** drag a lecture by its ⋮⋮ handle and drop it in its new place (mouse or touch), or use the ↑ ↓ arrows. The order is saved at once and the lectures are renumbered 1, 2, 3 … in that order.
+
+For each lecture:
 
 | Item | Meaning |
 |---|---|
-| Published to students | approved students see the lecture |
+| Published | everyone sees the lecture |
 | Show student sheet | the sheet with solutions hidden |
 | Release solved (doctor) sheet | students also get the solved version. Keep it off until you decide |
 | Student sheet | the lecture file (`.mn`), see §7 |
@@ -251,8 +266,20 @@ You don't need to learn the format. A Claude project is prepared for you:
 - The first time only, the browser downloads Python, so expect 20–40 seconds.
 - Students get the finished image instantly.
 
+## 7b. Solved-sheet PDF (only for you)
+On a lecture's **Doctor sheet** tab you get a green **Download solved PDF** button. Only the doctor sees it; students download the student sheet only.
+
+## 7c. Offline (lecture hall without internet)
+- While online, open the course page and press **Save for offline**. The device keeps every lecture: the course page, student sheets and solved sheets.
+- In the hall, open the site on the same device and browser — the saved lectures open without internet.
+- Each lecture also has its own button at the bottom. After you change a sheet, press ⟳ next to "Saved" to refresh the copy. Videos always need internet.
+
+## 7d. Ongoing research
+- **Website content → Publications → Add ongoing**, then choose **Accepted**, **Under review** or **In preparation**.
+- It appears on the Publications page under **Ongoing research** and is not counted in the publication or citation numbers. When it is published, switch it to **Published**.
+
 ## 8. What students see
-- Their dashboard: their courses and the status of each request.
+- Every course is open to them, even without an account.
 - Each lecture has four tabs: student sheet, solved sheet (once released), videos, files.
 - **The sheet works like a PDF viewer:** the zoom buttons at the top scale the whole sheet (text, maths, figures), with Fit width ↔, **Full screen** ⛶ (like F11) and Contents.
 - **Reading focus:** the site's top bar slides away while scrolling down the sheet and returns when scrolling up.
@@ -266,12 +293,12 @@ You don't need to learn the format. A Claude project is prepared for you:
 ## 9. FAQ
 - **A change doesn't show?** Refresh the page. Changes are immediate, and never take more than an hour.
 - **A student can't see a lecture?** Check three things:
-  1. You approved them.
-  2. **Published to students** is on for the lecture.
+  1. The course is **Published** (Settings).
+  2. **Published** is on for the lecture.
   3. **Show student sheet** is on.
 - **A student forgot their password?** It is reset from Supabase by whoever maintains the site.
 - **Can I write sheets myself?** Yes: **Edit** opens an editor with an instant error checker. The full rules are in `MN_SYNTAX_SPEC.md`.
 
 ## 10. Security
 - Never share the admin password.
-- Course files are in private storage. Only students approved for that course can download them.
+- Course files are in private storage. Only signed-in accounts can download them.

@@ -14,7 +14,12 @@ export type Pub = {
   citation_count: number | null
   pub_type: string | null
   is_featured?: boolean | null
+  /** published (default) · accepted · under_review · in_preparation */
+  status?: string | null
 }
+
+/** published = no status yet (before sql/004) or 'published'; everything else is ongoing research */
+export const isPublished = (p: { status?: string | null }) => !p.status || p.status === 'published'
 
 export function hIndex(c: number[]) {
   const s = [...c].sort((a, b) => b - a)

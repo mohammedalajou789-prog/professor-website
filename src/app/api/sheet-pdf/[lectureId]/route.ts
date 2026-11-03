@@ -12,16 +12,16 @@ export const runtime = 'nodejs'
 
 /**
  * Sheet → PDF (vector text, real fonts, same design as on screen, A4).
- *  1. access: same rules as the lecture page (RLS + "release" switches)
- *  2. the clean PDF is rendered once per sheet version and cached in R2
- *  3. students get their own copy stamped with their university ID (cached too)
- *  If the renderer is unavailable, the student is sent to the browser's print dialog instead.
+ *  1. a site account is needed (lectures are open to everyone, downloads are not)
+ *  2. students: the blank student sheet only · the doctor: also the solved sheet (?v=doctor)
+ *  3. the clean PDF is rendered once per sheet version and cached in R2
+ *  4. students get their own copy stamped with their university ID (cached too)
  */
 export async function GET(req: Request, { params }: { params: Promise<{ lectureId: string }> }) {
   const { lectureId } = await params
   const url = new URL(req.url)
-  // only the blank student sheet can ever be downloaded (solutions never leave the site as a file)
-  const mode = 'student' as const
+  // students: only the blank student sheet · the solved (doctor) sheet only for the doctor himself
+  const mode = url.searchParams.get('v') === 'doctor' ? ('doctor' as const) : ('student' as const)
   const wantsJson = (req.headers.get('accept') || '').includes('application/json')
   const lang = url.searchParams.get('lang') === 'ar' ? 'ar' : 'en'
 
@@ -34,20 +34,25 @@ export async function GET(req: Request, { params }: { params: Promise<{ lectureI
   }
 
   const { supabase, user, isAdmin, student } = await getViewer()
-  if (!user) return NextResponse.redirect(new URL('/login', req.url))
+  if (!user) {
+    if (wantsJson) return NextResponse.json({ error: 'login', login: true }, { status: 401 })
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+  if (mode === 'doctor' && !isAdmin) return NextResponse.json({ error: 'Only the doctor can download the solved sheet' }, { status: 403 })
+  if (!isAdmin && (!student || student.status !== 'active')) return NextResponse.json({ error: 'This account cannot download files' }, { status: 403 })
   const { data: lec } = await supabase.from('lectures').select('id, number, title_en, course_id, student_sheet_key, doctor_sheet_key, show_student_sheet, show_doctor_sheet').eq('id', lectureId).maybeSingle()
   if (!lec) return NextResponse.json({ error: 'Not found or no access' }, { status: 404 })
   const { data: course } = await supabase.from('courses').select('slug, name_en, code').eq('id', lec.course_id).maybeSingle()
   const allowed = isAdmin || lec.show_student_sheet
-  const key = lec.student_sheet_key || lec.doctor_sheet_key
+  const key = mode === 'doctor' ? lec.doctor_sheet_key || lec.student_sheet_key : lec.student_sheet_key || lec.doctor_sheet_key
   if (!allowed || !key) return NextResponse.json({ error: 'This sheet is not available' }, { status: 403 })
   if (!r2Configured()) return NextResponse.json({ error: 'Storage is not configured' }, { status: 500 })
 
-  const fileName = `${(course?.code || course?.name_en || 'course').replace(/[^\w\- ]+/g, '').trim()} - Lecture ${lec.number}.pdf`
+  const fileName = `${(course?.code || course?.name_en || 'course').replace(/[^\w\- ]+/g, '').trim()} - Lecture ${lec.number}${mode === 'doctor' ? ' (solved)' : ''}.pdf`
   let step = 'render'
   try {
     // normally already built when the doctor saved the sheet → no wait
-    const base = await ensureSheetPdf({ origin: url.origin, sheetKey: key, lang, footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` })
+    const base = await ensureSheetPdf({ origin: url.origin, sheetKey: key, lang, mode, footer: `${course?.name_en || ''} · Lecture ${lec.number} · Prof. Ahmad El-Ajou` })
     let out = base
     if (!isAdmin && student) {
       step = 'watermark'

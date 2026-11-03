@@ -1,26 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Save, Trash2, PlayCircle, Pin, ExternalLink, BookOpen, Paperclip, Megaphone, Users, Settings, GripVertical } from 'lucide-react'
+import { ArrowLeft, Plus, Save, Trash2, PlayCircle, Pin, ExternalLink, BookOpen, Paperclip, Megaphone, Settings, GripVertical, ChevronUp, ChevronDown, Loader2, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { revalidateSite } from '@/lib/admin-client'
 import SheetEditor from './SheetEditor'
 import FilesManager from './FilesManager'
-import Enrollments, { type Row } from './Enrollments'
-import { Btn, Card, Field, Toggle, inp } from './ui'
+import { AdminHero, Btn, Card, Field, HeroTabs, Toggle, inp } from './ui'
 
-type Tab = 'lectures' | 'files' | 'news' | 'students' | 'settings'
+type Tab = 'lectures' | 'files' | 'news' | 'settings'
 const ytId = (s: string) => s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([\w-]{11})/)?.[1] || (/^[\w-]{11}$/.test(s.trim()) ? s.trim() : null)
 
-export default function CourseEditor({ course, lectures, videos, files, news, rows, openLecture }: { course: any; lectures: any[]; videos: any[]; files: any[]; news: any[]; rows: Row[]; openLecture?: string }) {
+export default function CourseEditor({ course, lectures, videos, files, news, openLecture }: { course: any; lectures: any[]; videos: any[]; files: any[]; news: any[]; openLecture?: string }) {
   const router = useRouter()
-  const pending = rows.filter((r) => r.status === 'pending').length
-  const [tab, setTab] = useState<Tab>(pending ? 'students' : 'lectures')
+  const [tab, setTab] = useState<Tab>('lectures')
   const [sel, setSel] = useState<string | null>(openLecture || lectures[0]?.id || null)
   const lec = lectures.find((l) => l.id === sel)
   const sb = createClient()
+  const accent = course.accent || '#1F5FAD'
 
   const addLecture = async () => {
     const n = (lectures.reduce((m, l) => Math.max(m, l.number), 0) || 0) + 1
@@ -30,60 +29,36 @@ export default function CourseEditor({ course, lectures, videos, files, news, ro
     router.refresh()
   }
 
-  const TABS: [Tab, string, any][] = [
-    ['lectures', `Lectures (${lectures.length})`, BookOpen],
-    ['files', 'Course files', Paperclip],
-    ['news', 'Announcements', Megaphone],
-    ['students', `Students${pending ? ` · ${pending} pending` : ''}`, Users],
-    ['settings', 'Settings', Settings],
-  ]
-
   return (
-    <div className="p-3 sm:p-5 lg:p-7">
-      <header className="admin-hero overflow-hidden rounded-2xl text-white">
-        <div className="relative flex flex-wrap items-center gap-3 px-4 py-5 sm:px-6">
-          <Link href="/admin/courses" className="rounded-md p-1.5 hover:bg-white/10"><ArrowLeft size={18} /></Link>
-          <div className="min-w-0">
-            <p className="text-[12px] text-[#C9A227]">{course.code || 'Course'}</p>
-            <h1 className="truncate text-[18px] font-semibold">{course.name_en}</h1>
-          </div>
-          <span className={`ms-auto rounded-full px-2.5 py-1 text-[12px] ${course.is_published ? 'bg-[#0E7C6B]' : 'bg-[#8A6D00]'}`}>{course.is_published ? 'Published' : 'Hidden'}</span>
-          <Link href={`/courses/${course.slug}`} target="_blank" className="inline-flex items-center gap-1 rounded-md border border-white/20 px-3 py-1.5 text-[13px] hover:border-[#C9A227]"><ExternalLink size={13} /> Student view</Link>
-        </div>
-        <nav className="no-scrollbar relative flex gap-1 overflow-x-auto px-3 sm:px-5">
-          {TABS.map(([id, label, Icon]) => (
-            <button key={id} onClick={() => setTab(id)} className={`relative flex shrink-0 items-center gap-1.5 px-3.5 py-3 text-[13.5px] ${tab === id ? 'font-semibold text-[#E3C566]' : 'text-[#AEBBCC]'}`}>
-              <Icon size={15} /> {label}
-              {tab === id && <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-t bg-[#C9A227]" />}
-            </button>
-          ))}
-        </nav>
-      </header>
+    <div className="space-y-5 p-3 sm:p-5 lg:p-7">
+      <AdminHero
+        icon={BookOpen}
+        tone={accent}
+        glyph="∂"
+        title={course.name_en}
+        ar={course.name_ar || undefined}
+        sub={<span className="inline-flex flex-wrap items-center gap-2">
+          <Link href="/admin/courses" className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-0.5 text-[12px] hover:border-white/40"><ArrowLeft size={12} className="rtl:rotate-180" /> All courses</Link>
+          {course.code && <span dir="ltr" className="rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] text-[#E3C566]">{course.code}</span>}
+          <span className={`rounded-full px-2.5 py-0.5 text-[12px] ${course.is_published ? 'bg-[#0E7C6B]' : 'bg-[#8A6D00]'}`}>{course.is_published ? 'Published · open to everyone' : 'Hidden'}</span>
+        </span>}
+        actions={<Link href={`/courses/${course.slug}`} target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border border-white/25 px-3.5 py-2 text-[13px] text-white transition hover:border-[#C9A227] hover:text-[#E3C566]"><ExternalLink size={14} /> Open course page</Link>}
+      >
+        <HeroTabs
+          tabs={[['lectures', `Lectures (${lectures.length})`, BookOpen], ['files', 'Course files', Paperclip], ['news', 'Announcements', Megaphone], ['settings', 'Settings', Settings]]}
+          value={tab}
+          onChange={setTab}
+        />
+      </AdminHero>
 
-      <main className="pt-5">
+      <main>
         {tab === 'lectures' && (
-          <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
-            <aside className="space-y-2">
-              {lectures.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => setSel(l.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-start transition ${sel === l.id ? 'border-[#0B6FA4] bg-surface shadow-[0_6px_18px_rgba(11,111,164,.12)]' : 'border-line bg-surface/70 hover:bg-surface'}`}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#0B6FA4] to-[#12A4D9] font-display text-[18px] font-semibold text-white">{l.number}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-medium text-ink">{l.title_en}</span>
-                    <span className="mt-0.5 flex gap-1 text-[11px]">
-                      <span className={l.is_published ? 'text-ok' : 'text-gold-ink'}>{l.is_published ? 'published' : 'draft'}</span>
-                      {l.student_sheet_key && <span className="text-link">· sheet</span>}
-                      {l.show_doctor_sheet && <span className="text-ok">· solved</span>}
-                    </span>
-                  </span>
-                </button>
-              ))}
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+            <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+              <LectureOrder lectures={lectures} sel={sel} onSelect={setSel} accent={accent} />
               <Btn kind="gold" onClick={addLecture}><Plus size={15} /> Add lecture</Btn>
             </aside>
-            <div>{lec ? <LectureEditor key={lec.id} lec={lec} videos={videos.filter((v) => v.lecture_id === lec.id)} files={files} courseId={course.id} courseSlug={course.slug} /> : <Card><p className="py-10 text-center text-muted">Add your first lecture.</p></Card>}</div>
+            <div>{lec ? <LectureEditor key={`${lec.id}-${lec.number}`} lec={lec} videos={videos.filter((v) => v.lecture_id === lec.id)} files={files} courseId={course.id} courseSlug={course.slug} /> : <Card><p className="py-10 text-center text-muted">Add your first lecture.</p></Card>}</div>
           </div>
         )}
 
@@ -95,14 +70,116 @@ export default function CourseEditor({ course, lectures, videos, files, news, ro
 
         {tab === 'news' && <News courseId={course.id} news={news} />}
 
-        {tab === 'students' && (
-          <Card title="Students in this course">
-            <Enrollments rows={rows} />
-          </Card>
-        )}
-
         {tab === 'settings' && <CourseSettings course={course} />}
       </main>
+    </div>
+  )
+}
+
+/**
+ * Lecture list with drag & drop ordering (mouse AND touch: drag the ⋮⋮ handle; the arrows work too).
+ * The new order is saved at once and the lectures are renumbered 1, 2, 3 … in that order.
+ */
+function LectureOrder({ lectures, sel, onSelect, accent }: { lectures: any[]; sel: string | null; onSelect: (id: string) => void; accent: string }) {
+  const router = useRouter()
+  const [order, setOrder] = useState(lectures)
+  const [drag, setDrag] = useState<string | null>(null)
+  const [state, setState] = useState<'' | 'saving' | 'saved'>('')
+  const listRef = useRef<HTMLUListElement>(null)
+  const orderRef = useRef(lectures)
+  const apply = (next: any[]) => { orderRef.current = next; setOrder(next) }
+  const sig = lectures.map((l) => `${l.id}:${l.number}:${l.title_en}:${l.is_published}:${l.student_sheet_key}:${l.show_doctor_sheet}`).join('|')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { orderRef.current = lectures; setOrder(lectures) }, [sig])
+
+  const persist = async (next: any[]) => {
+    const changed = next.map((l, i) => ({ l, n: i + 1 })).filter(({ l, n }) => l.number !== n || l.sort_order !== n)
+    if (!changed.length) return
+    setState('saving')
+    const sb = createClient()
+    const res = await Promise.all(changed.map(({ l, n }) => sb.from('lectures').update({ number: n, sort_order: n }).eq('id', l.id)))
+    const err = res.find((r) => r.error)?.error
+    if (err) { alert(err.message); apply(lectures); setState(''); return }
+    setState('saved')
+    setTimeout(() => setState(''), 2200)
+    router.refresh()
+  }
+
+  const moveTo = (id: string, y: number) => {
+    const list = listRef.current
+    if (!list) return
+    const cur = orderRef.current
+    const items = Array.from(list.children) as HTMLElement[]
+    const target = items.filter((el) => el.dataset.id !== id).filter((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2 < y }).length
+    const from = cur.findIndex((l) => l.id === id)
+    if (from < 0 || target === from) return
+    const next = cur.filter((l) => l.id !== id)
+    next.splice(target, 0, cur[from])
+    apply(next)
+  }
+
+  const step = (i: number, d: -1 | 1) => {
+    const j = i + d
+    if (j < 0 || j >= order.length) return
+    const next = [...order]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    apply(next)
+    persist(next)
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-line bg-surface-2 px-4 py-2.5">
+        <p className="text-[12.5px] font-semibold text-ink-2">Order <span className="font-arabic font-normal text-muted">· اسحب لتغيير الترتيب</span></p>
+        <span className={`ms-auto text-[12px] transition ${state ? 'opacity-100' : 'opacity-0'} ${state === 'saved' ? 'text-ok' : 'text-muted'}`}>
+          {state === 'saving' ? <span className="inline-flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span> : 'Order saved ✓'}
+        </span>
+      </div>
+      <ul ref={listRef} className="space-y-1.5 p-2">
+        {order.map((l, i) => (
+          <li
+            key={l.id}
+            data-id={l.id}
+            className={`group flex items-center gap-2 rounded-xl border p-2 transition ${drag === l.id ? 'z-10 scale-[1.02] border-[#C9A227] bg-surface shadow-[var(--c-shadow-lg)]' : sel === l.id ? 'border-[#0B6FA4]/60 bg-sky-soft' : 'border-transparent hover:bg-surface-2'}`}
+          >
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label={`Drag lecture ${i + 1}`}
+              title="Drag to reorder"
+              className="flex h-9 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted hover:text-ink active:cursor-grabbing"
+              onPointerDown={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); setDrag(l.id) }}
+              onPointerMove={(e) => {
+                if (drag !== l.id) return
+                moveTo(l.id, e.clientY)
+                if (e.clientY < 90) window.scrollBy(0, -12)
+                else if (e.clientY > window.innerHeight - 70) window.scrollBy(0, 12)
+              }}
+              onPointerUp={() => { if (drag) { setDrag(null); persist(orderRef.current) } }}
+              onPointerCancel={() => { setDrag(null); apply(lectures) }}
+              onKeyDown={(e) => { if (e.key === 'ArrowUp') { e.preventDefault(); step(i, -1) } if (e.key === 'ArrowDown') { e.preventDefault(); step(i, 1) } }}
+            >
+              <GripVertical size={16} />
+            </span>
+            <button type="button" onClick={() => onSelect(l.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-start">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-display text-[18px] font-semibold italic text-white shadow-[0_6px_14px_rgba(11,111,164,.25)]" style={{ background: `linear-gradient(135deg, ${accent}, #12A4D9)` }}>{i + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14px] font-medium text-ink">{l.title_en}</span>
+                <span className="mt-0.5 flex flex-wrap gap-1 text-[11px]">
+                  <span className={`rounded-full px-1.5 ${l.is_published ? 'bg-ok-soft text-ok' : 'bg-gold-soft text-gold-ink'}`}>{l.is_published ? 'published' : 'draft'}</span>
+                  {l.student_sheet_key && <span className="rounded-full bg-sky-soft px-1.5 text-link">sheet</span>}
+                  {l.show_doctor_sheet && <span className="rounded-full bg-ok-soft px-1.5 text-ok">solved</span>}
+                </span>
+              </span>
+            </button>
+            <span className="flex shrink-0 flex-col opacity-60 transition group-hover:opacity-100">
+              <button type="button" aria-label="Move up" disabled={i === 0} onClick={() => step(i, -1)} className="rounded p-0.5 text-muted hover:text-ink disabled:opacity-30"><ChevronUp size={14} /></button>
+              <button type="button" aria-label="Move down" disabled={i === order.length - 1} onClick={() => step(i, 1)} className="rounded p-0.5 text-muted hover:text-ink disabled:opacity-30"><ChevronDown size={14} /></button>
+            </span>
+          </li>
+        ))}
+        {order.length === 0 && <li className="px-3 py-6 text-center text-[13px] text-muted">No lectures yet.</li>}
+      </ul>
     </div>
   )
 }
@@ -110,11 +187,11 @@ export default function CourseEditor({ course, lectures, videos, files, news, ro
 function LectureEditor({ lec, videos, files, courseId, courseSlug }: { lec: any; videos: any[]; files: any[]; courseId: string; courseSlug: string }) {
   const router = useRouter()
   const sb = createClient()
-  const [f, setF] = useState({ number: lec.number, title_en: lec.title_en, title_ar: lec.title_ar || '', summary_en: lec.summary_en || '', is_published: lec.is_published, show_student_sheet: lec.show_student_sheet, show_doctor_sheet: lec.show_doctor_sheet })
+  const [f, setF] = useState({ number: lec.number, title_en: lec.title_en, title_ar: lec.title_ar || '', summary_en: lec.summary_en || '', summary_ar: lec.summary_ar || '', is_published: lec.is_published, show_student_sheet: lec.show_student_sheet, show_doctor_sheet: lec.show_doctor_sheet })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [yt, setYt] = useState({ url: '', title: '' })
-  const dirty = JSON.stringify(f) !== JSON.stringify({ number: lec.number, title_en: lec.title_en, title_ar: lec.title_ar || '', summary_en: lec.summary_en || '', is_published: lec.is_published, show_student_sheet: lec.show_student_sheet, show_doctor_sheet: lec.show_doctor_sheet })
+  const dirty = JSON.stringify(f) !== JSON.stringify({ number: lec.number, title_en: lec.title_en, title_ar: lec.title_ar || '', summary_en: lec.summary_en || '', summary_ar: lec.summary_ar || '', is_published: lec.is_published, show_student_sheet: lec.show_student_sheet, show_doctor_sheet: lec.show_doctor_sheet })
 
   const save = async (patch?: Partial<typeof f>) => {
     setSaving(true)
@@ -160,10 +237,13 @@ function LectureEditor({ lec, videos, files, courseId, courseSlug }: { lec: any;
           <Field label="العنوان (عربي)"><input dir="rtl" className={inp} value={f.title_ar} onChange={(e) => setF({ ...f, title_ar: e.target.value })} /></Field>
         </div>
         <div className="mt-3">
-          <Field label="Short summary (optional)"><textarea rows={2} className={inp} value={f.summary_en} onChange={(e) => setF({ ...f, summary_en: e.target.value })} /></Field>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Short summary (optional)"><textarea rows={2} className={inp} value={f.summary_en} onChange={(e) => setF({ ...f, summary_en: e.target.value })} /></Field>
+            <Field label="ملخص قصير (اختياري)"><textarea dir="rtl" rows={2} className={inp} value={f.summary_ar} onChange={(e) => setF({ ...f, summary_ar: e.target.value })} /></Field>
+          </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-4">
-          <Toggle on={f.is_published} onChange={flip('is_published')} label="Published to students" />
+          <Toggle on={f.is_published} onChange={flip('is_published')} label="Published (visible to everyone)" />
           <Toggle on={f.show_student_sheet} onChange={flip('show_student_sheet')} label="Show student sheet" />
           <Toggle on={f.show_doctor_sheet} onChange={flip('show_doctor_sheet')} label="Release solved (doctor) sheet" />
           <span className="ms-auto">
@@ -172,7 +252,7 @@ function LectureEditor({ lec, videos, files, courseId, courseSlug }: { lec: any;
         </div>
       </Card>
 
-      <Card title="Sheets (MN syntax)">
+      <Card title={<span className="flex items-center gap-2"><FileText size={17} className="text-link" /> Sheets (MN syntax)</span>}>
         <div className="space-y-3">
           <SheetEditor lectureId={lec.id} which="student" sheetKey={lec.student_sheet_key} onSaved={() => router.refresh()} onRemoved={async () => { await sb.from('lectures').update({ student_sheet_key: null }).eq('id', lec.id); router.refresh() }} />
           <details className="group rounded-xl border border-dashed border-line-2 bg-surface-2/60 open:bg-transparent" open={!!lec.doctor_sheet_key}>
@@ -308,8 +388,7 @@ function CourseSettings({ course }: { course: any }) {
         <Field label="Accent colour"><input type="color" className="h-11 w-full cursor-pointer rounded-lg border border-line" value={f.accent || '#1F5FAD'} onChange={set('accent')} /></Field>
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-6 border-t border-line pt-4">
-        <Toggle on={!!f.is_published} onChange={(v) => setF({ ...f, is_published: v })} label="Published (visible on /courses)" />
-        <Toggle on={!!f.enrollment_open} onChange={(v) => setF({ ...f, enrollment_open: v })} label="Accept new access requests" />
+        <Toggle on={!!f.is_published} onChange={(v) => setF({ ...f, is_published: v })} label="Published — open to everyone on /courses" />
         <span className="ms-auto">
           <Btn
             kind="dark"

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import PageHero from '@/components/ui/PageHero'
 import Bibliography from '@/components/research/Bibliography'
+import Ongoing from '@/components/research/Ongoing'
 import { getProfile, getPublications } from '@/lib/data'
-import { pubStats, type Pub } from '@/lib/pubstats'
+import { isPublished, pubStats, type Pub } from '@/lib/pubstats'
 import { isLang } from '@/lib/i18n'
 
 export const metadata: Metadata = { title: 'Publications' }
@@ -14,8 +15,11 @@ const T = {
 
 export default async function PublicationsPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: l } = await params
-  const t = T[isLang(l) ? l : 'en']
-  const [pubs, profile] = await Promise.all([getPublications(), getProfile()])
+  const lang = isLang(l) ? l : 'en'
+  const t = T[lang]
+  const [all, profile] = await Promise.all([getPublications(), getProfile()])
+  const pubs = (all as Pub[]).filter(isPublished)
+  const ongoing = (all as Pub[]).filter((p) => !isPublished(p))
   const s = pubStats(pubs as Pub[], profile)
   return (
     <>
@@ -32,7 +36,8 @@ export default async function PublicationsPage({ params }: { params: Promise<{ l
           { sym: '10', value: String(s.i10), label: t.i10 },
         ]}
       />
-      <Bibliography pubs={pubs as Pub[]} />
+      <Ongoing pubs={ongoing} lang={lang} />
+      <Bibliography pubs={pubs} />
     </>
   )
 }

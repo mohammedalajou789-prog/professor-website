@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Download, List, Minus, Plus, X, Loader2, ChevronsLeftRight, Maximize, Minimize } from 'lucide-react'
+import { Download, List, Minus, Plus, X, Loader2, ChevronsLeftRight, Maximize, Minimize, LogIn } from 'lucide-react'
+import Link from 'next/link'
 import { useLang } from '@/context/LangContext'
 
 /**
@@ -47,7 +48,7 @@ function applyZoom(z: number) {
   }
 }
 
-export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id: string; html: string }[]; pdfHref?: string; ar?: boolean; /** bilingual sheet: quick EN / ع switch (= the site language switch) */ langSwitch?: boolean }) {
+export default function SheetTools({ toc, pdfHref, pdfLogin, solvedPdf, ar, langSwitch }: { toc: { id: string; html: string }[]; pdfHref?: string; /** visitor without an account: the PDF button leads to sign-in */ pdfLogin?: string; /** the doctor's solved PDF (doctor only) */ solvedPdf?: boolean; ar?: boolean; /** bilingual sheet: quick EN / ع switch (= the site language switch) */ langSwitch?: boolean }) {
   const { setLang } = useLang()
   const [zoom, setZoom] = useState(1)
   const phoneManual = useRef<number | null>(null)
@@ -58,8 +59,8 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
   const [canFs, setCanFs] = useState(false)
   const [fs, setFs] = useState(false)
   const L = ar
-    ? { contents: 'المحتويات', pdf: 'تحميل الشيت PDF', smaller: 'تصغير', larger: 'تكبير', fit: 'ملء العرض', full: 'ملء الشاشة', exitFull: 'الخروج من ملء الشاشة', failed: 'تعذّر تجهيز الملف، حاول بعد قليل.' }
-    : { contents: 'Contents', pdf: 'Download PDF', smaller: 'Zoom out', larger: 'Zoom in', fit: 'Fit width', full: 'Full screen', exitFull: 'Exit full screen', failed: 'Could not prepare the PDF — please try again in a moment.' }
+    ? { contents: 'المحتويات', pdf: solvedPdf ? 'تحميل المحلولة PDF' : 'تحميل الشيت PDF', login: 'سجّل الدخول للتحميل', smaller: 'تصغير', larger: 'تكبير', fit: 'ملء العرض', full: 'ملء الشاشة', exitFull: 'الخروج من ملء الشاشة', failed: 'تعذّر تجهيز الملف، حاول بعد قليل.' }
+    : { contents: 'Contents', pdf: solvedPdf ? 'Download solved PDF' : 'Download PDF', login: 'Sign in to download', smaller: 'Zoom out', larger: 'Zoom in', fit: 'Fit width', full: 'Full screen', exitFull: 'Exit full screen', failed: 'Could not prepare the PDF — please try again in a moment.' }
 
   // initial zoom: on a computer the saved choice (otherwise fit-to-width);
   // on a phone ALWAYS fit the screen — a zoom saved on the computer (e.g. 110 %) must never make
@@ -147,6 +148,7 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
         const r = await fetch(pdfHref, { headers: { accept: 'application/json' } })
         j = await r.json().catch(() => ({}))
         if (r.status === 202 && j.pending) { await new Promise((res) => setTimeout(res, (j.retryAfter || 4) * 1000)); continue }
+        if (r.status === 401 && j.login) { window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return }
         if (!r.ok || !j.url) throw new Error(j.step ? `${j.step}: ${j.detail || j.error}` : j.error || 'failed')
         break
       }
@@ -189,8 +191,15 @@ export default function SheetTools({ toc, pdfHref, ar, langSwitch }: { toc: { id
           <button type="button" className={btn} onClick={() => setOpen(true)} aria-label={L.contents} title={L.contents}><List size={16} /></button>
         )}
       </div>
+      {!pdfHref && pdfLogin && (
+        <Link href={pdfLogin} title={L.login} className="mn-noprint inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#0B6FA4]/40 bg-sky-soft px-3 text-[13px] font-semibold text-link transition hover:border-[#0B6FA4]">
+          <LogIn size={15} />
+          <span className="hidden sm:inline">{L.login}</span>
+          <span className="sm:hidden">PDF</span>
+        </Link>
+      )}
       {pdfHref && (
-        <button type="button" onClick={download} disabled={busy} className="mn-noprint relative inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#0B6FA4] px-3 text-[13px] font-semibold text-white transition hover:bg-[#095E8C] disabled:opacity-80">
+        <button type="button" onClick={download} disabled={busy} className={`mn-noprint relative inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-white transition disabled:opacity-80 ${solvedPdf ? 'bg-[#0E7C6B] hover:bg-[#0B6A5B]' : 'bg-[#0B6FA4] hover:bg-[#095E8C]'}`}>
           {busy ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
           <span className="hidden sm:inline">{L.pdf}</span>
           <span className="sm:hidden">PDF</span>
